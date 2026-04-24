@@ -1,0 +1,13 @@
+# Scripts internos - NAO publicar
+*.py
+*.bat
+*.ps1
+*.sql
+*.md
+*.txt
+*.json
+*.log
+*.png
+
+# Excecoes permitidas
+!index.html
