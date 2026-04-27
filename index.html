@@ -2594,7 +2594,7 @@ function buildFaixaTable() {
   // Faixas ordenadas
   const ORDEM = ['00. CARTAO NAO ENTREGUE','01. ATE 2 DIAS','02. ATE 5 DIAS','03. ATE 7 DIAS','04. ATE 10 DIAS','05. ACIMA DE 10 DIAS','06. NAO RENOVADO'];
   const faixasSet = new Set();
-  safras.forEach(s => Object.keys(DIAS_ENTREGA_DIST[s]).forEach(f => faixasSet.add(f)));
+  safras.forEach(s => Object.keys(DATA[s] || DIAS_ENTREGA_DIST[s] || {}).forEach(f => faixasSet.add(f)));
   const faixas = [...faixasSet].sort((a,b) => {
     const ia = ORDEM.indexOf(a), ib = ORDEM.indexOf(b);
     return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
@@ -2624,14 +2624,14 @@ function buildFaixaTable() {
   // Totais por safra (para % por coluna)
   const totBySafra = {};
   safras.forEach(s => {
-    totBySafra[s] = Object.values(DIAS_ENTREGA_DIST[s]).reduce((a,v)=>a+v,0);
+    totBySafra[s] = Object.values(DATA[s] || DIAS_ENTREGA_DIST[s] || {}).reduce((a,v)=>a+v,0);
   });
   const grandTotal = safras.reduce((a,s)=>a+totBySafra[s],0);
 
   // Totais por faixa
   const totByFaixa = {};
   faixas.forEach(f => {
-    totByFaixa[f] = safras.reduce((a,s)=>a+(DIAS_ENTREGA_DIST[s][f]||0),0);
+    totByFaixa[f] = safras.reduce((a,s)=>a+((DATA[s]||DIAS_ENTREGA_DIST[s]||{})[f]||0),0);
   });
 
   const tdS = 'padding:5px 10px;text-align:center;font-size:11px;font-variant-numeric:tabular-nums;';
@@ -2643,7 +2643,7 @@ function buildFaixaTable() {
     const totF = totByFaixa[f];
     const pct = grandTotal > 0 ? (totF/grandTotal*100).toFixed(1)+'%' : '—';
     const cells = safras.map(s => {
-      const v   = DIAS_ENTREGA_DIST[s][f] || 0;
+      const v   = (DATA[s]||DIAS_ENTREGA_DIST[s]||{})[f] || 0;
       const tot = totBySafra[s];
       const p   = tot > 0 ? (v/tot*100).toFixed(1) : '0.0';
       return `<td style="${tdS}background:#fff;">
