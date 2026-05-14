@@ -1625,6 +1625,58 @@
   ═══════════════════════════════════════════════════════════ -->
   <div id="tab-slide" class="tab-panel">
 
+    <!-- ══ BLOCO CONCEITO ══ -->
+    <div style="background:#1A1A1A;border-radius:12px;padding:28px 32px;margin-bottom:24px;color:#e2e8f0;line-height:1.7;font-size:13px">
+
+      <div style="margin-bottom:18px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="font-size:16px">🖥️</span>
+          <span style="font-weight:800;font-size:14px;color:#FFE600;letter-spacing:-.2px">Escopo do Controle</span>
+        </div>
+        <p>Monitoramos cartões físicos de <strong style="color:#fff">Puro Débito e Híbridos (Crédito + Débito)</strong>. O ciclo de vida padrão para novas emissões era <strong style="color:#FFE600">5 anos</strong>, pós MONZA, virou 10 anos.</p>
+      </div>
+
+      <div style="margin-bottom:18px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span style="font-size:16px">👥</span>
+          <span style="font-weight:800;font-size:14px;color:#FFE600;letter-spacing:-.2px">Segmentação (FLAG_GRUPO)</span>
+        </div>
+        <p style="margin-bottom:8px">Dividimos a base em dois perfis para otimizar o custo de operação:</p>
+        <ul style="list-style:disc;padding-left:24px;display:flex;flex-direction:column;gap:4px">
+          <li><strong style="color:#5bc8f5">Grupo 1:</strong> Usuários ativos (uso de débito nos últimos 180 dias ou com linha de crédito ativa).</li>
+          <li><strong style="color:#94a3b8">Grupo 2:</strong> Usuários sem engajamento nos últimos 180 dias. Estes <strong style="color:#f87171">não recebem comunicação</strong> proativa para renovação, pois o custo de emissão não traria retorno imediato.</li>
+        </ul>
+      </div>
+
+      <div style="margin-bottom:18px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span style="font-size:16px">📅</span>
+          <span style="font-weight:800;font-size:14px;color:#FFE600;letter-spacing:-.2px">Regras de Expiração e Fluxos</span>
+        </div>
+        <ul style="list-style:none;padding-left:0;display:flex;flex-direction:column;gap:4px">
+          <li><span style="color:#FFE600">•</span> <strong style="color:#fff">Prazo:</strong> Se um cartão expira em Mai/26, o usuário tem até <strong style="color:#FFE600">31/05/26</strong> para transacionar normalmente e solicitar a nova via.</li>
+          <li><span style="color:#FFE600">•</span> <strong style="color:#fff">Renovação vs. Reemissão:</strong></li>
+          <li style="padding-left:16px"><span style="color:#4ade80">✦</span> <strong style="color:#4ade80">Renovação:</strong> Solicitação feita <em>antes</em> da data de expiração.</li>
+          <li style="padding-left:16px"><span style="color:#fb923c">✦</span> <strong style="color:#fb923c">Reemissão:</strong> Solicitação feita <em>após</em> o cartão já estar vencido.</li>
+        </ul>
+      </div>
+
+      <div style="border-top:1px solid #334155;padding-top:16px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span style="font-size:16px">📊</span>
+          <span style="font-weight:800;font-size:14px;color:#FFE600;letter-spacing:-.2px">Panorama Geral (Conversão)</span>
+        </div>
+        <p style="margin-bottom:8px">Atualmente, nossos indicadores consolidados mostram:</p>
+        <ul style="list-style:disc;padding-left:24px;display:flex;flex-direction:column;gap:4px">
+          <li id="conceito-taxa-renov"><strong style="color:#4ade80">—</strong> de taxa de <strong style="color:#fff">Renovação.</strong></li>
+          <li id="conceito-taxa-comb"><strong style="color:#5bc8f5">—</strong> de taxa combinada <strong style="color:#fff">(Renovação + Reemissão).</strong></li>
+        </ul>
+        <p style="margin-top:12px;padding:10px 14px;background:rgba(255,230,0,.07);border-left:3px solid #FFE600;border-radius:4px;font-style:italic;color:#cbd5e1">
+          Esses números garantem que a grande maioria da nossa base ativa (Grupo 1) permanece com o cartão em mãos sem atrito no uso.
+        </p>
+      </div>
+    </div>
+
     <div class="section-title">
       Conversão por Safra e Ciclo de Uso
       <span class="badge">Por elegível</span>
@@ -4948,6 +5000,16 @@ function buildInsights() {
 const slideCharts = {};
 
 function buildSlideCharts() {
+  // Preencher taxas dinâmicas no bloco Conceito
+  const kpi = getKpiD();
+  const totalAll = kpi.totalRen + kpi.totalRei;
+  const txRen  = kpi.totalTelG1 ? (kpi.totalRen  / kpi.totalTelG1 * 100).toFixed(1) + '%' : '—';
+  const txComb = kpi.totalTelG1 ? (totalAll / kpi.totalTelG1 * 100).toFixed(1) + '%' : '—';
+  const elRen  = document.getElementById('conceito-taxa-renov');
+  const elComb = document.getElementById('conceito-taxa-comb');
+  if (elRen)  elRen.innerHTML  = `<strong style="color:#4ade80">${txRen}</strong> de taxa de <strong style="color:#fff">Renovação.</strong>`;
+  if (elComb) elComb.innerHTML = `<strong style="color:#5bc8f5">${txComb}</strong> de taxa combinada <strong style="color:#fff">(Renovação + Reemissão).</strong>`;
+
   const CK      = ['c1','c2','c3','c4','c5','c6','c7'];
   const CK_LABEL= ['C1 (0-30d)','C2 (31-60d)','C3 (61-90d)','C4 (91-120d)','C5 (121-180d)','C6 (>180d)','C7 (Inativo)'];
   const CK_COLOR= ['#4ade80','#34d399','#22d3ee','#fbbf24','#fb923c','#f87171','#94a3b8'];
