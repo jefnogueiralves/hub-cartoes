@@ -1694,15 +1694,17 @@
       Análise de Mix — Ciclo de Uso por Safra
       <span class="badge">Comportamento</span>
     </div>
-    <div class="chart-row two" style="margin-top:12px">
+    <div class="chart-row full" style="margin-top:12px">
       <div class="chart-card">
         <h3>Composição do Mix por Ciclo de Uso</h3>
         <div class="chart-sub">% share de cada ciclo nos renovados por safra · identifica mudanças de comportamento</div>
-        <div class="chart-wrap" style="height:320px"><canvas id="chartSlideMixCiclo"></canvas></div>
+        <div class="chart-wrap" style="height:360px"><canvas id="chartSlideMixCiclo"></canvas></div>
       </div>
+    </div>
+    <div class="chart-row full" style="margin-top:16px">
       <div class="chart-card">
-        <h3>Evolução do Segmento NAO_ATIVO (C7)</h3>
-        <div class="chart-sub">% do ciclo inativo nos renovados ao longo das safras</div>
+        <h3>Evolução do Segmento 06. ACIMA DE 180 D nos Renovados</h3>
+        <div class="chart-sub">% do ciclo >180d nos renovados ao longo das safras</div>
         <div class="chart-wrap" style="height:320px"><canvas id="chartSlideC7Trend"></canvas></div>
       </div>
     </div>
@@ -2449,7 +2451,7 @@ function buildCicloSafraTable() {
     { label:'04. 91 A 120 D',     k:'c4', col:'#fbbf24', rgb:'251,191,36',   wRen:0.12 },
     { label:'05. 121 A 180 D',    k:'c5', col:'#fb923c', rgb:'251,146,60',   wRen:0.08 },
     { label:'06. ACIMA DE 180 D', k:'c6', col:'#f87171', rgb:'248,113,113',  wRen:0.05 },
-    { label:'Inativo',   k:'c7', col:'#94a3b8', rgb:'148,163,184',  wRen:0.00 },
+    // 07. NAO ATIVO removido a pedido
   ];
 
   const monthly = getMonthlyByGrupo(state.grupo);
@@ -2731,7 +2733,7 @@ function buildEntregaCicloTable() {
     '04. 91 A 120 D':     {label:'04. 91 A 120 D',     col:'#fbbf24'},
     '05. 121 A 180 D':    {label:'05. 121 A 180 D',    col:'#fb923c'},
     '06. ACIMA DE 180 D': {label:'06. ACIMA DE 180 D', col:'#f87171'},
-    '07. NAO ATIVO':      {label:'Inativo',   col:'#94a3b8'},
+    // '07. NAO ATIVO' removido a pedido
   };
   const ORDEM_CICLO = Object.keys(CICLOS_LABEL);
 
@@ -5001,25 +5003,33 @@ const slideCharts = {};
 
 function buildSlideCharts() {
   // Preencher taxas dinâmicas no bloco Conceito
-  const kpi = getKpiD();
-  const totalAll = kpi.totalRen + kpi.totalRei;
-  const txRen  = kpi.totalTelG1 ? (kpi.totalRen  / kpi.totalTelG1 * 100).toFixed(1) + '%' : '—';
-  const txComb = kpi.totalTelG1 ? (totalAll / kpi.totalTelG1 * 100).toFixed(1) + '%' : '—';
+  // Usa MONTHLY + TOTAL_GRUPO1 diretamente — mesma fonte da tabela "Total Amostra"
+  const _sMM2 = getSelectedSafrasSet();
+  let _totE = 0, _totR = 0, _totRei = 0;
+  MONTHLY.filter(m => m.completo && _sMM2.has(mesToSafraYYYYMM(m.mes))).forEach(mo => {
+    const safra = mesToSafraYYYYMM(mo.mes);
+    _totE   += TOTAL_GRUPO1[safra] || mo.tel || 0;
+    _totR   += mo.ren || 0;
+    _totRei += mo.rei || 0;
+  });
+  const txRen  = _totE ? (_totR / _totE * 100).toFixed(1) + '%' : '—';
+  const txComb = _totE ? ((_totR + _totRei) / _totE * 100).toFixed(1) + '%' : '—';
   const elRen  = document.getElementById('conceito-taxa-renov');
   const elComb = document.getElementById('conceito-taxa-comb');
   if (elRen)  elRen.innerHTML  = `<strong style="color:#4ade80">${txRen}</strong> de taxa de <strong style="color:#fff">Renovação.</strong>`;
   if (elComb) elComb.innerHTML = `<strong style="color:#5bc8f5">${txComb}</strong> de taxa combinada <strong style="color:#fff">(Renovação + Reemissão).</strong>`;
 
-  const CK      = ['c1','c2','c3','c4','c5','c6','c7'];
-  const CK_LABEL= ['01. 1 A 30 D','02. 31 A 60 D','03. 61 A 90 D','04. 91 A 120 D','05. 121 A 180 D','06. ACIMA DE 180 D','07. NAO ATIVO'];
-  const CK_COLOR= ['#4ade80','#34d399','#22d3ee','#fbbf24','#fb923c','#f87171','#94a3b8'];
+  // SEM c7 (07. NAO ATIVO) — removido a pedido
+  const CK      = ['c1','c2','c3','c4','c5','c6'];
+  const CK_LABEL= ['01. 1 A 30 D','02. 31 A 60 D','03. 61 A 90 D','04. 91 A 120 D','05. 121 A 180 D','06. ACIMA DE 180 D'];
+  const CK_COLOR= ['#4ade80','#34d399','#22d3ee','#fbbf24','#fb923c','#f87171'];
 
-  // Safras completas em ordem cronológica (filtra c7 > 0 para ter dados de ciclo)
+  // Safras completas em ordem cronológica
   const safras = CICLO_SAFRA.filter(cs => Object.values({...cs}).some((v,i)=>i>0&&v>0))
-                             .slice(-14);  // últimas 14 safras
+                             .slice(-14);
   const labels = safras.map(cs => safraLabel(cs.safra));
 
-  // ── Gráfico 1a: Mix 100% empilhado por ciclo ──────────────────
+  // ── Gráfico 1a: Mix 100% empilhado por ciclo (sem Inativo) ───
   if (slideCharts.mixCiclo) slideCharts.mixCiclo.destroy();
   slideCharts.mixCiclo = new Chart(document.getElementById('chartSlideMixCiclo'), {
     type: 'bar',
@@ -5028,6 +5038,7 @@ function buildSlideCharts() {
       datasets: CK.map((k, i) => ({
         label: CK_LABEL[i],
         data: safras.map(cs => {
+          // denominator sem c7 para refletir apenas os ciclos exibidos
           const tot = CK.reduce((a, kk) => a + (cs[kk]||0), 0);
           return tot ? +((cs[k]||0)/tot*100).toFixed(1) : 0;
         }),
@@ -5038,13 +5049,19 @@ function buildSlideCharts() {
     },
     options: {
       responsive: true, maintainAspectRatio: false,
+      layout: { padding: { top: 20 } },
       plugins: {
-        legend: { position:'bottom', labels:{boxWidth:10,font:{size:10}} },
+        legend: { position:'bottom', labels:{boxWidth:10,font:{size:11}} },
         datalabels: {
-          display: ctx => ctx.dataset.label.includes('C7') || ctx.dataset.label.includes('C6'),
+          // Mostra rótulo em TODOS os segmentos com valor ≥ 4%
+          display: ctx => ctx.parsed.y >= 4,
           anchor:'center', align:'center',
-          color:'#fff', font:{size:8,weight:'bold'},
-          formatter: v => v >= 5 ? v.toFixed(0)+'%' : null
+          color: ctx => {
+            const dark = ['#4ade80','#34d399','#22d3ee'];
+            return dark.includes(CK_COLOR[ctx.datasetIndex]) ? '#1e293b' : '#fff';
+          },
+          font: { size: 9, weight: 'bold' },
+          formatter: v => v.toFixed(0) + '%'
         }
       },
       scales: {
@@ -5055,22 +5072,13 @@ function buildSlideCharts() {
     }
   });
 
-  // ── Gráfico 1b: Tendência 07. NAO ATIVO ───────────────────────
+  // ── Gráfico 1b: Tendência 06. ACIMA DE 180 D ─────────────────
   if (slideCharts.c7Trend) slideCharts.c7Trend.destroy();
   slideCharts.c7Trend = new Chart(document.getElementById('chartSlideC7Trend'), {
     type: 'line',
     data: {
       labels,
       datasets: [
-        {
-          label: '07. NAO ATIVO % renovados',
-          data: safras.map(cs => {
-            const tot = CK.reduce((a,k)=>a+(cs[k]||0),0);
-            return tot ? +((cs.c7||0)/tot*100).toFixed(1) : 0;
-          }),
-          borderColor:'#64748b', backgroundColor:'rgba(100,116,132,.12)',
-          borderWidth:2.5, pointRadius:4, fill:true, tension:.3
-        },
         {
           label: '06. ACIMA DE 180 D % renovados',
           data: safras.map(cs => {
@@ -5088,7 +5096,7 @@ function buildSlideCharts() {
       plugins:{
         legend:{position:'top',labels:{boxWidth:12,font:{size:11}}},
         datalabels:{display:true,anchor:'top',align:'top',offset:2,
-          color:ctx=>ctx.datasetIndex===0?'#475569':'#dc2626',
+          color:'#dc2626',
           font:{size:9,weight:'bold'}, formatter:v=>v.toFixed(1)+'%'}
       },
       scales:{
