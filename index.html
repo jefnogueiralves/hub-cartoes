@@ -1125,7 +1125,7 @@
         <div class="chart-wrap" style="height:240px"><canvas id="chartMpReem"></canvas></div>
       </div>
       <div class="chart-card">
-        <h3>Share de C6 (>180d) vs C7 (Inativo) nos Renovados</h3>
+        <h3>Share de 06. ACIMA DE 180 D vs 07. NAO ATIVO nos Renovados</h3>
         <div class="chart-sub">C6 cai, C7 sobe — a base está ficando mais inativa</div>
         <div class="chart-wrap" style="height:240px"><canvas id="chartMpC6C7"></canvas></div>
       </div>
@@ -2443,12 +2443,12 @@ function buildCicloSafraTable() {
 
   // Ciclos: label, chave, cor texto, rgb fundo, peso renovação (C_REN proxy)
   const CICLOS_DEF = [
-    { label:'0–30d',     k:'c1', col:'#4ade80', rgb:'74,222,128',   wRen:0.25 },
-    { label:'31–60d',    k:'c2', col:'#34d399', rgb:'52,211,153',   wRen:0.30 },
-    { label:'61–90d',    k:'c3', col:'#22d3ee', rgb:'34,211,238',   wRen:0.20 },
-    { label:'91–120d',   k:'c4', col:'#fbbf24', rgb:'251,191,36',   wRen:0.12 },
-    { label:'121–180d',  k:'c5', col:'#fb923c', rgb:'251,146,60',   wRen:0.08 },
-    { label:'>180d',     k:'c6', col:'#f87171', rgb:'248,113,113',  wRen:0.05 },
+    { label:'01. 1 A 30 D',       k:'c1', col:'#4ade80', rgb:'74,222,128',   wRen:0.25 },
+    { label:'02. 31 A 60 D',      k:'c2', col:'#34d399', rgb:'52,211,153',   wRen:0.30 },
+    { label:'03. 61 A 90 D',      k:'c3', col:'#22d3ee', rgb:'34,211,238',   wRen:0.20 },
+    { label:'04. 91 A 120 D',     k:'c4', col:'#fbbf24', rgb:'251,191,36',   wRen:0.12 },
+    { label:'05. 121 A 180 D',    k:'c5', col:'#fb923c', rgb:'251,146,60',   wRen:0.08 },
+    { label:'06. ACIMA DE 180 D', k:'c6', col:'#f87171', rgb:'248,113,113',  wRen:0.05 },
     { label:'Inativo',   k:'c7', col:'#94a3b8', rgb:'148,163,184',  wRen:0.00 },
   ];
 
@@ -2725,12 +2725,12 @@ function buildEntregaCicloTable() {
   table.style.display = ''; empty.style.display = 'none';
 
   const CICLOS_LABEL = {
-    '01. 1 A 30 D':       {label:'0–30d',     col:'#4ade80'},
-    '02. 31 A 60 D':      {label:'31–60d',    col:'#34d399'},
-    '03. 61 A 90 D':      {label:'61–90d',    col:'#22d3ee'},
-    '04. 91 A 120 D':     {label:'91–120d',   col:'#fbbf24'},
-    '05. 121 A 180 D':    {label:'121–180d',  col:'#fb923c'},
-    '06. ACIMA DE 180 D': {label:'>180d',     col:'#f87171'},
+    '01. 1 A 30 D':       {label:'01. 1 A 30 D',       col:'#4ade80'},
+    '02. 31 A 60 D':      {label:'02. 31 A 60 D',      col:'#34d399'},
+    '03. 61 A 90 D':      {label:'03. 61 A 90 D',      col:'#22d3ee'},
+    '04. 91 A 120 D':     {label:'04. 91 A 120 D',     col:'#fbbf24'},
+    '05. 121 A 180 D':    {label:'05. 121 A 180 D',    col:'#fb923c'},
+    '06. ACIMA DE 180 D': {label:'06. ACIMA DE 180 D', col:'#f87171'},
     '07. NAO ATIVO':      {label:'Inativo',   col:'#94a3b8'},
   };
   const ORDEM_CICLO = Object.keys(CICLOS_LABEL);
@@ -3967,7 +3967,7 @@ function buildMixPublico() {
       <div class="kpi-sub">${preUlt.mes} → ${last.mes}</div>
     </div>
     <div class="kpi-card red">
-      <div class="kpi-label">Crescimento C7 (Inativo)</div>
+      <div class="kpi-label">Crescimento 07. NAO ATIVO</div>
       <div class="kpi-value" style="color:var(--red)">+${c7growth.toFixed(1)}pp</div>
       <div class="kpi-sub">${first.mes}: ${first.c7sh}% → ${last.mes}: ${last.c7sh}%</div>
     </div>
@@ -3977,7 +3977,7 @@ function buildMixPublico() {
       <div class="kpi-sub">${first.mes}: ${first.reemPct}% → ${last.mes}: ${last.reemPct}%</div>
     </div>
     <div class="kpi-card ${last.c6sh < 35 ? 'red' : 'orange'}">
-      <div class="kpi-label">Share C6 (>180d) atual</div>
+      <div class="kpi-label">Share 06. ACIMA DE 180 D atual</div>
       <div class="kpi-value" style="color:var(--orange)">${last.c6sh}%</div>
       <div class="kpi-sub">Era ${pico.c6sh}% no pico (${pico.mes})</div>
     </div>
@@ -3995,7 +3995,7 @@ function buildMixPublico() {
           <div class="insight-title">Queda acumulada de ${Math.abs(queda)}pp na taxa de renovação desde ${pico.mes}</div>
           <div class="insight-text">
             Taxa de renovações proativas caiu de <strong>${pico.pRen}%</strong> (${pico.mes}) para <strong>${last.pRen}%</strong> (${last.mes}).
-            Nos últimos 3 meses, o C7 (Inativo) saiu de <strong>${data[data.length-4]?.c7sh||'—'}%</strong> para <strong>${last.c7sh}%</strong> dos renovados.
+            Nos últimos 3 meses, o 07. NAO ATIVO saiu de <strong>${data[data.length-4]?.c7sh||'—'}%</strong> para <strong>${last.c7sh}%</strong> dos renovados.
             Reemissões representam <strong>${last.reemPct}%</strong> do total — crescimento de ${reemGrow >= 0 ? '+' : ''}${reemGrow.toFixed(1)}pp vs início da série.
           </div>
         </div>
@@ -4058,7 +4058,7 @@ function buildMixPublico() {
   });
 
   // ── Gráfico 3: Stacked bar — share ciclos nos renovados ───────
-  const cicloLabels = ['C1 (0-30d)','C2 (31-60d)','C3 (61-90d)','C4 (91-120d)','C5 (121-180d)','C6 (>180d)','C7 (Inativo)'];
+  const cicloLabels = ['01. 1 A 30 D','02. 31 A 60 D','03. 61 A 90 D','04. 91 A 120 D','05. 121 A 180 D','06. ACIMA DE 180 D','07. NAO ATIVO'];
   const cicloColors = ['#4ade80','#34d399','#22d3ee','#fbbf24','#fb923c','#f87171','#94a3b8'];
   const cicloKeys   = ['c1sh','c2sh','c3sh','c4sh','c5sh','c6sh','c7sh'];
   if (mpCharts.cicloStack) { mpCharts.cicloStack.destroy(); }
@@ -4088,7 +4088,7 @@ function buildMixPublico() {
     type: 'bar',
     data: { labels,
       datasets:[
-        { label:'C7 (Inativo) % dos renovados', data: data.map(d=>d.c7sh),
+        { label:'07. NAO ATIVO % dos renovados', data: data.map(d=>d.c7sh),
           backgroundColor:'rgba(148,163,184,.7)', borderColor:'#64748b', borderWidth:1,
           borderRadius:3, yAxisID:'y', type:'bar' },
         { label:'Taxa renovação % (proativas)', data: pRenArr,
@@ -4136,9 +4136,9 @@ function buildMixPublico() {
   mpCharts.c6c7 = new Chart(document.getElementById('chartMpC6C7'), {
     type: 'line',
     data:{ labels, datasets:[
-      { label:'C6 (>180d) % renovados', data: data.map(d=>d.c6sh),
+      { label:'06. ACIMA DE 180 D % renovados', data: data.map(d=>d.c6sh),
         borderColor:'#f87171', borderWidth:2, pointRadius:3, tension:.3, borderDash:[5,3] },
-      { label:'C7 (Inativo) % renovados', data: data.map(d=>d.c7sh),
+      { label:'07. NAO ATIVO % renovados', data: data.map(d=>d.c7sh),
         borderColor:'#64748b', borderWidth:2.5, pointRadius:4, tension:.3,
         backgroundColor:'rgba(100,116,132,.08)', fill:true },
     ]},
@@ -4200,7 +4200,7 @@ function buildMixPublico() {
     <div class="insight-card info">
       <div class="insight-icon">📊</div>
       <div>
-        <div class="insight-title">C6 (>180d) caiu de ${pico.c6sh}% → ${last.c6sh}% — base menos "heavy user"</div>
+        <div class="insight-title">06. ACIMA DE 180 D caiu de ${pico.c6sh}% → ${last.c6sh}% — base menos "heavy user"</div>
         <div class="insight-text">
           O segmento de maior engajamento histórico (usuários que usam o cartão a cada 180d+) perdeu share nos renovados.
           Eram <strong>${pico.c6sh}%</strong> em ${pico.mes} e hoje são <strong>${last.c6sh}%</strong>.<br>
@@ -4241,7 +4241,7 @@ function buildMixPublico() {
       <div>
         <div class="insight-title">Segmentar comunicação proativa por ciclo</div>
         <div class="insight-text">
-          Usuários C7 (Inativo) e C6 (>180d) têm perfil diferente de resposta. Criar campanhas específicas para cada segmento: C7 com incentivo de primeira transação, C6 com benefício de retenção de limite/cashback.
+          Usuários 07. NAO ATIVO e 06. ACIMA DE 180 D têm perfil diferente de resposta. Criar campanhas específicas para cada segmento: C7 com incentivo de primeira transação, C6 com benefício de retenção de limite/cashback.
         </div>
       </div>
     </div>
@@ -5011,7 +5011,7 @@ function buildSlideCharts() {
   if (elComb) elComb.innerHTML = `<strong style="color:#5bc8f5">${txComb}</strong> de taxa combinada <strong style="color:#fff">(Renovação + Reemissão).</strong>`;
 
   const CK      = ['c1','c2','c3','c4','c5','c6','c7'];
-  const CK_LABEL= ['C1 (0-30d)','C2 (31-60d)','C3 (61-90d)','C4 (91-120d)','C5 (121-180d)','C6 (>180d)','C7 (Inativo)'];
+  const CK_LABEL= ['01. 1 A 30 D','02. 31 A 60 D','03. 61 A 90 D','04. 91 A 120 D','05. 121 A 180 D','06. ACIMA DE 180 D','07. NAO ATIVO'];
   const CK_COLOR= ['#4ade80','#34d399','#22d3ee','#fbbf24','#fb923c','#f87171','#94a3b8'];
 
   // Safras completas em ordem cronológica (filtra c7 > 0 para ter dados de ciclo)
@@ -5055,7 +5055,7 @@ function buildSlideCharts() {
     }
   });
 
-  // ── Gráfico 1b: Tendência C7 (Inativo) ───────────────────────
+  // ── Gráfico 1b: Tendência 07. NAO ATIVO ───────────────────────
   if (slideCharts.c7Trend) slideCharts.c7Trend.destroy();
   slideCharts.c7Trend = new Chart(document.getElementById('chartSlideC7Trend'), {
     type: 'line',
@@ -5063,7 +5063,7 @@ function buildSlideCharts() {
       labels,
       datasets: [
         {
-          label: 'C7 (Inativo) % renovados',
+          label: '07. NAO ATIVO % renovados',
           data: safras.map(cs => {
             const tot = CK.reduce((a,k)=>a+(cs[k]||0),0);
             return tot ? +((cs.c7||0)/tot*100).toFixed(1) : 0;
@@ -5072,7 +5072,7 @@ function buildSlideCharts() {
           borderWidth:2.5, pointRadius:4, fill:true, tension:.3
         },
         {
-          label: 'C6 (>180d) % renovados',
+          label: '06. ACIMA DE 180 D % renovados',
           data: safras.map(cs => {
             const tot = CK.reduce((a,k)=>a+(cs[k]||0),0);
             return tot ? +((cs.c6||0)/tot*100).toFixed(1) : 0;
