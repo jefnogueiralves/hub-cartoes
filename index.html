@@ -1624,17 +1624,48 @@
        TAB: SLIDE PROPOSTO
   ═══════════════════════════════════════════════════════════ -->
   <div id="tab-slide" class="tab-panel">
+
     <div class="section-title">
       Conversão por Safra e Ciclo de Uso
       <span class="badge">Por elegível</span>
     </div>
 
-    <!-- Tabela Total Grupo 1 (mesma visão da aba Público Principal) -->
-    <div class="chart-card" style="margin-top:12px">
+    <!-- Tabela Total Grupo 1 -->
+    <div class="chart-card" style="margin-top:12px;margin-bottom:24px">
       <h3>Total — Grupo 1</h3>
       <div class="chart-sub">Por safra de expiração · taxa de conversão acumulada no funil</div>
       <div style="overflow-x:auto;margin-top:12px" id="tableGrupo1WrapSlide"></div>
     </div>
+
+    <!-- Gráfico 1: Mix de ciclo de uso por safra -->
+    <div class="section-title" style="margin-top:8px">
+      Análise de Mix — Ciclo de Uso por Safra
+      <span class="badge">Comportamento</span>
+    </div>
+    <div class="chart-row two" style="margin-top:12px">
+      <div class="chart-card">
+        <h3>Composição do Mix por Ciclo de Uso</h3>
+        <div class="chart-sub">% share de cada ciclo nos renovados por safra · identifica mudanças de comportamento</div>
+        <div class="chart-wrap" style="height:320px"><canvas id="chartSlideMixCiclo"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>Evolução do Segmento NAO_ATIVO (C7)</h3>
+        <div class="chart-sub">% do ciclo inativo nos renovados ao longo das safras</div>
+        <div class="chart-wrap" style="height:320px"><canvas id="chartSlideC7Trend"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Gráfico 2: Curva acumulada de renovações (slide campanhas) -->
+    <div class="section-title" style="margin-top:28px">
+      Renovações e Reissues pós-vencimento
+      <span class="badge">Curva Acumulada</span>
+    </div>
+    <div class="chart-card" style="margin-top:12px">
+      <h3>Renovación y Reissue — Grupo 1</h3>
+      <div class="chart-sub">% acumulado de renovados + reemitidos por dias em relação ao vencimento · linha vertical = data de expiração</div>
+      <div class="chart-wrap" style="height:420px"><canvas id="chartSlideCampanha"></canvas></div>
+    </div>
+
   </div>
 
 </main>
@@ -3246,6 +3277,7 @@ function updateCharts() {
   updateKPIs();
   buildTable();
   buildSlide();
+  buildSlideCharts();
 }
 
 // ── KPIs ──────────────────────────────────────────────────────
@@ -4912,6 +4944,188 @@ function buildInsights() {
   `;
 }
 
+// ── GRÁFICOS DA ABA SLIDE PROPOSTO ────────────────────────────
+const slideCharts = {};
+
+function buildSlideCharts() {
+  const CK      = ['c1','c2','c3','c4','c5','c6','c7'];
+  const CK_LABEL= ['C1 (0-30d)','C2 (31-60d)','C3 (61-90d)','C4 (91-120d)','C5 (121-180d)','C6 (>180d)','C7 (Inativo)'];
+  const CK_COLOR= ['#4ade80','#34d399','#22d3ee','#fbbf24','#fb923c','#f87171','#94a3b8'];
+
+  // Safras completas em ordem cronológica (filtra c7 > 0 para ter dados de ciclo)
+  const safras = CICLO_SAFRA.filter(cs => Object.values({...cs}).some((v,i)=>i>0&&v>0))
+                             .slice(-14);  // últimas 14 safras
+  const labels = safras.map(cs => safraLabel(cs.safra));
+
+  // ── Gráfico 1a: Mix 100% empilhado por ciclo ──────────────────
+  if (slideCharts.mixCiclo) slideCharts.mixCiclo.destroy();
+  slideCharts.mixCiclo = new Chart(document.getElementById('chartSlideMixCiclo'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: CK.map((k, i) => ({
+        label: CK_LABEL[i],
+        data: safras.map(cs => {
+          const tot = CK.reduce((a, kk) => a + (cs[kk]||0), 0);
+          return tot ? +((cs[k]||0)/tot*100).toFixed(1) : 0;
+        }),
+        backgroundColor: CK_COLOR[i],
+        stack: 's',
+        borderWidth: 0,
+      }))
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position:'bottom', labels:{boxWidth:10,font:{size:10}} },
+        datalabels: {
+          display: ctx => ctx.dataset.label.includes('C7') || ctx.dataset.label.includes('C6'),
+          anchor:'center', align:'center',
+          color:'#fff', font:{size:8,weight:'bold'},
+          formatter: v => v >= 5 ? v.toFixed(0)+'%' : null
+        }
+      },
+      scales: {
+        x: { stacked:true, grid:{display:false}, ticks:{font:{size:10}} },
+        y: { stacked:true, min:0, max:100,
+             ticks:{callback:v=>v+'%',font:{size:10}}, grid:{display:false} }
+      }
+    }
+  });
+
+  // ── Gráfico 1b: Tendência C7 (Inativo) ───────────────────────
+  if (slideCharts.c7Trend) slideCharts.c7Trend.destroy();
+  slideCharts.c7Trend = new Chart(document.getElementById('chartSlideC7Trend'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'C7 (Inativo) % renovados',
+          data: safras.map(cs => {
+            const tot = CK.reduce((a,k)=>a+(cs[k]||0),0);
+            return tot ? +((cs.c7||0)/tot*100).toFixed(1) : 0;
+          }),
+          borderColor:'#64748b', backgroundColor:'rgba(100,116,132,.12)',
+          borderWidth:2.5, pointRadius:4, fill:true, tension:.3
+        },
+        {
+          label: 'C6 (>180d) % renovados',
+          data: safras.map(cs => {
+            const tot = CK.reduce((a,k)=>a+(cs[k]||0),0);
+            return tot ? +((cs.c6||0)/tot*100).toFixed(1) : 0;
+          }),
+          borderColor:'#f87171', backgroundColor:'transparent',
+          borderWidth:2, pointRadius:3, fill:false, tension:.3, borderDash:[5,3]
+        }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      layout:{padding:{top:10}},
+      plugins:{
+        legend:{position:'top',labels:{boxWidth:12,font:{size:11}}},
+        datalabels:{display:true,anchor:'top',align:'top',offset:2,
+          color:ctx=>ctx.datasetIndex===0?'#475569':'#dc2626',
+          font:{size:9,weight:'bold'}, formatter:v=>v.toFixed(1)+'%'}
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:10}}},
+        y:{min:0,ticks:{callback:v=>v+'%',font:{size:10}},grid:{color:'#f0f0f0'}}
+      }
+    }
+  });
+
+  // ── Gráfico 2: Curva acumulada de campanhas ───────────────────
+  if (!window.GRAFICO_CAMPANHAS || !Object.keys(GRAFICO_CAMPANHAS).length) return;
+
+  const gc         = GRAFICO_CAMPANHAS;
+  const safrasGC   = Object.keys(gc).sort().slice(-8); // últimas 8 safras
+  const palette    = ['#1d4ed8','#7c3aed','#db2777','#ea580c','#16a34a','#0891b2','#d97706','#dc2626'];
+  const datasets   = [];
+
+  safrasGC.forEach((safra, si) => {
+    const cor = palette[si % palette.length];
+    ['Renovación','Reissue'].forEach(team => {
+      const pts = (gc[safra][team] || []).sort((a,b)=>a.x-b.x);
+      if (!pts.length) return;
+      datasets.push({
+        label: `${team} · ${safra}`,
+        data: pts,
+        borderColor: cor,
+        backgroundColor: 'transparent',
+        borderWidth: team==='Renovación' ? 2 : 1.2,
+        borderDash: team==='Reissue' ? [4,3] : [],
+        pointRadius: 0,
+        tension: 0.3,
+        parsing: {xAxisKey:'x', yAxisKey:'y'}
+      });
+    });
+  });
+
+  // Plugin linha vertical na expiração (x=0)
+  const vlinePlugin = {
+    id:'vline0',
+    afterDraw(chart){
+      const xScale = chart.scales.x;
+      const yScale = chart.scales.y;
+      if(!xScale||!yScale) return;
+      const xPx = xScale.getPixelForValue(0);
+      chart.ctx.save();
+      chart.ctx.beginPath();
+      chart.ctx.moveTo(xPx, yScale.top);
+      chart.ctx.lineTo(xPx, yScale.bottom);
+      chart.ctx.lineWidth = 2;
+      chart.ctx.strokeStyle = '#1e293b';
+      chart.ctx.setLineDash([6,4]);
+      chart.ctx.stroke();
+      chart.ctx.fillStyle='#1e293b';
+      chart.ctx.font='bold 10px sans-serif';
+      chart.ctx.fillText('Expiração', xPx+4, yScale.top+14);
+      chart.ctx.restore();
+    }
+  };
+
+  if (slideCharts.campanha) slideCharts.campanha.destroy();
+  slideCharts.campanha = new Chart(document.getElementById('chartSlideCampanha'), {
+    type: 'line',
+    data: { datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      layout:{padding:{top:20}},
+      plugins:{
+        legend:{
+          position:'right',
+          labels:{boxWidth:10,font:{size:10},
+            filter: item => item.text.includes('Renovación')  // só mostra renovação na legenda
+          }
+        },
+        datalabels:{ display:false },
+        tooltip:{
+          callbacks:{
+            label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}%`
+          }
+        }
+      },
+      scales:{
+        x:{
+          type:'linear',
+          title:{display:true,text:'Dias em relação ao vencimento',font:{size:11}},
+          grid:{display:false},
+          ticks:{font:{size:10},stepSize:10}
+        },
+        y:{
+          min:0, max:100,
+          title:{display:true,text:'% Acumulado',font:{size:11}},
+          ticks:{callback:v=>v+'%',font:{size:10}},
+          grid:{color:'#f0f0f0'}
+        }
+      }
+    },
+    plugins:[vlinePlugin]
+  });
+}
+
 // ── INIT ──────────────────────────────────────────────────────
 buildFilters();
 buildSumario();
@@ -4924,6 +5138,7 @@ buildCicloUsoTable();
 buildMixPublico();
 buildSlide();
 buildInsights();
+buildSlideCharts();
 
 // ── TAB SWITCHING ─────────────────────────────────────────────
 function switchTab(id) {
