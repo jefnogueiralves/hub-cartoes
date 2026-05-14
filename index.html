@@ -1624,7 +1624,17 @@
        TAB: SLIDE PROPOSTO
   ═══════════════════════════════════════════════════════════ -->
   <div id="tab-slide" class="tab-panel">
-    <!-- Aba limpa — conteúdo removido a pedido -->
+    <div class="section-title">
+      Conversão por Safra e Ciclo de Uso
+      <span class="badge">Por elegível</span>
+    </div>
+
+    <!-- Tabela Total Grupo 1 (mesma visão da aba Público Principal) -->
+    <div class="chart-card" style="margin-top:12px">
+      <h3>Total — Grupo 1</h3>
+      <div class="chart-sub">Por safra de expiração · taxa de conversão acumulada no funil</div>
+      <div style="overflow-x:auto;margin-top:12px" id="tableGrupo1WrapSlide"></div>
+    </div>
   </div>
 
 </main>
@@ -4330,6 +4340,10 @@ function buildGrupo1Table() {
 
   html += `</tbody></table>`;
   wrap.innerHTML = html;
+
+  // Replica a mesma tabela na aba Slide Proposto
+  const wrapSlide = document.getElementById('tableGrupo1WrapSlide');
+  if (wrapSlide) wrapSlide.innerHTML = html;
 }
 
 // ── TABELA CICLO DE USO × SAFRA ────────────────────────────────
