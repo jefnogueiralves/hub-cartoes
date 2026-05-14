@@ -804,7 +804,7 @@
   <button class="tab-btn" onclick="switchTab('funil')">Funil de Conversão</button>
   <button class="tab-btn" onclick="switchTab('ativacao')">Ativacao Pos-Renovacao</button>
   <button class="tab-btn" onclick="switchTab('insights')">Insights</button>
-  <button class="tab-btn" onclick="switchTab('slide')">Slide Proposto</button>
+  <button class="tab-btn" onclick="switchTab('slide')">Apresentação</button>
 </nav>
 
 <!-- ── GLOBAL FILTER BAR ── -->
@@ -1218,7 +1218,6 @@
         </div>
       </div>
     </div>
-  </div>
 
     <div class="chart-row full">
       <div class="chart-card">
@@ -1235,6 +1234,8 @@
         </div>
       </div>
     </div>
+  </div>
+
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════
@@ -1625,7 +1626,7 @@
   ═══════════════════════════════════════════════════════════ -->
   <div id="tab-slide" class="tab-panel">
 
-    <!-- ══ BLOCO CONCEITO ══ -->
+    <!-- ══ 1. BLOCO CONCEITO ══ -->
     <div style="background:#1A1A1A;border-radius:12px;padding:28px 32px;margin-bottom:24px;color:#e2e8f0;line-height:1.7;font-size:13px">
 
       <div style="margin-bottom:18px">
@@ -1677,48 +1678,41 @@
       </div>
     </div>
 
-    <div class="section-title">
+    <!-- ══ 2. CONVERSÃO POR SAFRA ══ -->
+    <div class="section-title" style="margin-top:24px">
       Conversão por Safra e Ciclo de Uso
       <span class="badge">Por elegível</span>
     </div>
-
-    <!-- Tabela Total Grupo 1 -->
     <div class="chart-card" style="margin-top:12px;margin-bottom:24px">
       <h3>Total — Grupo 1</h3>
       <div class="chart-sub">Por safra de expiração · taxa de conversão acumulada no funil</div>
       <div style="overflow-x:auto;margin-top:12px" id="tableGrupo1WrapSlide"></div>
     </div>
 
-    <!-- Gráfico 1: Mix de ciclo de uso por safra -->
-    <div class="section-title" style="margin-top:8px">
+    <!-- ══ 3. RENOVAÇÕES E REISSUES ══ -->
+    <div class="section-title" style="margin-top:28px">
+      Renovações e Reissues pós-vencimento
+      <span class="badge">Curva Acumulada</span>
+    </div>
+    <div class="chart-card" style="margin-top:12px;margin-bottom:24px">
+      <h3>Renovación y Reissue — Grupo 1</h3>
+      <div class="chart-sub">% acumulado de renovados + reemitidos por dias em relação ao vencimento · linha vertical = data de expiração</div>
+      <div class="chart-wrap" style="height:420px"><canvas id="chartSlideCampanha"></canvas></div>
+    </div>
+
+    <!-- ══ 4. MIX DE CICLO DE USO ══ -->
+    <div class="section-title" style="margin-top:28px">
       Análise de Mix — Ciclo de Uso por Safra
       <span class="badge">Comportamento</span>
     </div>
     <div class="chart-row full" style="margin-top:12px">
       <div class="chart-card">
         <h3>Composição do Mix por Ciclo de Uso</h3>
-        <div class="chart-sub">% share de cada ciclo nos renovados por safra · identifica mudanças de comportamento</div>
-        <div class="chart-wrap" style="height:360px"><canvas id="chartSlideMixCiclo"></canvas></div>
-      </div>
-    </div>
-    <div class="chart-row full" style="margin-top:16px">
-      <div class="chart-card">
-        <h3>Evolução do Segmento 06. ACIMA DE 180 D nos Renovados</h3>
-        <div class="chart-sub">% do ciclo >180d nos renovados ao longo das safras</div>
-        <div class="chart-wrap" style="height:320px"><canvas id="chartSlideC7Trend"></canvas></div>
+        <div class="chart-sub">% share de cada ciclo nos renovados por safra · até Jul/26 · identifica mudanças de comportamento</div>
+        <div class="chart-wrap" style="height:380px"><canvas id="chartSlideMixCiclo"></canvas></div>
       </div>
     </div>
 
-    <!-- Gráfico 2: Curva acumulada de renovações (slide campanhas) -->
-    <div class="section-title" style="margin-top:28px">
-      Renovações e Reissues pós-vencimento
-      <span class="badge">Curva Acumulada</span>
-    </div>
-    <div class="chart-card" style="margin-top:12px">
-      <h3>Renovación y Reissue — Grupo 1</h3>
-      <div class="chart-sub">% acumulado de renovados + reemitidos por dias em relação ao vencimento · linha vertical = data de expiração</div>
-      <div class="chart-wrap" style="height:420px"><canvas id="chartSlideCampanha"></canvas></div>
-    </div>
 
   </div>
 
@@ -3331,7 +3325,8 @@ function updateCharts() {
   updateKPIs();
   buildTable();
   buildSlide();
-  buildSlideCharts();
+  // Se a aba Slide estiver ativa, rebuilda os gráficos
+  if (document.getElementById('tab-slide').classList.contains('active')) buildSlideCharts();
 }
 
 // ── KPIs ──────────────────────────────────────────────────────
@@ -4350,9 +4345,11 @@ function buildGrupo1Table() {
   const thS = 'padding:7px 12px;font-size:10px;text-transform:uppercase;letter-spacing:.4px;font-weight:700;white-space:nowrap;border-bottom:2px solid #334155;';
   const tdS = 'padding:6px 10px;font-size:12px;font-variant-numeric:tabular-nums;text-align:right;border-bottom:1px solid #f0f0f0;';
   const tdL = 'padding:6px 10px;font-size:12px;font-variant-numeric:tabular-nums;border-bottom:1px solid #f0f0f0;';
-  const pctBadge = (p) => {
+  const fmtKT = n => n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? (n/1e3).toFixed(0)+'K' : String(Math.round(n)||0);
+  const pctBadge = (p, vol) => {
     const [bg, col] = p >= 85 ? ['#dcfce7','#166534'] : p >= 75 ? ['#dbeafe','#1e40af'] : p >= 65 ? ['#fef9c3','#854d0e'] : ['#fee2e2','#991b1b'];
-    return `<span style="background:${bg};color:${col};padding:2px 7px;border-radius:4px;font-weight:700;font-size:11px">${p.toFixed(1)}%</span>`;
+    const volLabel = vol != null ? `<span style="display:block;font-size:9px;color:#64748b;font-weight:600;margin-top:2px">(${fmtKT(vol)})</span>` : '';
+    return `<span style="background:${bg};color:${col};padding:2px 7px;border-radius:4px;font-weight:700;font-size:11px">${p.toFixed(1)}%</span>${volLabel}`;
   };
   const numFmt = n => n.toLocaleString('pt-BR');
 
@@ -4400,10 +4397,10 @@ function buildGrupo1Table() {
         <td style="${tdL}font-weight:600;color:#2563eb${yearBorder?';'+yearBorder:''}">${r.label}${incAst}</td>
         <td style="${tdS}${yearBorder?yearBorder:''}">${numFmt(r.exp)}</td>
         <td style="${tdS}${yearBorder?yearBorder:''}">${pShare.toFixed(1)}%</td>
-        <td style="${tdS}${yearBorder?yearBorder:''}">${pctBadge(pRen)}</td>
-        <td style="${tdS}${yearBorder?yearBorder:''}">${pctBadge(pCReem)}</td>
-        <td style="${tdS}${yearBorder?yearBorder:''}">${pctBadge(pEnt)}</td>
-        <td style="${tdS}${yearBorder?yearBorder:''}">${pctBadge(pDesb)}</td>
+        <td style="${tdS}${yearBorder?yearBorder:''}">${pctBadge(pRen,   r.ren)}</td>
+        <td style="${tdS}${yearBorder?yearBorder:''}">${pctBadge(pCReem, r.totRnv)}</td>
+        <td style="${tdS}${yearBorder?yearBorder:''}">${pctBadge(pEnt,   r.ent)}</td>
+        <td style="${tdS}${yearBorder?yearBorder:''}">${pctBadge(pDesb,  r.desb)}</td>
       </tr>`;
       rowIdx++;
     });
@@ -4418,10 +4415,10 @@ function buildGrupo1Table() {
     <td style="${tdL}color:#94a3b8;font-weight:800" colspan="2">Total Amostra</td>
     <td style="${tdS}color:#f1f5f9">${numFmt(totExp)}</td>
     <td style="${tdS}color:#FFE600">100,0%</td>
-    <td style="${tdS}font-weight:800">${tPRen.toFixed(1)}%</td>
-    <td style="${tdS}font-weight:800">${tPCReem.toFixed(1)}%</td>
-    <td style="${tdS}font-weight:800">${tPEnt.toFixed(1)}%</td>
-    <td style="${tdS}font-weight:800">${tPDesb.toFixed(1)}%</td>
+    <td style="${tdS}font-weight:800">${tPRen.toFixed(1)}% <span style="font-size:9px;color:#94a3b8;font-weight:400">(${fmtKT(totRen)})</span></td>
+    <td style="${tdS}font-weight:800">${tPCReem.toFixed(1)}% <span style="font-size:9px;color:#94a3b8;font-weight:400">(${fmtKT(totRnv)})</span></td>
+    <td style="${tdS}font-weight:800">${tPEnt.toFixed(1)}% <span style="font-size:9px;color:#94a3b8;font-weight:400">(${fmtKT(totEnt)})</span></td>
+    <td style="${tdS}font-weight:800">${tPDesb.toFixed(1)}% <span style="font-size:9px;color:#94a3b8;font-weight:400">(${fmtKT(totDesb)})</span></td>
   </tr>`;
 
   html += `</tbody></table>`;
@@ -5001,199 +4998,208 @@ function buildInsights() {
 // ── GRÁFICOS DA ABA SLIDE PROPOSTO ────────────────────────────
 const slideCharts = {};
 
+function _buildEntregaSlide() {
+  // Clona o HTML da tabela buildEntregaCicloTable para o slide
+  const srcHead = document.getElementById('entregaCicloThead');
+  const srcBody = document.getElementById('entregaCicloTbody');
+  const dstHead = document.getElementById('entregaCicloTheadSlide');
+  const dstBody = document.getElementById('entregaCicloTbodySlide');
+  if (srcHead && dstHead) dstHead.innerHTML = srcHead.innerHTML;
+  if (srcBody && dstBody) dstBody.innerHTML = srcBody.innerHTML;
+}
+
 function buildSlideCharts() {
-  // Preencher taxas dinâmicas no bloco Conceito
-  // Usa MONTHLY + TOTAL_GRUPO1 diretamente — mesma fonte da tabela "Total Amostra"
-  const _sMM2 = getSelectedSafrasSet();
-  let _totE = 0, _totR = 0, _totRei = 0;
-  MONTHLY.filter(m => m.completo && _sMM2.has(mesToSafraYYYYMM(m.mes))).forEach(mo => {
-    const safra = mesToSafraYYYYMM(mo.mes);
-    _totE   += TOTAL_GRUPO1[safra] || mo.tel || 0;
-    _totR   += mo.ren || 0;
-    _totRei += mo.rei || 0;
-  });
-  const txRen  = _totE ? (_totR / _totE * 100).toFixed(1) + '%' : '—';
-  const txComb = _totE ? ((_totR + _totRei) / _totE * 100).toFixed(1) + '%' : '—';
-  const elRen  = document.getElementById('conceito-taxa-renov');
-  const elComb = document.getElementById('conceito-taxa-comb');
-  if (elRen)  elRen.innerHTML  = `<strong style="color:#4ade80">${txRen}</strong> de taxa de <strong style="color:#fff">Renovação.</strong>`;
-  if (elComb) elComb.innerHTML = `<strong style="color:#5bc8f5">${txComb}</strong> de taxa combinada <strong style="color:#fff">(Renovação + Reemissão).</strong>`;
+  try {
+    // ── Taxas dinâmicas no bloco Conceito ────────────────────────
+    const _sMM2 = getSelectedSafrasSet();
+    let _totE = 0, _totR = 0, _totRei = 0;
+    MONTHLY.filter(m => m.completo && _sMM2.has(mesToSafraYYYYMM(m.mes))).forEach(mo => {
+      _totE   += TOTAL_GRUPO1[mesToSafraYYYYMM(mo.mes)] || mo.tel || 0;
+      _totR   += mo.ren || 0;
+      _totRei += mo.rei || 0;
+    });
+    const txRen  = _totE ? (_totR / _totE * 100).toFixed(1) + '%' : '—';
+    const txComb = _totE ? ((_totR + _totRei) / _totE * 100).toFixed(1) + '%' : '—';
+    const elRen  = document.getElementById('conceito-taxa-renov');
+    const elComb = document.getElementById('conceito-taxa-comb');
+    if (elRen)  elRen.innerHTML  = `<strong style="color:#4ade80">${txRen}</strong> de taxa de <strong style="color:#fff">Renovação.</strong>`;
+    if (elComb) elComb.innerHTML = `<strong style="color:#5bc8f5">${txComb}</strong> de taxa combinada <strong style="color:#fff">(Renovação + Reemissão).</strong>`;
 
-  // SEM c7 (07. NAO ATIVO) — removido a pedido
-  const CK      = ['c1','c2','c3','c4','c5','c6'];
-  const CK_LABEL= ['01. 1 A 30 D','02. 31 A 60 D','03. 61 A 90 D','04. 91 A 120 D','05. 121 A 180 D','06. ACIMA DE 180 D'];
-  const CK_COLOR= ['#4ade80','#34d399','#22d3ee','#fbbf24','#fb923c','#f87171'];
+    // ── Tabela Entrega por Ciclo (copia para o slide) ─────────────
+    _buildEntregaSlide();
 
-  // Safras completas em ordem cronológica
-  const safras = CICLO_SAFRA.filter(cs => Object.values({...cs}).some((v,i)=>i>0&&v>0))
-                             .slice(-14);
-  const labels = safras.map(cs => safraLabel(cs.safra));
+    // ── Dados de ciclo — limite Jul/26 ────────────────────────────
+    const CK       = ['c1','c2','c3','c4','c5','c6'];
+    const CK_LABEL = ['01. 1 A 30 D','02. 31 A 60 D','03. 61 A 90 D','04. 91 A 120 D','05. 121 A 180 D','06. ACIMA DE 180 D'];
+    const CK_COLOR = ['#4ade80','#34d399','#22d3ee','#fbbf24','#fb923c','#f87171'];
+    const safras   = CICLO_SAFRA.filter(cs => cs.safra <= '202607').slice(-14);
+    const labels   = safras.map(cs => safraLabel(cs.safra));
 
-  // ── Gráfico 1a: Mix 100% empilhado por ciclo (sem Inativo) ───
-  if (slideCharts.mixCiclo) slideCharts.mixCiclo.destroy();
-  slideCharts.mixCiclo = new Chart(document.getElementById('chartSlideMixCiclo'), {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: CK.map((k, i) => ({
+    // ── Gráfico 5: Mix 100% empilhado (até Jul/26, com rótulos) ───
+    if (slideCharts.mixCiclo) { slideCharts.mixCiclo.destroy(); slideCharts.mixCiclo = null; }
+    const cvMix = document.getElementById('chartSlideMixCiclo');
+    if (cvMix) {
+      const mixData = CK.map((k, i) => ({
         label: CK_LABEL[i],
         data: safras.map(cs => {
-          // denominator sem c7 para refletir apenas os ciclos exibidos
           const tot = CK.reduce((a, kk) => a + (cs[kk]||0), 0);
           return tot ? +((cs[k]||0)/tot*100).toFixed(1) : 0;
         }),
         backgroundColor: CK_COLOR[i],
-        stack: 's',
-        borderWidth: 0,
-      }))
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      layout: { padding: { top: 20 } },
-      plugins: {
-        legend: { position:'bottom', labels:{boxWidth:10,font:{size:11}} },
-        datalabels: {
-          // Mostra rótulo em TODOS os segmentos com valor ≥ 4%
-          display: ctx => ctx.parsed.y >= 4,
-          anchor:'center', align:'center',
-          color: ctx => {
-            const dark = ['#4ade80','#34d399','#22d3ee'];
-            return dark.includes(CK_COLOR[ctx.datasetIndex]) ? '#1e293b' : '#fff';
+        stack: 's', borderWidth: 0
+      }));
+      // Totais por safra para exibir acima de cada barra
+      const totaisSafra = safras.map(cs => CK.reduce((a, k) => a + (cs[k]||0), 0));
+      const fmtK = n => n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? (n/1e3).toFixed(0)+'K' : String(n);
+
+      // Plugin custom: total acima de cada barra empilhada
+      const totalTopPlugin = {
+        id: 'totalTop',
+        afterDatasetsDraw(chart) {
+          try {
+            const ctx2 = chart.ctx;
+            const lastMeta = chart.getDatasetMeta(chart.data.datasets.length - 1);
+            totaisSafra.forEach((total, i) => {
+              if (!total) return;
+              const bar = lastMeta.data[i];
+              if (!bar) return;
+              ctx2.save();
+              ctx2.textAlign   = 'center';
+              ctx2.textBaseline = 'bottom';
+              ctx2.font        = 'bold 10px sans-serif';
+              ctx2.fillStyle   = '#1e293b';
+              ctx2.fillText(fmtK(total), bar.x, bar.y - 3);
+              ctx2.restore();
+            });
+          } catch(e) {}
+        }
+      };
+
+      slideCharts.mixCiclo = new Chart(cvMix, {
+        type: 'bar',
+        data: { labels, datasets: mixData },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          layout: { padding: { top: 22 } },
+          plugins: {
+            legend: { position:'bottom', labels:{boxWidth:10,font:{size:10}} },
+            datalabels: {
+              display: (ctx) => {
+                const v = ctx.dataset.data[ctx.dataIndex];
+                return typeof v === 'number' && v >= 5;
+              },
+              anchor: 'center', align: 'center',
+              color: (ctx) => ['#4ade80','#34d399','#22d3ee'].includes(CK_COLOR[ctx.datasetIndex]) ? '#1a2e1a' : '#fff',
+              font: { size: 8, weight: 'bold' },
+              formatter: v => v.toFixed(0) + '%'
+            }
           },
-          font: { size: 9, weight: 'bold' },
-          formatter: v => v.toFixed(0) + '%'
-        }
-      },
-      scales: {
-        x: { stacked:true, grid:{display:false}, ticks:{font:{size:10}} },
-        y: { stacked:true, min:0, max:100,
-             ticks:{callback:v=>v+'%',font:{size:10}}, grid:{display:false} }
-      }
-    }
-  });
-
-  // ── Gráfico 1b: Tendência 06. ACIMA DE 180 D ─────────────────
-  if (slideCharts.c7Trend) slideCharts.c7Trend.destroy();
-  slideCharts.c7Trend = new Chart(document.getElementById('chartSlideC7Trend'), {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [
-        {
-          label: '06. ACIMA DE 180 D % renovados',
-          data: safras.map(cs => {
-            const tot = CK.reduce((a,k)=>a+(cs[k]||0),0);
-            return tot ? +((cs.c6||0)/tot*100).toFixed(1) : 0;
-          }),
-          borderColor:'#f87171', backgroundColor:'transparent',
-          borderWidth:2, pointRadius:3, fill:false, tension:.3, borderDash:[5,3]
-        }
-      ]
-    },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      layout:{padding:{top:10}},
-      plugins:{
-        legend:{position:'top',labels:{boxWidth:12,font:{size:11}}},
-        datalabels:{display:true,anchor:'top',align:'top',offset:2,
-          color:'#dc2626',
-          font:{size:9,weight:'bold'}, formatter:v=>v.toFixed(1)+'%'}
-      },
-      scales:{
-        x:{grid:{display:false},ticks:{font:{size:10}}},
-        y:{min:0,ticks:{callback:v=>v+'%',font:{size:10}},grid:{color:'#f0f0f0'}}
-      }
-    }
-  });
-
-  // ── Gráfico 2: Curva acumulada de campanhas ───────────────────
-  if (!window.GRAFICO_CAMPANHAS || !Object.keys(GRAFICO_CAMPANHAS).length) return;
-
-  const gc         = GRAFICO_CAMPANHAS;
-  const safrasGC   = Object.keys(gc).sort().slice(-8); // últimas 8 safras
-  const palette    = ['#1d4ed8','#7c3aed','#db2777','#ea580c','#16a34a','#0891b2','#d97706','#dc2626'];
-  const datasets   = [];
-
-  safrasGC.forEach((safra, si) => {
-    const cor = palette[si % palette.length];
-    ['Renovación','Reissue'].forEach(team => {
-      const pts = (gc[safra][team] || []).sort((a,b)=>a.x-b.x);
-      if (!pts.length) return;
-      datasets.push({
-        label: `${team} · ${safra}`,
-        data: pts,
-        borderColor: cor,
-        backgroundColor: 'transparent',
-        borderWidth: team==='Renovación' ? 2 : 1.2,
-        borderDash: team==='Reissue' ? [4,3] : [],
-        pointRadius: 0,
-        tension: 0.3,
-        parsing: {xAxisKey:'x', yAxisKey:'y'}
+          scales: {
+            x: { stacked:true, grid:{display:false}, ticks:{font:{size:10}} },
+            y: { stacked:true, min:0, max:100, ticks:{callback:v=>v+'%',font:{size:10}}, grid:{display:false} }
+          }
+        },
+        plugins: [totalTopPlugin]
       });
-    });
-  });
-
-  // Plugin linha vertical na expiração (x=0)
-  const vlinePlugin = {
-    id:'vline0',
-    afterDraw(chart){
-      const xScale = chart.scales.x;
-      const yScale = chart.scales.y;
-      if(!xScale||!yScale) return;
-      const xPx = xScale.getPixelForValue(0);
-      chart.ctx.save();
-      chart.ctx.beginPath();
-      chart.ctx.moveTo(xPx, yScale.top);
-      chart.ctx.lineTo(xPx, yScale.bottom);
-      chart.ctx.lineWidth = 2;
-      chart.ctx.strokeStyle = '#1e293b';
-      chart.ctx.setLineDash([6,4]);
-      chart.ctx.stroke();
-      chart.ctx.fillStyle='#1e293b';
-      chart.ctx.font='bold 10px sans-serif';
-      chart.ctx.fillText('Expiração', xPx+4, yScale.top+14);
-      chart.ctx.restore();
     }
-  };
 
-  if (slideCharts.campanha) slideCharts.campanha.destroy();
-  slideCharts.campanha = new Chart(document.getElementById('chartSlideCampanha'), {
-    type: 'line',
-    data: { datasets },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      layout:{padding:{top:20}},
-      plugins:{
-        legend:{
-          position:'right',
-          labels:{boxWidth:10,font:{size:10},
-            filter: item => item.text.includes('Renovación')  // só mostra renovação na legenda
-          }
+    // ── Gráfico 2: Tendência 06. ACIMA DE 180 D ───────────────────
+    if (slideCharts.c7Trend) { slideCharts.c7Trend.destroy(); slideCharts.c7Trend = null; }
+    const cvTrend = document.getElementById('chartSlideC7Trend');
+    if (cvTrend) {
+      slideCharts.c7Trend = new Chart(cvTrend, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: '06. ACIMA DE 180 D % renovados',
+            data: safras.map(cs => {
+              const tot = CK.reduce((a,k)=>a+(cs[k]||0),0);
+              return tot ? +((cs.c6||0)/tot*100).toFixed(1) : 0;
+            }),
+            borderColor:'#f87171', backgroundColor:'rgba(248,113,113,.1)',
+            borderWidth:2, pointRadius:3, fill:true, tension:.3
+          }]
         },
-        datalabels:{ display:false },
-        tooltip:{
-          callbacks:{
-            label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}%`
+        options: {
+          responsive:true, maintainAspectRatio:false,
+          plugins:{
+            legend:{position:'top',labels:{boxWidth:12,font:{size:11}}},
+            datalabels:{display:false}
+          },
+          scales:{
+            x:{grid:{display:false},ticks:{font:{size:10}}},
+            y:{min:0,max:60,ticks:{callback:v=>v+'%',font:{size:10}},grid:{color:'#f0f0f0'}}
           }
         }
-      },
-      scales:{
-        x:{
-          type:'linear',
-          title:{display:true,text:'Dias em relação ao vencimento',font:{size:11}},
-          grid:{display:false},
-          ticks:{font:{size:10},stepSize:10}
+      });
+    }
+
+    // ── Gráfico 3: Curva acumulada Renovación/Reissue ─────────────
+    if (typeof GRAFICO_CAMPANHAS === 'undefined') return;
+    const gc = GRAFICO_CAMPANHAS;
+    // Janela dinâmica: 3 meses antes + mês atual + 4 meses depois
+    const _now   = new Date();
+    const _fmtYM = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    const _from  = _fmtYM(new Date(_now.getFullYear(), _now.getMonth() - 3, 1));
+    const _to    = _fmtYM(new Date(_now.getFullYear(), _now.getMonth() + 4, 1));
+    const safrasGC = Object.keys(gc).filter(s => s >= _from && s <= _to).sort();
+    const palette  = ['#1d4ed8','#7c3aed','#db2777','#ea580c','#16a34a','#0891b2','#d97706','#dc2626'];
+    const datasets = [];
+    safrasGC.forEach((safra, si) => {
+      const cor = palette[si % palette.length];
+      const renPts  = (gc[safra]['Renovación'] || []).filter(p => p.x <= 0).sort((a,b)=>a.x-b.x);
+      const reemPts = (gc[safra]['Reissue']    || []).filter(p => p.x > 0) .sort((a,b)=>a.x-b.x);
+      if (renPts.length)  datasets.push({ label:`Renovación · ${safra}`, data:renPts,  borderColor:cor, backgroundColor:'transparent', borderWidth:2,   pointRadius:0, tension:.3, borderDash:[],    parsing:{xAxisKey:'x',yAxisKey:'y'} });
+      if (reemPts.length) datasets.push({ label:`Reissue · ${safra}`,    data:reemPts, borderColor:cor, backgroundColor:'transparent', borderWidth:1.2, pointRadius:0, tension:.3, borderDash:[4,3], parsing:{xAxisKey:'x',yAxisKey:'y'} });
+    });
+
+    if (slideCharts.campanha) { slideCharts.campanha.destroy(); slideCharts.campanha = null; }
+    const cvCamp = document.getElementById('chartSlideCampanha');
+    if (cvCamp && datasets.length) {
+      const vline = { id:'vline0', afterDraw(c){ try{ const x=c.scales.x,y=c.scales.y; const px=x.getPixelForValue(0); c.ctx.save(); c.ctx.beginPath(); c.ctx.moveTo(px,y.top); c.ctx.lineTo(px,y.bottom); c.ctx.lineWidth=2; c.ctx.strokeStyle='#1e293b'; c.ctx.setLineDash([6,4]); c.ctx.stroke(); c.ctx.setLineDash([]); c.ctx.fillStyle='#1e293b'; c.ctx.font='bold 10px sans-serif'; c.ctx.fillText('d0',px+4,y.top+14); c.ctx.restore(); }catch(e){} } };
+      // Adiciona hover radius nos datasets para facilitar o tooltip
+      datasets.forEach(ds => { ds.pointHoverRadius = 5; ds.pointHoverBorderWidth = 2; });
+
+      slideCharts.campanha = new Chart(cvCamp, {
+        type:'line', data:{datasets},
+        options:{
+          responsive:true, maintainAspectRatio:false,
+          // Ativa tooltip ao passar o mouse em qualquer ponto do eixo X
+          interaction:{ mode:'index', intersect:false, axis:'x' },
+          plugins:{
+            legend:{ position:'right', labels:{boxWidth:10,font:{size:10}, filter:i=>i.text.includes('Renovación')} },
+            datalabels:{ display:false },
+            tooltip:{
+              enabled: true,
+              mode: 'index',
+              intersect: false,
+              filter: item => item.parsed.y != null,
+              callbacks:{
+                title: items => `Dia ${items[0]?.parsed?.x ?? ''} em relação ao vencimento`,
+                label: ctx => {
+                  if (ctx.parsed == null || ctx.parsed.y == null) return null;
+                  return `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}%`;
+                }
+              },
+              itemSort: (a, b) => b.parsed.y - a.parsed.y,
+              backgroundColor:'rgba(15,23,42,.92)',
+              titleColor:'#fff', bodyColor:'#cbd5e1',
+              borderColor:'#334155', borderWidth:1,
+              padding:10, bodyFont:{size:11}, titleFont:{size:11,weight:'bold'}
+            }
+          },
+          scales:{
+            x:{ type:'linear', grid:{display:false}, ticks:{font:{size:10},stepSize:10}, title:{display:true,text:'Dias em relação ao vencimento'} },
+            y:{ min:0, max:100, ticks:{callback:v=>v+'%',font:{size:10}}, grid:{color:'#f0f0f0'} }
+          }
         },
-        y:{
-          min:0, max:100,
-          title:{display:true,text:'% Acumulado',font:{size:11}},
-          ticks:{callback:v=>v+'%',font:{size:10}},
-          grid:{color:'#f0f0f0'}
-        }
-      }
-    },
-    plugins:[vlinePlugin]
-  });
+        plugins:[vline]
+      });
+    }
+  } catch(e) {
+    console.error('buildSlideCharts error:', e);
+  }
 }
 
 // ── INIT ──────────────────────────────────────────────────────
@@ -5208,7 +5214,8 @@ buildCicloUsoTable();
 buildMixPublico();
 buildSlide();
 buildInsights();
-buildSlideCharts();
+// buildSlideCharts() NÃO roda no init — canvas está oculto (tab inativa)
+// É chamado em switchTab('slide') com setTimeout para garantir visibilidade
 
 // ── TAB SWITCHING ─────────────────────────────────────────────
 function switchTab(id) {
@@ -5216,6 +5223,11 @@ function switchTab(id) {
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+id).classList.add('active');
   event.target.classList.add('active');
+  // Rebuilda gráficos da aba Slide ao abrir (canvas estava oculto no init)
+  if (id === 'slide') {
+    // duplo rAF: 1º frame = tab visível, 2º frame = layout calculado, então build
+    requestAnimationFrame(() => requestAnimationFrame(() => buildSlideCharts()));
+  }
 }
 </script>
 
