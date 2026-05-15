@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hub Cartões · Jeff</title>
+  <style>
+    :root {
+      --yellow: #FFE600;
+      --blue:   #009EE3;
+      --green:  #00A650;
+      --red:    #FF3B30;
+      --orange: #FF6B00;
+      --purple: #7C4DFF;
+      --bg:     #F2F2F2;
+      --card:   #FFFFFF;
+      --text:   #1A1A1A;
+      --muted:  #666666;
+      --border: #E0E0E0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #1A1A1A 0%, #2C2C2C 100%);
+      color: #fff;
+      padding: 36px 48px 32px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::before {
+      content: '';
+      position: absolute;
+      top: -80px; right: -80px;
+      width: 360px; height: 360px;
+      background: var(--yellow);
+      border-radius: 50%;
+      opacity: .07;
+      pointer-events: none;
+    }
+
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: -60px; right: 120px;
+      width: 200px; height: 200px;
+      background: var(--blue);
+      border-radius: 50%;
+      opacity: .06;
+      pointer-events: none;
+    }
+
+    .hd-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--yellow);
+      color: #1A1A1A;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 14px;
+    }
+
+    header h1 {
+      font-size: 36px;
+      font-weight: 900;
+      letter-spacing: -1px;
+      margin-bottom: 6px;
+    }
+
+    header h1 span { color: var(--yellow); }
+
+    header p {
+      font-size: 14px;
+      color: rgba(255,255,255,.55);
+      max-width: 480px;
+    }
+
+    .hd-meta {
+      position: absolute;
+      top: 36px; right: 48px;
+      text-align: right;
+      font-size: 11px;
+      color: rgba(255,255,255,.35);
+      line-height: 1.6;
+    }
+
+    /* ── Stats bar ── */
+    .stats-bar {
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      padding: 14px 48px;
+      display: flex;
+      gap: 32px;
+      align-items: center;
+    }
+
+    .stat {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .stat strong { color: var(--text); font-weight: 700; }
+
+    .stat-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+
+    /* ── Main ── */
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 40px 24px 60px;
+    }
+
+    /* ── Section title ── */
+    .section-label {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── Grid ── */
+    .dash-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+      gap: 18px;
+      margin-bottom: 48px;
+    }
+
+    /* ── Card ── */
+    .dash-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform .18s ease, box-shadow .18s ease;
+    }
+
+    .dash-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 36px rgba(0,0,0,.10);
+    }
+
+    .card-accent {
+      height: 4px;
+      background: var(--blue);
+    }
+
+    .card-header {
+      padding: 20px 20px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+
+    .card-icon {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .card-info { flex: 1; min-width: 0; }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 2px;
+      line-height: 1.3;
+    }
+
+    .card-sub {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 10px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      white-space: nowrap;
+    }
+
+    .st-live     { background: #E7F9F0; color: #00A650; }
+    .st-internal { background: #FFF8E1; color: #F57C00; }
+
+    .card-body {
+      padding: 0 20px 16px;
+      flex: 1;
+    }
+
+    .card-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.55;
+      margin-bottom: 14px;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .tag {
+      font-size: 11px;
+      background: #F4F4F4;
+      color: #555;
+      padding: 3px 9px;
+      border-radius: 6px;
+      font-weight: 500;
+    }
+
+    .card-footer {
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 15px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: opacity .15s, transform .1s;
+      white-space: nowrap;
+    }
+
+    .btn:active { transform: scale(.97); }
+    .btn:hover  { opacity: .85; }
+
+    .btn-blue   { background: var(--blue);   color: #fff; }
+    .btn-yellow { background: var(--yellow); color: #1A1A1A; }
+    .btn-green  { background: var(--green);  color: #fff; }
+    .btn-off    { background: #EBEBEB; color: #999; cursor: default; }
+    .btn-off:hover { opacity: 1; }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 28px 24px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: #aaa;
+      line-height: 1.8;
+    }
+
+    footer strong { color: var(--muted); }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      header { padding: 24px 20px 20px; }
+      header h1 { font-size: 26px; }
+      .hd-meta { display: none; }
+      .stats-bar { padding: 12px 20px; gap: 20px; overflow-x: auto; }
+      main { padding: 28px 16px 48px; }
+      .dash-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════ HEADER ═══════ -->
+<header>
+  <div class="hd-meta">
+    Mercado Pago Brasil<br>
+    Cards Indicators
+  </div>
+  <div class="hd-badge">
+    <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="#1A1A1A"/></svg>
+    Hub · Jeff
+  </div>
+  <h1>Dashboards <span>Cartões</span></h1>
+  <p>Central de acesso a todos os dashboards e ferramentas criados para acompanhamento de cartões no Mercado Pago Brasil.</p>
+</header>
+
+<!-- ═══════ STATS BAR ═══════ -->
+<div class="stats-bar">
+  <div class="stat">
+    <div class="stat-dot" style="background:var(--green)"></div>
+    <strong>2</strong> publicados
+  </div>
+  <div class="stat">
+    <div class="stat-dot" style="background:var(--orange)"></div>
+    <strong>3</strong> internos
+  </div>
+  <div class="stat">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+    Atualizado mai/2026
+  </div>
+  <div class="stat" style="margin-left:auto">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    jefferson.nogueira@mercadopago.com.br
+  </div>
+</div>
+
+<!-- ═══════ MAIN ═══════ -->
+<main>
+
+  <!-- Publicados -->
+  <div class="section-label">Dashboards publicados</div>
+  <div class="dash-grid">
+
+    <!-- TD Indicadores -->
+    <div class="dash-card">
+      <div class="card-accent" style="background:var(--blue)"></div>
+      <div class="card-header">
+        <div class="card-icon" style="background:#E3F4FD;">💳</div>
+        <div class="card-info">
+          <div class="card-title">TD Indicadores</div>
+          <div class="card-sub">Cartão de Débito · TDMP</div>
+        </div>
+        <div class="status st-live">● Live</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">
+          KPIs completos de emissão, carteira ativa, ativação, recorrência e Challenger. Projeção TPV com Prophet (180 dias). Atualização diária automática via BigQuery + bot Severino.
+        </div>
+        <div class="tags">
+          <span class="tag">KPIs</span>
+          <span class="tag">Emissão</span>
+          <span class="tag">Carteira</span>
+          <span class="tag">Ativação</span>
+          <span class="tag">Projeção</span>
+          <span class="tag">Challenger</span>
+          <span class="tag">Severino Bot</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <a class="btn btn-yellow" href="https://jefnogueiralves.github.io/td-indicadores-dash/" target="_blank" rel="noopener">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          GitHub Pages
+        </a>
+        <a class="btn btn-blue" href="https://grid.adminml.com/d/01KPYFDX3NW80KGF0S0PWPDK1V/view" target="_blank" rel="noopener">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Grid MP
+        </a>
+      </div>
+    </div>
+
+    <!-- Cartões Expirados -->
+    <div class="dash-card">
+      <div class="card-accent" style="background:var(--orange)"></div>
+      <div class="card-header">
+        <div class="card-icon" style="background:#FFF3E0;">⏰</div>
+        <div class="card-info">
+          <div class="card-title">Cartões Expirados</div>
+          <div class="card-sub">Histórico de Renovações Físicas</div>
+        </div>
+        <div class="status st-live">● Live</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">
+          Acompanhamento de cartões físicos com vencimento próximo e histórico de renovações. Pipeline BigQuery com atualização automática agendada.
+        </div>
+        <div class="tags">
+          <span class="tag">Renovação</span>
+          <span class="tag">Físico</span>
+          <span class="tag">Expirados</span>
+          <span class="tag">BigQuery</span>
+          <span class="tag">Auto-update</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <a class="btn btn-blue" href="https://grid.adminml.com/d/01KPYH9GPN78Y3DZDV22XQY649/view" target="_blank" rel="noopener">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Abrir no Grid MP
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Ferramentas internas -->
+  <div class="section-label">Ferramentas e análises internas</div>
+  <div class="dash-grid">
+
+    <!-- Micro TC MLB -->
+    <div class="dash-card">
+      <div class="card-accent" style="background:var(--green)"></div>
+      <div class="card-header">
+        <div class="card-icon" style="background:#E7F9F0;">📊</div>
+        <div class="card-info">
+          <div class="card-title">Micro TC · MLB</div>
+          <div class="card-sub">Dashboard Micro Transações</div>
+        </div>
+        <div class="status st-internal">● Interno</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">
+          Dashboard de micro transações com crédito MLB. Análise de ativação, cross CC, engajamento e graduação. Dados ao vivo via BigQuery com cache local.
+        </div>
+        <div class="tags">
+          <span class="tag">Micro TC</span>
+          <span class="tag">MLB</span>
+          <span class="tag">Ativação</span>
+          <span class="tag">Cross CC</span>
+          <span class="tag">Engajamento</span>
+          <span class="tag">Graduação</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="btn btn-off">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Arquivo local · Sem URL pública
+        </span>
+      </div>
+    </div>
+
+    <!-- Projeção Business Débito -->
+    <div class="dash-card">
+      <div class="card-accent" style="background:var(--purple)"></div>
+      <div class="card-header">
+        <div class="card-icon" style="background:#F3EEFF;">📈</div>
+        <div class="card-info">
+          <div class="card-title">Projeção Cartão Business</div>
+          <div class="card-sub">Débito · Forecast Anual</div>
+        </div>
+        <div class="status st-internal">● Interno</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">
+          Projeção de indicadores do Cartão de Débito Business. Visualização interativa de forecast anual com filtros por safra e indicador.
+        </div>
+        <div class="tags">
+          <span class="tag">Business</span>
+          <span class="tag">Débito</span>
+          <span class="tag">Projeção</span>
+          <span class="tag">Forecast</span>
+          <span class="tag">Safra</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="btn btn-off">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Arquivo local · Sem URL pública
+        </span>
+      </div>
+    </div>
+
+    <!-- Tombamento Legado -->
+    <div class="dash-card">
+      <div class="card-accent" style="background:var(--red)"></div>
+      <div class="card-header">
+        <div class="card-icon" style="background:#FFF0F0;">🔄</div>
+        <div class="card-info">
+          <div class="card-title">Tombamento Legado</div>
+          <div class="card-sub">Análise Abr/25</div>
+        </div>
+        <div class="status st-internal">● Interno</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">
+          Análise do tombamento do sistema legado em abril/25. Mapeamento de transições e impacto nos indicadores de cartão.
+        </div>
+        <div class="tags">
+          <span class="tag">Legado</span>
+          <span class="tag">Tombamento</span>
+          <span class="tag">Abr/25</span>
+          <span class="tag">Migração</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="btn btn-off">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Arquivo local · Sem URL pública
+        </span>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+<!-- ═══════ FOOTER ═══════ -->
+<footer>
+  <strong>Hub Cartões · Jefferson Nogueira</strong><br>
+  Mercado Pago Brasil · Cards Indicators · Criado com Claude Code · mai/2026
+</footer>
+
+</body>
+</html>
