@@ -1,0 +1,58 @@
+name: Atualizar Cartões Expirados + MTC + Hub
+
+on:
+  schedule:
+    - cron: '30 12 * * 1-5'   # 09:30 BRT (seg–sex) — após o TD ter rodado
+  workflow_dispatch:
+
+env:
+  GOOGLE_APPLICATION_CREDENTIALS: /home/runner/.config/gcloud/application_default_credentials.json
+  GCS_BASE: https://storage.googleapis.com/meli-sandbox/CARDSINDICATORSBR/dashboards_TDMP_MLB
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Instalar dependências
+        run: pip install --quiet -r requirements.txt
+
+      - name: Configurar credenciais GCP
+        run: |
+          mkdir -p ~/.config/gcloud
+          echo '${{ secrets.GCP_ADC_JSON }}' > ~/.config/gcloud/application_default_credentials.json
+
+      # ── Cartões Expirados ──────────────────────────────────────────────────
+      - name: Cartões Expirados — Extrair BQ
+        run: python cartoes-expirados/update_data.py
+
+      - name: Cartões Expirados — Publicar GCS
+        run: python cartoes-expirados/publicar_gcs.py
+
+      # ── Micro TC ───────────────────────────────────────────────────────────
+      - name: Micro TC — Gerar estático e publicar GCS
+        run: python micro-tc/gerar_estatico.py
+
+      # ── Hub ────────────────────────────────────────────────────────────────
+      - name: Hub — Publicar GCS
+        run: python scripts/publicar_gcs.py
+
+      - name: Resumo
+        run: |
+          echo "## Dashboards atualizados" >> $GITHUB_STEP_SUMMARY
+          echo "| Dashboard | URL |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| Cartões Expirados | ${{ env.GCS_BASE }}/cartoes_expirados.html |" >> $GITHUB_STEP_SUMMARY
+          echo "| Micro TC | ${{ env.GCS_BASE }}/micro_tc_mlb.html |" >> $GITHUB_STEP_SUMMARY
+          echo "| Hub | ${{ env.GCS_BASE }}/hub_cartoes.html |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Data** | $(date -u +'%d/%m/%Y %H:%M UTC') |" >> $GITHUB_STEP_SUMMARY

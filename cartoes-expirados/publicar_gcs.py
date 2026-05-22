@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-publicar_gcs.py — Publica o Hub Cartões no GCS como HTML estático
+publicar_gcs.py — Publica Cartões Expirados no GCS como HTML auto-contido
 """
-import os, sys, json
+import os, sys, json, re
 from pathlib import Path
 from datetime import datetime
 
-BASE_DIR   = Path(__file__).resolve().parent.parent   # raiz do repo hub-cartoes
+BASE_DIR   = Path(__file__).resolve().parent
 GCS_BUCKET = 'meli-sandbox'
-GCS_OBJECT = 'CARDSINDICATORSBR/dashboards_TDMP_MLB/hub_cartoes.html'
+GCS_OBJECT = 'CARDSINDICATORSBR/dashboards_TDMP_MLB/cartoes_expirados.html'
 GCS_URL    = f'https://storage.googleapis.com/{GCS_BUCKET}/{GCS_OBJECT}'
 
 
@@ -39,19 +39,33 @@ def get_gcs_client():
     return storage.Client(project='meli-bi-data', credentials=creds)
 
 
-def publicar():
-    html  = (BASE_DIR / 'index.html').read_text(encoding='utf-8')
-    ts    = datetime.now().strftime('%Y%m%d%H%M%S')
-    html  = html.replace('</head>', f'<meta name="cache-ts" content="{ts}">\n</head>', 1)
-    dados = html.encode('utf-8')
+def build_html():
+    html = (BASE_DIR / 'index.html').read_text(encoding='utf-8')
+    data_js_path = BASE_DIR / 'dashboard_data.js'
+    if data_js_path.exists():
+        data_js = data_js_path.read_text(encoding='utf-8')
+        html = html.replace(
+            '<script src="dashboard_data.js"></script>',
+            f'<script>\n{data_js}\n</script>'
+        )
+    ts = datetime.now().strftime('%Y%m%d%H%M%S')
+    html = html.replace('</head>', f'<meta name="cache-ts" content="{ts}">\n</head>', 1)
+    return html
 
-    print(f'Publicando Hub no GCS ({len(dados)//1024} KB)...', flush=True)
+
+def publicar():
+    print('Gerando HTML auto-contido...')
+    html  = build_html()
+    dados = html.encode('utf-8')
+    print(f'  Tamanho: {len(dados) // 1024} KB')
+
+    print('Publicando no GCS...')
     client = get_gcs_client()
     blob   = client.bucket(GCS_BUCKET).blob(GCS_OBJECT)
     blob.upload_from_string(dados, content_type='text/html; charset=utf-8')
     blob.cache_control = 'no-cache, max-age=0'
     blob.patch()
-    print(f'Publicado: {GCS_URL}', flush=True)
+    print(f'Publicado: {GCS_URL}')
     return GCS_URL
 
 
