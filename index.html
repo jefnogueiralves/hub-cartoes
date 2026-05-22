@@ -725,7 +725,10 @@
         </div>
       </div>
       <div class="card-footer">
-        <span class="local-file" data-path="C:\Users\jefnogueira\Desktop\Arquivos Claude\projecao-cartao-business-debito.html" data-label="projecao-cartao-business-debito.html"></span>
+        <a class="btn btn-primary" href="https://grid.adminml.com/d/01KQ083TZAS4CKP309R99BN9DC/view" target="_blank" rel="noopener">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Abrir no Grid
+        </a>
       </div>
     </div>
 
@@ -771,7 +774,10 @@
         </div>
       </div>
       <div class="card-footer">
-        <span class="local-file" data-path="C:\Users\jefnogueira\Desktop\Arquivos Claude\Limite médio\dashboard_limite_medio.html" data-label="dashboard_limite_medio.html"></span>
+        <a class="btn btn-primary" href="https://grid.adminml.com/d/01KQFDWVKJ0T6G3ZG99SQPWP1C/view" target="_blank" rel="noopener">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Abrir no Grid
+        </a>
       </div>
     </div>
 
@@ -852,6 +858,9 @@ function activateOwner() {
   document.querySelectorAll('[data-owner-only]').forEach(el => el.style.display = '');
   // Converte local-file spans em botões de copiar
   document.querySelectorAll('.local-file').forEach(el => {
+    // Garante que o footer esteja visível (pode ter sido escondido antes da senha)
+    const footer = el.closest('.card-footer');
+    if (footer) footer.style.display = '';
     const path  = el.dataset.path  || '';
     const label = el.dataset.label || path.split('\\').pop();
     const btn   = document.createElement('button');
