@@ -1,0 +1,59 @@
+name: Update Dashboard Micro TC MLB
+
+on:
+  schedule:
+    - cron: '0 12 * * *'   # 09:00 BRT (UTC-3) = 12:00 UTC, todos os dias
+  workflow_dispatch:         # permite rodar manualmente pelo GitHub UI
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout repositório
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Instalar dependências Python
+        run: |
+          pip install --quiet \
+            google-cloud-bigquery \
+            google-cloud-storage \
+            google-auth \
+            pyarrow \
+            db-dtypes
+
+      - name: Criar SA key file
+        run: echo '${{ secrets.GCP_SA_KEY }}' > /tmp/sa_key.json
+
+      - name: Executar atualização do dashboard
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: /tmp/sa_key.json
+          OUTPUT_DIR: /tmp/dash_output
+        run: |
+          python scripts/update_gcs.py 2>&1 | tee /tmp/update.log
+          echo "--- Últimas linhas ---"
+          tail -5 /tmp/update.log
+
+      - name: Atualizar data no hub e fazer commit
+        run: |
+          HOJE=$(TZ='America/Sao_Paulo' date '+%b\/%Y' | tr '[:upper:]' '[:lower:]')
+          sed -i "s/Atualizado [a-z]*\/[0-9]*/Atualizado $HOJE/" index.html
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --staged --quiet && echo "Nenhuma alteração" || \
+            git commit -m "auto: dash Micro TC MLB $(TZ='America/Sao_Paulo' date '+%d/%m/%Y %H:%M')" && \
+            git push
+
+      - name: Limpar SA key
+        if: always()
+        run: rm -f /tmp/sa_key.json
