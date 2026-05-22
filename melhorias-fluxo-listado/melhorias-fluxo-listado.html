@@ -152,8 +152,78 @@ tr:nth-child(even) td{background:#F8FAFC}
 </head>
 <body>
 <div class="wrapper">
-<div class="pb"><div class="pbf" id="prog" style="width:25%"></div></div>
+<div class="pb"><div class="pbf" id="prog" style="width:11.1%"></div></div>
 <div class="slide-box">
+
+<!-- SLIDE: RESUMO EXECUTIVO -->
+<div class="slide">
+  <div class="sh bk"><h2>Resumo Executivo</h2><span class="tag">EXECUTIVO</span></div>
+  <div class="sb">
+    <div class="krow">
+      <div class="kcard b3"><div class="kv">+14pp</div><div class="kl">Conversão funil<br>Out/25 → Mar/26</div></div>
+      <div class="kcard dk"><div class="kv">10×</div><div class="kl">Volume Listado<br>Dez/25 → Mar/26</div></div>
+      <div class="kcard"><div class="kv">33–37%</div><div class="kl">Ativação MOB1<br>Estável pós-melhoria</div></div>
+      <div class="kcard yl"><div class="kv">+15%</div><div class="kl">Emissão total<br>vs Plano Q1 2026</div></div>
+    </div>
+    <div class="tc">
+      <div class="col">
+        <div class="st">O que foi feito</div>
+        <div class="ibul"><span class="ico">🔧</span><span>Otimização das telas de <strong>review e solicitação</strong> no fluxo Listado — principal canal orgânico de aquisição via app MP</span></div>
+        <div class="ibul"><span class="ico">📅</span><span>Período de implementação: <strong>Dez/25 – Jan/26</strong> (Jan/26 excluído — tracking quebrado confirmado)</span></div>
+        <div class="ibul"><span class="ico">🎯</span><span>Objetivo: reduzir dropout e aumentar conversão no funil orgânico de emissão de TD</span></div>
+        <div class="dv" style="margin:8px 0"></div>
+        <div class="st">O que analisamos</div>
+        <div class="ibul"><span class="ico">📈</span><span>Funil de conversão (Out/25 – Mar/26)</span></div>
+        <div class="ibul"><span class="ico">💳</span><span>Emissão por canal e share Listado (Mai/25 – Mai/26)</span></div>
+        <div class="ibul"><span class="ico">🎯</span><span>Propensão dos emissores via score do modelo</span></div>
+        <div class="ibul"><span class="ico">✅</span><span>Ativação por cohort: Total · Listado · Listado Baixa Propensão</span></div>
+      </div>
+      <div class="col">
+        <div class="st">Conclusão em uma linha</div>
+        <div class="ins dk" style="font-size:.8em;line-height:1.7;margin-bottom:10px"><strong>A melhoria funcionou.</strong> O canal Listado passou de 7% para 58% do mix de emissão com ativação estável, criando um novo baseline estrutural que exige revisão do plano e implementação de guardrails de qualidade.</div>
+        <div class="st">Questões respondidas</div>
+        <div class="arow" style="font-size:.72em"><div class="aq">Elevamos emissão por essa melhoria?</div><div class="aa"><span class="badge b-b">✓</span>Sim — Listado 10× em volume</div></div>
+        <div class="arow" style="font-size:.72em"><div class="aq">Ativação se equilibrou?</div><div class="aa"><span class="badge b-b">✓</span>Sim — 33–37% MOB1 estável</div></div>
+        <div class="arow" style="font-size:.72em"><div class="aq">DVC dentro do plano?</div><div class="aa"><span class="badge b-y">⚠</span>Custo +R$9M Q1, TPV +7% — em maturação</div></div>
+        <div class="arow" style="font-size:.72em"><div class="aq">Empilhamento gera melhor DC?</div><div class="aa"><span class="badge b-b">✓</span>Sim — 10× ativos por cohort</div></div>
+        <div class="arow" style="font-size:.72em"><div class="aq">TD como porta de entrada em TC?</div><div class="aa"><span class="badge b-b">✓</span>~900K emissões Fev–Abr/26</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE: PIPELINE METODOLÓGICO -->
+<div class="slide">
+  <div class="sh b2"><h2>Pipeline Metodológico — Como Chegamos nos Dados</h2><span class="tag">METODOLOGIA</span></div>
+  <div class="sb">
+    <div class="krow">
+      <div class="scard b" style="flex:1"><div><span class="snum b">1</span><span class="stit">Fontes de Dados</span></div><div class="sbody"><li>MELIDATA.TRACKS → telas de review</li><li>BT_DBT_CARD_REQUEST → emissões</li><li>DASHBOARD_EMISSAO_CUBO → canal e propensão</li><li>Dashboard Grid → cohorts de ativação MOB</li></div></div>
+      <div class="scard b" style="flex:1"><div><span class="snum b">2</span><span class="stit">Métricas Calculadas</span></div><div class="sbody"><li>Conversão = emissões / views review screen</li><li>Dropout = 1 − conversão</li><li>Share canal = Listado / total emissões</li><li>MOB n = % ativados no n-ésimo mês</li></div></div>
+      <div class="scard b" style="flex:1"><div><span class="snum b">3</span><span class="stit">Segmentações</span></div><div class="sbody"><li>Por canal: Listado vs demais</li><li>Por propensão: Alta (>0.50) vs Baixa (≤0.50)</li><li>Por cohort: mês de emissão Mai/25–Abr/26</li><li>Por MOB: 0 a 8 meses</li></div></div>
+      <div class="scard y" style="flex:1"><div><span class="snum y">4</span><span class="stit">Limitações Conhecidas</span></div><div class="sbody"><li><strong>Jan/26 excluído</strong> — tracking quebrado confirmado com Gusta</li><li>Abr/26 MOB1 parcial (Jun/26 fecha)</li><li>Funil por canal pendente com IT</li><li>Ativação Listado: cohorts validados separadamente</li></div></div>
+    </div>
+    <div class="ins" style="text-align:center;font-size:.75em;margin:6px 0">MELIDATA.TRACKS → BQ Query → Conversão/Dropout → Segmentação por Canal → Cohort Ativação → Análise Propensão → Insights</div>
+    <div class="tc">
+      <div class="col">
+        <div class="st">Cobertura por dataset</div>
+        <table>
+          <tr><th>Dataset</th><th>Período</th><th>Status</th></tr>
+          <tr><td>Funil conversão</td><td>Out/25 – Mar/26</td><td class="hb1">Jan/26 excluído</td></tr>
+          <tr><td>Emissão por canal</td><td>Mai/25 – Mai/26</td><td class="hp">Mai/26 parcial</td></tr>
+          <tr><td>Cohort ativação total</td><td>Mai/25 – Mai/26</td><td class="hb3">MOB 0 a 12</td></tr>
+          <tr><td>Cohort ativação Listado</td><td>Mai/25 – Abr/26</td><td class="hp">Abr/26 MOB1 parcial</td></tr>
+          <tr><td>Listado Baixa Propensão</td><td>Mai/25 – Abr/26</td><td class="hp">Abr/26 MOB1 parcial</td></tr>
+        </table>
+      </div>
+      <div class="col">
+        <div class="st">Definições-chave</div>
+        <div class="scard" style="margin-bottom:6px"><div class="stit">Listado de Cartão</div><div class="sbody" style="padding:0;margin-top:3px">Canal orgânico via app MP — usuário vê a oferta de cartão no carrossel ao navegar. Principal canal de aquisição não-induzida.</div></div>
+        <div class="scard" style="margin-bottom:6px"><div class="stit">Baixa Propensão (score ≤ 0.50)</div><div class="sbody" style="padding:0;margin-top:3px">Threshold do modelo de propensão aplicado desde Fev/26. Usuários com menor probabilidade predita de ativar o cartão.</div></div>
+        <div class="scard"><div class="stit">MOB — Months on Book</div><div class="sbody" style="padding:0;margin-top:3px">Meses desde a emissão. MOB0 = mês de emissão. MOB1 = primeiro mês completo após emissão. Pico histórico de ativação no MOB1.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- SLIDE 1: A MELHORIA FUNCIONOU -->
 <div class="slide active">
@@ -362,6 +432,146 @@ tr:nth-child(even) td{background:#F8FAFC}
         </div>
       </div>
     </div>
+  </div>
+</div>
+
+
+<!-- SLIDE: RESULTADOS CONSOLIDADOS -->
+<div class="slide">
+  <div class="sh b1"><h2>Resultados Consolidados — Antes × Depois</h2><span class="tag">RESULTADOS</span></div>
+  <div class="sb">
+    <div class="krow">
+      <div class="kcard b3"><div class="kv">+14pp</div><div class="kl">Conversão funil</div></div>
+      <div class="kcard dk"><div class="kv">10×</div><div class="kl">Volume Listado</div></div>
+      <div class="kcard"><div class="kv">108%</div><div class="kl">Active Users vs Plano Q1</div></div>
+      <div class="kcard yl"><div class="kv">+7%</div><div class="kl">TPV vs Plano Q1</div></div>
+    </div>
+    <div class="tc">
+      <div class="col">
+        <div class="st">Comparativo Antes × Depois</div>
+        <table>
+          <tr><th>Métrica</th><th>Antes (Dez/25)</th><th>Depois (Mar/26)</th><th>Delta</th></tr>
+          <tr><td>Conversão funil</td><td>50,4%</td><td class="hb4">56,2%</td><td class="hb3">+5,8pp</td></tr>
+          <tr><td>Dropout</td><td>49,6%</td><td class="hb3">43,8%</td><td class="hb3">−5,8pp</td></tr>
+          <tr><td>Emissão Listado/mês</td><td>35.780</td><td class="hb5">361.836</td><td class="hb5">+10×</td></tr>
+          <tr><td>Share Listado no mix</td><td>6,9%</td><td class="hb5">57,8%</td><td class="hb5">+50,9pp</td></tr>
+          <tr><td>Ativação MOB1 Listado</td><td class="hp">35,7%</td><td class="hb3">37,3%</td><td class="hb2">+1,6pp</td></tr>
+          <tr><td>Ativos gerados (Listado)</td><td>~12.800</td><td class="hb5">~135.000</td><td class="hb5">+10,5×</td></tr>
+        </table>
+        <div class="ins" style="margin-top:6px">Referência Out/25 (pré-implementação): conversão 42,1%, dropout 57,9%, Listado 23,5% do mix.</div>
+      </div>
+      <div class="col">
+        <div class="st">Resultados financeiros Q1 2026</div>
+        <table>
+          <tr><th>Indicador</th><th>Real</th><th>vs Plano</th><th>Status</th></tr>
+          <tr><td>Emissão física</td><td>+15% vs plano</td><td>—</td><td class="hy2">Acima</td></tr>
+          <tr><td>Active Users</td><td>108% do plano</td><td>+8pp</td><td class="hb3">✓</td></tr>
+          <tr><td>TPV</td><td>+7% vs plano</td><td>+7pp</td><td class="hb3">✓</td></tr>
+          <tr><td>Issuing & Shipping</td><td>+R$9M vs plano</td><td>—</td><td class="hy3">Pressão</td></tr>
+        </table>
+        <div class="ins y" style="margin-top:6px"><strong>Custo real existe</strong> — parte é alocação incorreta TC/TD (em correção). Justificativa: volume de ativos cresceu 10× no período e interchange cresce com maturação dos cohorts.</div>
+        <div class="ins" style="margin-top:6px"><strong>Pipeline TD→TC:</strong> ~900K emissões Fev–Abr/26 via canal orgânico = base potencial de upgrade para Crédito.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE: TRÊS LEITURAS HONESTAS -->
+<div class="slide">
+  <div class="sh bk"><h2>Três Leituras Honestas para Diretivos</h2><span class="tag">PERSPECTIVAS</span></div>
+  <div class="sb">
+    <div class="ins dk" style="margin-bottom:10px">Os dados são os mesmos. A interpretação depende do horizonte e da prioridade do observador.</div>
+    <div class="krow" style="align-items:stretch">
+      <div style="flex:1;background:var(--blue5);border:1px solid var(--blue4);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:1.3em;margin-bottom:2px">📈</div>
+        <div class="st">Leitura 1 — A Positiva</div>
+        <div style="font-size:.73em;color:var(--gray1);line-height:1.6">
+          <p style="margin-bottom:7px">A melhoria de UX funcionou como deveria: <strong>convertemos melhor o mesmo público orgânico.</strong> Listado ativa acima da média total (+3–6pp MOB0) — o usuário já está no app MP.</p>
+          <p style="margin-bottom:7px">O custo de emissão maior é o preço do crescimento que se dilui com o empilhamento. Mar/26 gerou ~135K ativos via Listado — vs ~13K em Dez/25. Isso é crescimento real de base ativa.</p>
+          <p style="font-weight:700;color:var(--blue)">Mensagem: Investimento justificado. Focar em qualificar o crescimento, não revertê-lo.</p>
+        </div>
+      </div>
+      <div style="flex:1;background:var(--yellow3);border:1px solid var(--yellow2);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:1.3em;margin-bottom:2px">⚠️</div>
+        <div class="st yl">Leitura 2 — A Cautelosa</div>
+        <div style="font-size:.73em;color:var(--gray1);line-height:1.6">
+          <p style="margin-bottom:7px">Emissão +15% acima do plano = <strong>custo real de R$9M no Q1.</strong> 63% dos emissores são Baixa Propensão. Abr/26 registrou o pior MOB0 de Baixa Prop dos últimos 12M (27,9%).</p>
+          <p style="margin-bottom:7px">Sem confirmação de que inteligência de ordem está ativa, sem a tela de fricção, continuamos emitindo para quem tem menor probabilidade de ativar e gerar interchange.</p>
+          <p style="font-weight:700;color:#7d5a00">Mensagem: Crescimento com risco de qualidade. Guardrails são urgentes — não opcionais.</p>
+        </div>
+      </div>
+      <div style="flex:1;background:var(--gray5);border:1px solid var(--gray4);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:1.3em;margin-bottom:2px">♟️</div>
+        <div class="st dk">Leitura 3 — A Estratégica</div>
+        <div style="font-size:.73em;color:var(--gray1);line-height:1.6">
+          <p style="margin-bottom:7px">O novo baseline de 54–58% Listado <strong>não é reversível — é o novo normal.</strong> O plano precisa refletir isso. Manter o plano antigo cria alertas falsos toda semana.</p>
+          <p style="margin-bottom:7px">O argumento mais forte não é o custo de TD isolado: é o <strong>pipeline de TC.</strong> ~900K emissões orgânicas via app MP = base de upgrade para crédito. Esse é o ROI que justifica quando visto no P&L completo.</p>
+          <p style="font-weight:700;color:var(--black)">Mensagem: Atualizar o plano, comunicar o novo cenário. O crescimento está certo — o enquadramento precisa evoluir.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE: RECOMENDAÇÕES -->
+<div class="slide">
+  <div class="sh b2"><h2>Recomendações — 4 Ações com Dono e Urgência</h2><span class="tag">RECOMENDAÇÕES</span></div>
+  <div class="sb">
+    <div class="tc">
+      <div class="col">
+        <div class="scard k" style="margin-bottom:10px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <div><span class="snum k">1</span><span class="stit">Atualizar o plano de emissões 2026</span></div>
+            <span style="font-size:.65em;background:var(--black);color:#fff;padding:2px 8px;border-radius:10px;font-weight:700">ALTA</span>
+          </div>
+          <div class="sbody">
+            <li>Projeção revisada: <strong>~7,4M emissões</strong> (vs 7,9M provisionado)</li>
+            <li>Novo baseline Listado: 54–58% do mix</li>
+            <li>Corrigir alocação TC/TD no modelo de custo</li>
+            <li><strong>Dono:</strong> Jefferson + Juan Del Boca (Planning)</li>
+          </div>
+        </div>
+        <div class="scard y">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <div><span class="snum y">2</span><span class="stit">Verificar inteligência de ordem no carrossel</span></div>
+            <span style="font-size:.65em;background:var(--yellow);color:#000;padding:2px 8px;border-radius:10px;font-weight:700">URGENTE</span>
+          </div>
+          <div class="sbody">
+            <li>Confirmar com IT se ordenação está ativa para Baixa Prop</li>
+            <li>Usuários Baixa Prop devem ver o card <strong>por último</strong></li>
+            <li>Sem isso, a tela de fricção não tem efeito real</li>
+            <li><strong>Dono:</strong> Jefferson + IT (Gustavo)</li>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="scard b" style="margin-bottom:10px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <div><span class="snum b">3</span><span class="stit">Priorizar tela de fricção para Baixa Prop</span></div>
+            <span style="font-size:.65em;background:var(--blue);color:#fff;padding:2px 8px;border-radius:10px;font-weight:700">ALTA</span>
+          </div>
+          <div class="sbody">
+            <li>Tela específica para usuários com score ≤ 0.50 no fluxo Listado</li>
+            <li>Fecha o ciclo de qualidade do crescimento orgânico</li>
+            <li>Prioridade no roadmap de produto</li>
+            <li><strong>Dono:</strong> Produto (Gustavo Belletti)</li>
+          </div>
+        </div>
+        <div class="scard">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <div><span class="snum b" style="background:var(--gray2)">4</span><span class="stit">Monitorar cohort Abr/26 em junho</span></div>
+            <span style="font-size:.65em;background:var(--gray3);color:#fff;padding:2px 8px;border-radius:10px;font-weight:700">MÉDIA</span>
+          </div>
+          <div class="sbody">
+            <li>MOB0 Baixa Prop Abr/26 = 27,9% — pior dos últimos 12 meses</li>
+            <li>Verificar MOB1 quando Jun/26 fechar</li>
+            <li><strong>Alerta:</strong> se MOB1 < 30%, qualidade deteriorou — escalar</li>
+            <li><strong>Dono:</strong> Jefferson (monitoramento mensal)</li>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="ins dk"><strong>Sequência de prioridade:</strong> Verificar ordem no carrossel (urgente, sem custo) → Atualizar plano (alta, alinha expectativas) → Tela de fricção (alta, qualifica crescimento) → Monitorar Abr/26 (média, alerta preventivo)</div>
   </div>
 </div>
 
