@@ -90,6 +90,10 @@
     .btn-green  { background: var(--green);  color: #fff; }
     .btn-off    { background: #EBEBEB; color: #999; cursor: default; }
     .btn-off:hover { opacity: 1; }
+    .btn-owner  { background: #F0F7FF; color: var(--blue); border: 1px dashed var(--blue); cursor: pointer; }
+    .btn-owner:hover { background: #E0F0FF; opacity: 1; }
+    .owner-bar  { display: none; background: #FFF9E6; border-bottom: 1px solid #FFE066; padding: 7px 48px; font-size: 11px; color: #7a6300; gap: 6px; align-items: center; }
+    .owner-bar.on { display: flex; }
 
     /* ── Run status badge on card ── */
     .run-badge { display: none; align-items: center; gap: 5px; font-size: 11px; padding: 4px 9px; border-radius: 8px; margin-left: auto; white-space: nowrap; }
@@ -126,6 +130,12 @@
   <h1>Dashboards <span>Cartões</span></h1>
   <p>Central de acesso a todos os dashboards e ferramentas criados para acompanhamento de cartões no Mercado Pago Brasil.</p>
 </header>
+
+<!-- ═══════ OWNER BAR ═══════ -->
+<div class="owner-bar" id="ownerBar">
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7a6300" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/></svg>
+  Modo owner ativo — você está vendo os caminhos dos arquivos locais
+</div>
 
 <!-- ═══════ STATS BAR ═══════ -->
 <div class="stats-bar">
@@ -331,10 +341,7 @@
         </div>
       </div>
       <div class="card-footer">
-        <span class="btn btn-off">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          Arquivo local · Sem URL pública
-        </span>
+        <span class="local-file" data-path="C:\Users\jefnogueira\Desktop\Arquivos Claude\projecao-cartao-business-debito.html" data-label="projecao-cartao-business-debito.html"></span>
       </div>
     </div>
 
@@ -357,10 +364,7 @@
         </div>
       </div>
       <div class="card-footer">
-        <span class="btn btn-off">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          Arquivo local · Sem URL pública
-        </span>
+        <span class="local-file" data-path="C:\Users\jefnogueira\Desktop\Arquivos Claude\tombamento-legado-abr25.html" data-label="tombamento-legado-abr25.html"></span>
       </div>
     </div>
 
@@ -383,10 +387,7 @@
         </div>
       </div>
       <div class="card-footer">
-        <span class="btn btn-off">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          Arquivo local · Sem URL pública
-        </span>
+        <span class="local-file" data-path="C:\Users\jefnogueira\Desktop\Arquivos Claude\Limite médio\dashboard_limite_medio.html" data-label="dashboard_limite_medio.html"></span>
       </div>
     </div>
 
@@ -409,10 +410,7 @@
         </div>
       </div>
       <div class="card-footer">
-        <span class="btn btn-off">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          Arquivo local · Sem URL pública
-        </span>
+        <span class="local-file" data-path="C:\Users\jefnogueira\Desktop\Arquivos Claude\visa-copa-dash\index.html" data-label="visa-copa-dash/index.html"></span>
       </div>
     </div>
 
@@ -429,6 +427,37 @@
 (function () {
   const STATUS_ICONS = { ok: '✅', warning: '⚠️', error: '❌', missed: '🔴' };
   const STATUS_LABEL = { ok: 'Rodou', warning: 'Aviso', error: 'Erro', missed: 'Não rodou' };
+
+  // ── Owner mode ────────────────────────────────────────────────
+  const isOwner = new URLSearchParams(location.search).has('owner');
+
+  if (isOwner) {
+    document.getElementById('ownerBar').classList.add('on');
+  }
+
+  document.querySelectorAll('.local-file').forEach(el => {
+    if (!isOwner) {
+      // Outros: remove o footer inteiro se só tem o local-file
+      el.closest('.card-footer').style.display = 'none';
+      return;
+    }
+    // Owner: botão que copia o caminho para clipboard
+    const path = el.dataset.path || '';
+    const label = el.dataset.label || path.split('\\').pop();
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-owner';
+    btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> ${label}`;
+    btn.title = path;
+    btn.onclick = () => {
+      navigator.clipboard.writeText(path).then(() => {
+        btn.innerHTML = '✅ Caminho copiado!';
+        setTimeout(() => {
+          btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> ${label}`;
+        }, 2000);
+      });
+    };
+    el.replaceWith(btn);
+  });
 
   function fmtDate(iso) {
     const d = new Date(iso + 'T00:00:00');
