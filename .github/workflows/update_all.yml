@@ -22,15 +22,16 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          cache: pip
 
       - name: Instalar dependências
         run: pip install --quiet -r requirements.txt
 
       - name: Configurar credenciais GCP
+        env:
+          GCP_ADC_JSON: ${{ secrets.GCP_ADC_JSON }}
         run: |
           mkdir -p ~/.config/gcloud
-          echo '${{ secrets.GCP_ADC_JSON }}' > ~/.config/gcloud/application_default_credentials.json
+          echo "$GCP_ADC_JSON" > ~/.config/gcloud/application_default_credentials.json
 
       # ── Cartões Expirados ──────────────────────────────────────────────────
       - name: Cartões Expirados — Extrair BQ
