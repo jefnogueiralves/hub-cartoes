@@ -4,6 +4,8 @@ on:
   schedule:
     # 09:00 BRT = 12:00 UTC  (BRT = UTC-3)
     - cron: '0 12 * * 1-5'
+    # 11:00 BRT = 14:00 UTC
+    - cron: '0 14 * * 1-5'
   workflow_dispatch:
 
 jobs:
