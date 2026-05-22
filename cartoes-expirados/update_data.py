@@ -68,19 +68,19 @@ ORDER BY 1
 
 Q_FUNIL = f"""
 SELECT
-  EXPIRATION_DATE AS safra,
-  SUM(BASE_RENOVACAO)   AS base,
-  SUM(QTDE_ENTREGUE)    AS entregue,
-  SUM(ATIVADOS_TC)      AS atv_tc,
-  SUM(ATIVOS_TC)        AS ativ_tc,
-  SUM(ATIVOS_TD)        AS ativ_td,
-  SUM(ATIVOS_FISICO)    AS ativ_fis,
-  SUM(TPV_TC)           AS tpv_tc,
-  SUM(TPV_TD)           AS tpv_td
+  REPLACE(EXPIRATION_DATE, '-', '')       AS safra,
+  SUM(QTDE_RENOVADOS + QTDE_REEMITIDOS)  AS base,
+  SUM(QTDE_ENTREGUE)                     AS entregue,
+  SUM(QTDE_DESBLOQUEADO)                 AS ativados,
+  SUM(QTDE_ATIVO_TC)                     AS ativos_tc,
+  SUM(QTDE_ATIVO_TD)                     AS ativos_td,
+  SUM(COALESCE(QTDE_ATIVO_FISICO, 0))    AS ativos_fisico,
+  SUM(TPV_TC_POS)                        AS tpv_tc,
+  SUM(TPV_TD_POS)                        AS tpv_td
 FROM `{CUBO_TABLE}`
 WHERE FLAG_GRUPO = 'GRUPO1'
-GROUP BY 1
-ORDER BY 1
+  AND EXPIRATION_DATE <= FORMAT_DATE('%Y-%m', CURRENT_DATE())
+GROUP BY 1 ORDER BY 1
 """
 
 
