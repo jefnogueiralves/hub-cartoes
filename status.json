@@ -1,0 +1,24 @@
+{
+  "date": "2026-05-22",
+  "generated_at": "2026-05-22T09:02:06",
+  "dashboards": {
+    "td_indicadores": {
+      "name": "TD Indicadores",
+      "status": "ok",
+      "last_run": "08:25",
+      "message": "eapis.com/meli-sandbox/CARDSINDICATORSBR/dashboards_TDMP_MLB/td_indicadores.html"
+    },
+    "cartoes_expirados": {
+      "name": "Cartões Expirados",
+      "status": "ok",
+      "last_run": "08:40",
+      "message": "[2026-05-22 08:40:08] SUCESSO!"
+    },
+    "controle_plastico": {
+      "name": "Controle de Plástico",
+      "status": "ok",
+      "last_run": "07:39",
+      "message": "2026-05-22 07:39:07,461  INFO     Publicação concluída!"
+    }
+  }
+}
