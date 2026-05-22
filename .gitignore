@@ -1,13 +1,32 @@
-# Scripts internos - NAO publicar
-*.py
-*.bat
-*.ps1
-*.sql
-*.md
-*.txt
+﻿# Credenciais — NUNCA commitar
+grid_credentials.txt
 *.json
-*.log
-*.png
+service_account*.json
+gcp_key*.json
+.env
+.env.*
 
-# Excecoes permitidas
-!index.html
+# Output gerado
+output/
+logs/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Playwright
+.playwright_profile/
+
+# IDEs
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Arquivos grandes
+archive/

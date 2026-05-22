@@ -1,0 +1,56 @@
+name: Atualizar Dashboard Cartões Expirados
+
+on:
+  schedule:
+    # 09:00 BRT = 12:00 UTC  (BRT = UTC-3)
+    - cron: '0 12 * * 1-5'
+  workflow_dispatch:
+
+jobs:
+  update:
+    name: BQ → HTML → GCS
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Instalar dependências
+        run: |
+          pip install --quiet \
+            google-cloud-bigquery \
+            google-cloud-storage \
+            google-auth \
+            db-dtypes \
+            pandas
+
+      - name: Autenticar GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Atualizar dados BQ + gerar HTML + publicar GCS
+        run: python scripts/publicar_gcs.py
+        env:
+          GOOGLE_CLOUD_PROJECT: meli-bi-data
+          GCS_BUCKET: meli-sandbox
+          GCS_PREFIX: CARDSINDICATORSBR/dashboards_TDMP_MLB
+          GCS_OBJECT: cartoes_expirados.html
+
+      - name: Resumo
+        run: |
+          echo "## ✅ Dashboard atualizado" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Horário:** $(TZ='America/Sao_Paulo' date '+%d/%m/%Y %H:%M BRT')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**URL GCS:** https://storage.googleapis.com/meli-sandbox/CARDSINDICATORSBR/dashboards_TDMP_MLB/cartoes_expirados.html" >> $GITHUB_STEP_SUMMARY

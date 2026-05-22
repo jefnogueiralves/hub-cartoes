@@ -128,7 +128,7 @@
     .kpi-card.green::before   { background: var(--green); }
     .kpi-card.orange::before  { background: var(--orange); }
     .kpi-card.red::before     { background: var(--red); }
-    .kpi-card.purple::before  { background: #7C3AED; }
+    .kpi-card.purple::before  { background: #777777; }
 
     /* ── INSIGHTS SECTION DIVIDER ── */
     .insights-section-title {
@@ -308,6 +308,8 @@
       border-bottom: 1px solid var(--border);
     }
     tr:hover td { background: #FAFAFA; }
+    /* Linhas escuras (totais/headers) mantêm fundo escuro no hover */
+    tr.dark-row:hover td { background: rgba(255,255,255,.06) !important; color: inherit; }
     .pill {
       display: inline-block;
       padding: 2px 8px;
@@ -799,12 +801,11 @@
 
 <nav class="tabs">
   <button class="tab-btn active" onclick="switchTab('visao-geral')">Visão Geral</button>
+  <button class="tab-btn" onclick="switchTab('slide')">Apresentação</button>
   <button class="tab-btn" onclick="switchTab('mix-publico')">Público Principal</button>
   <button class="tab-btn" onclick="switchTab('entrega')">Prazo de Entrega</button>
   <button class="tab-btn" onclick="switchTab('funil')">Funil de Conversão</button>
   <button class="tab-btn" onclick="switchTab('ativacao')">Ativacao Pos-Renovacao</button>
-  <button class="tab-btn" onclick="switchTab('insights')">Insights</button>
-  <button class="tab-btn" onclick="switchTab('slide')">Apresentação</button>
 </nav>
 
 <!-- ── GLOBAL FILTER BAR ── -->
@@ -1001,7 +1002,7 @@
         <div class="kpi-sub">Total (Renov+Reemit) / mês</div>
       </div>
       <div class="kpi-card orange">
-        <div class="kpi-label">Crescimento M/M</div>
+        <div class="kpi-label">Crescimento △</div>
         <div class="kpi-value" id="r-growth">—</div>
         <div class="kpi-sub">Total último mês vs anterior</div>
       </div>
@@ -1035,6 +1036,25 @@
           <tbody id="ciclo-safra-tbody"></tbody>
         </table>
       </div>
+    </div>
+
+    <!-- ══ BLOCO: ENGAJAMENTO <90D ══ -->
+    <div class="insights-section-title" style="margin-top:28px">
+      Renovações por Engajamento — Usuários Ativos &lt;90 dias
+      <span class="badge">Alta propensão</span>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin:8px 0 14px">
+      % renovados + reemitidos por safra para cada ciclo de uso ativo (01. 1 A 30 D, 02. 31 A 60 D, 03. 61 A 90 D) · variação △ em destaque
+    </p>
+    <!-- KPIs de tendência para último mês -->
+    <div id="eng90-kpis" class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px"></div>
+    <!-- Tabela ciclo × safra -->
+    <div class="chart-card" style="margin-bottom:20px;overflow-x:auto" id="eng90-tabela-wrap"></div>
+    <!-- Gráfico de linha tendência -->
+    <div class="chart-card" style="margin-bottom:20px">
+      <h3>Tendência de Renovação — Ciclos Ativos &lt;90 dias</h3>
+      <div class="chart-sub">% renovados+reemitidos por safra · últimas 12 safras completas · queda/alta △ visível</div>
+      <div class="chart-wrap" style="height:280px"><canvas id="chartEng90Trend"></canvas></div>
     </div>
 
     <!-- ══ BLOCO 3: Gráficos de Renovação/Reemissão ══ -->
@@ -1089,7 +1109,7 @@
         <div class="chart-wrap" style="height:260px"><canvas id="chartMpTrend"></canvas></div>
       </div>
       <div class="chart-card">
-        <h3>Variação M/M na Taxa de Renovação (pp)</h3>
+        <h3>Variação △ na Taxa de Renovação (pp)</h3>
         <div class="chart-sub">Pontos percentuais de ganho/perda vs safra anterior</div>
         <div class="chart-wrap" style="height:260px"><canvas id="chartMpDelta"></canvas></div>
       </div>
@@ -1627,55 +1647,78 @@
   <div id="tab-slide" class="tab-panel">
 
     <!-- ══ 1. BLOCO CONCEITO ══ -->
-    <div style="background:#1A1A1A;border-radius:12px;padding:28px 32px;margin-bottom:24px;color:#e2e8f0;line-height:1.7;font-size:13px">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px">
 
-      <div style="margin-bottom:18px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-          <span style="font-size:16px">🖥️</span>
-          <span style="font-weight:800;font-size:14px;color:#FFE600;letter-spacing:-.2px">Escopo do Controle</span>
+      <!-- Card 1: Escopo -->
+      <div style="background:#fff;border-radius:8px;padding:14px 16px;border:1px solid #E8E8E8;border-left:4px solid #FFE600">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+          <span style="font-size:14px">🖥️</span>
+          <span style="font-weight:800;font-size:11px;color:#1A1A1A;letter-spacing:.2px;text-transform:uppercase">Escopo</span>
         </div>
-        <p>Monitoramos cartões físicos de <strong style="color:#fff">Puro Débito e Híbridos (Crédito + Débito)</strong>. O ciclo de vida padrão para novas emissões era <strong style="color:#FFE600">5 anos</strong>, pós MONZA, virou 10 anos.</p>
-      </div>
-
-      <div style="margin-bottom:18px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-          <span style="font-size:16px">👥</span>
-          <span style="font-weight:800;font-size:14px;color:#FFE600;letter-spacing:-.2px">Segmentação (FLAG_GRUPO)</span>
-        </div>
-        <p style="margin-bottom:8px">Dividimos a base em dois perfis para otimizar o custo de operação:</p>
-        <ul style="list-style:disc;padding-left:24px;display:flex;flex-direction:column;gap:4px">
-          <li><strong style="color:#5bc8f5">Grupo 1:</strong> Usuários ativos (uso de débito nos últimos 180 dias ou com linha de crédito ativa).</li>
-          <li><strong style="color:#94a3b8">Grupo 2:</strong> Usuários sem engajamento nos últimos 180 dias. Estes <strong style="color:#f87171">não recebem comunicação</strong> proativa para renovação, pois o custo de emissão não traria retorno imediato.</li>
-        </ul>
-      </div>
-
-      <div style="margin-bottom:18px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-          <span style="font-size:16px">📅</span>
-          <span style="font-weight:800;font-size:14px;color:#FFE600;letter-spacing:-.2px">Regras de Expiração e Fluxos</span>
-        </div>
-        <ul style="list-style:none;padding-left:0;display:flex;flex-direction:column;gap:4px">
-          <li><span style="color:#FFE600">•</span> <strong style="color:#fff">Prazo:</strong> Se um cartão expira em Mai/26, o usuário tem até <strong style="color:#FFE600">31/05/26</strong> para transacionar normalmente e solicitar a nova via.</li>
-          <li><span style="color:#FFE600">•</span> <strong style="color:#fff">Renovação vs. Reemissão:</strong></li>
-          <li style="padding-left:16px"><span style="color:#4ade80">✦</span> <strong style="color:#4ade80">Renovação:</strong> Solicitação feita <em>antes</em> da data de expiração.</li>
-          <li style="padding-left:16px"><span style="color:#fb923c">✦</span> <strong style="color:#fb923c">Reemissão:</strong> Solicitação feita <em>após</em> o cartão já estar vencido.</li>
-        </ul>
-      </div>
-
-      <div style="border-top:1px solid #334155;padding-top:16px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-          <span style="font-size:16px">📊</span>
-          <span style="font-weight:800;font-size:14px;color:#FFE600;letter-spacing:-.2px">Panorama Geral (Conversão)</span>
-        </div>
-        <p style="margin-bottom:8px">Atualmente, nossos indicadores consolidados mostram:</p>
-        <ul style="list-style:disc;padding-left:24px;display:flex;flex-direction:column;gap:4px">
-          <li id="conceito-taxa-renov"><strong style="color:#4ade80">—</strong> de taxa de <strong style="color:#fff">Renovação.</strong></li>
-          <li id="conceito-taxa-comb"><strong style="color:#5bc8f5">—</strong> de taxa combinada <strong style="color:#fff">(Renovação + Reemissão).</strong></li>
-        </ul>
-        <p style="margin-top:12px;padding:10px 14px;background:rgba(255,230,0,.07);border-left:3px solid #FFE600;border-radius:4px;font-style:italic;color:#cbd5e1">
-          Esses números garantem que a grande maioria da nossa base ativa (Grupo 1) permanece com o cartão em mãos sem atrito no uso.
+        <p style="font-size:12px;color:#374151;line-height:1.55">
+          Cartões físicos <strong>Puro Débito</strong> e <strong>Híbridos</strong>.<br>
+          Ciclo: <strong>5 anos</strong> → <strong>10 anos</strong> pós MONZA.
         </p>
       </div>
+
+      <!-- Card 2: Segmentação -->
+      <div style="background:#fff;border-radius:8px;padding:14px 16px;border:1px solid #E8E8E8;border-left:4px solid #1A1A1A">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+          <span style="font-size:14px">👥</span>
+          <span style="font-weight:800;font-size:11px;color:#1A1A1A;letter-spacing:.2px;text-transform:uppercase">Segmentação</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;font-size:11.5px">
+          <div style="display:flex;gap:8px;align-items:baseline;padding:5px 8px;background:#FFFBEB;border-radius:4px;border-left:2px solid #FFE600">
+            <span style="font-weight:800;color:#1A1A1A;white-space:nowrap;font-size:11px">G1</span>
+            <span style="color:#374151">Ativos — débito nos últimos <strong>180d</strong> ou crédito ativo. Recebem comunicação.</span>
+          </div>
+          <div style="display:flex;gap:8px;align-items:baseline;padding:5px 8px;background:#F8FAFC;border-radius:4px;border-left:2px solid #AAAAAA">
+            <span style="font-weight:800;color:#777;white-space:nowrap;font-size:11px">G2</span>
+            <span style="color:#64748b">Inativos >180d. <strong style="color:#777">Sem comunicação</strong> proativa.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Regras -->
+      <div style="background:#fff;border-radius:8px;padding:14px 16px;border:1px solid #E8E8E8;border-left:4px solid #AAAAAA">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+          <span style="font-size:14px">📅</span>
+          <span style="font-weight:800;font-size:11px;color:#1A1A1A;letter-spacing:.2px;text-transform:uppercase">Regras</span>
+        </div>
+        <div style="display:flex;gap:8px;font-size:11.5px">
+          <div style="flex:1;padding:8px 10px;background:#FFFBEB;border-radius:6px;border-top:2px solid #FFE600;text-align:center">
+            <div style="font-weight:800;font-size:10px;color:#999;text-transform:uppercase;margin-bottom:3px">Renovação</div>
+            <div style="font-weight:700;color:#1A1A1A;font-size:11px">Antes do vencimento</div>
+            <div style="color:#888;font-size:10px;margin-top:1px">proativa</div>
+          </div>
+          <div style="flex:1;padding:8px 10px;background:#F8FAFC;border-radius:6px;border-top:2px solid #AAAAAA;text-align:center">
+            <div style="font-weight:800;font-size:10px;color:#999;text-transform:uppercase;margin-bottom:3px">Reemissão</div>
+            <div style="font-weight:700;color:#1A1A1A;font-size:11px">Após o vencimento</div>
+            <div style="color:#888;font-size:10px;margin-top:1px">reativa</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4: Panorama -->
+      <div style="background:#1A1A1A;border-radius:8px;padding:14px 16px;border:1px solid #333">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
+          <span style="font-size:14px">📊</span>
+          <span style="font-weight:800;font-size:11px;color:#FFE600;letter-spacing:.2px;text-transform:uppercase">Panorama Atual</span>
+        </div>
+        <div style="display:flex;gap:8px">
+          <div style="flex:1;text-align:center;padding:8px 6px;background:rgba(255,230,0,.08);border-radius:6px;border:1px solid rgba(255,230,0,.2)">
+            <div style="font-size:9px;color:#AAAAAA;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Renovação</div>
+            <div id="conceito-taxa-renov" style="font-size:20px;font-weight:900;color:#FFE600;line-height:1.1">—</div>
+            <div style="font-size:9px;color:#666;margin-top:1px">proativa</div>
+          </div>
+          <div style="flex:1;text-align:center;padding:8px 6px;background:rgba(255,255,255,.05);border-radius:6px;border:1px solid rgba(255,255,255,.1)">
+            <div style="font-size:9px;color:#AAAAAA;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Combinada</div>
+            <div id="conceito-taxa-comb" style="font-size:20px;font-weight:900;color:#fff;line-height:1.1">—</div>
+            <div style="font-size:9px;color:#666;margin-top:1px">renov + reemit</div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <!-- ══ 2. CONVERSÃO POR SAFRA ══ -->
@@ -1683,10 +1726,19 @@
       Conversão por Safra e Ciclo de Uso
       <span class="badge">Por elegível</span>
     </div>
-    <div class="chart-card" style="margin-top:12px;margin-bottom:24px">
+    <div class="chart-card" style="margin-top:12px;margin-bottom:4px">
       <h3>Total — Grupo 1</h3>
-      <div class="chart-sub">Por safra de expiração · taxa de conversão acumulada no funil</div>
-      <div style="overflow-x:auto;margin-top:12px" id="tableGrupo1WrapSlide"></div>
+      <div class="chart-sub">Volume de elegíveis (barras) vs taxa de conversão combinada % (linha) · por safra de expiração</div>
+      <div class="chart-wrap" style="height:320px"><canvas id="chartSlideGrupo1Combo"></canvas></div>
+      <div id="slide-insight-grupo1"></div>
+    </div>
+
+    <!-- Eng90 no slide -->
+    <div class="chart-card" style="margin-bottom:24px;margin-top:16px">
+      <h3>Renovações por Engajamento — Usuários Ativos &lt;90 dias</h3>
+      <div class="chart-sub">% renovados+reemitidos por ciclo ativo · △ apenas na última safra disponível</div>
+      <div id="eng90-tabela-wrap-slide" style="overflow-x:auto;margin-top:12px"></div>
+      <div id="slide-insight-eng90"></div>
     </div>
 
     <!-- ══ 3. RENOVAÇÕES E REISSUES ══ -->
@@ -1694,10 +1746,11 @@
       Renovações e Reissues pós-vencimento
       <span class="badge">Curva Acumulada</span>
     </div>
-    <div class="chart-card" style="margin-top:12px;margin-bottom:24px">
+    <div class="chart-card" style="margin-top:12px;margin-bottom:4px">
       <h3>Renovación y Reissue — Grupo 1</h3>
       <div class="chart-sub">% acumulado de renovados + reemitidos por dias em relação ao vencimento · linha vertical = data de expiração</div>
       <div class="chart-wrap" style="height:420px"><canvas id="chartSlideCampanha"></canvas></div>
+      <div id="slide-insight-campanha"></div>
     </div>
 
     <!-- ══ 4. MIX DE CICLO DE USO ══ -->
@@ -1705,14 +1758,29 @@
       Análise de Mix — Ciclo de Uso por Safra
       <span class="badge">Comportamento</span>
     </div>
-    <div class="chart-row full" style="margin-top:12px">
+    <div class="chart-row two" style="margin-top:12px">
       <div class="chart-card">
-        <h3>Composição do Mix por Ciclo de Uso</h3>
-        <div class="chart-sub">% share de cada ciclo nos renovados por safra · até Jul/26 · identifica mudanças de comportamento</div>
+        <h3>Mix dos Expirados (Elegíveis)</h3>
+        <div class="chart-sub">% share de cada ciclo nos <strong>usuários elegíveis</strong> · como o público disponível está distribuído por safra</div>
+        <div class="chart-wrap" style="height:380px"><canvas id="chartSlideMixExpirados"></canvas></div>
+        <div id="slide-insight-mix-exp"></div>
+      </div>
+      <div class="chart-card">
+        <h3>Mix dos Renovados</h3>
+        <div class="chart-sub">% share de cada ciclo nos <strong>usuários que renovaram</strong> · quem efetivamente renova por safra</div>
         <div class="chart-wrap" style="height:380px"><canvas id="chartSlideMixCiclo"></canvas></div>
+        <div id="slide-insight-mix-ren"></div>
       </div>
     </div>
+    <div class="chart-card" style="margin-top:16px">
+      <h3>Evolução do Mix — Ativos (C1–C3) vs Inativos (C6 &gt;180d)</h3>
+      <div class="chart-sub">% de share por ciclo ao longo das safras — tendência de qualificação (ou deterioração) da base elegível</div>
+      <div class="chart-wrap" style="height:280px"><canvas id="chartSlideMixTrend"></canvas></div>
+      <div id="slide-insight-mix-trend"></div>
+    </div>
 
+    <!-- ══ 5. HIGHLIGHTS & HIPÓTESES ══ -->
+    <div id="slide-insights-bloco" style="margin-top:36px"></div>
 
   </div>
 
@@ -1948,7 +2016,7 @@ const charts = {};
 const C = {
   yellow:'#FFE600', yellowA:'rgba(255,230,0,.15)',
   blue:'#009EE3',   blueA:'rgba(0,158,227,.15)',
-  green:'#00A650',  red:'#FF3B30', orange:'#FF6B00',
+  green:'#444444',  red:'#FF3B30', orange:'#1A1A1A',
 };
 
 // ── CRIAÇÃO DOS GRÁFICOS ───────────────────────────────────────
@@ -2187,9 +2255,9 @@ function initCharts() {
       datasets:[
         {label:'Expirados',     data:D.elegiveis, backgroundColor:'rgba(255,230,0,.3)', borderColor:'#FFE600', borderWidth:1.5, borderRadius:3},
         {label:'Renovados',     data:D.meses.map((_,i)=>D.renovacoes[i]+D.reemissoes[i]), backgroundColor:'rgba(0,158,227,.5)', borderColor:'#009EE3', borderWidth:1.5, borderRadius:3},
-        {label:'Entregue',      data:D.meses.map(m=>{const s=mesToSafra(m); const fd=_funilFdMap(m); return getFunilEntregue(s,fd);}), backgroundColor:'rgba(0,166,80,.5)', borderColor:'#00A650', borderWidth:1.5, borderRadius:3},
-        {label:'Desbloqueados', data:D.meses.map(m=>{const fd=_funilFdMap(m); return fd?(fd.ativados||0):0;}), backgroundColor:'rgba(124,58,237,.5)', borderColor:'#7C3AED', borderWidth:1.5, borderRadius:3},
-        {label:'Ativados',      data:D.meses.map(m=>getFunilAtivos(_funilFdMap(m))), backgroundColor:'rgba(255,107,0,.5)', borderColor:'#FF6B00', borderWidth:1.5, borderRadius:3},
+        {label:'Entregue',      data:D.meses.map(m=>{const s=mesToSafra(m); const fd=_funilFdMap(m); return getFunilEntregue(s,fd);}), backgroundColor:'rgba(68,68,68,.5)', borderColor:'#444444', borderWidth:1.5, borderRadius:3},
+        {label:'Desbloqueados', data:D.meses.map(m=>{const fd=_funilFdMap(m); return fd?(fd.ativados||0):0;}), backgroundColor:'rgba(119,119,119,.5)', borderColor:'#777777', borderWidth:1.5, borderRadius:3},
+        {label:'Ativados',      data:D.meses.map(m=>getFunilAtivos(_funilFdMap(m))), backgroundColor:'rgba(26,26,26,.5)', borderColor:'#1A1A1A', borderWidth:1.5, borderRadius:3},
       ]
     },
     options:{responsive:true, maintainAspectRatio:false,
@@ -2228,9 +2296,9 @@ function initCharts() {
       labels: D.meses,
       datasets:[
         {label:'% Renovados / Expirados',     data:_fpPctSol,  backgroundColor:'rgba(0,158,227,.6)',   borderColor:'#009EE3', borderWidth:1.5, borderRadius:3},
-        {label:'% Entregue / Renovados',       data:_fpPctEnt,  backgroundColor:'rgba(0,166,80,.6)',    borderColor:'#00A650', borderWidth:1.5, borderRadius:3},
-        {label:'% Desbloqueados / Entregue',   data:_fpPctDesb, backgroundColor:'rgba(124,58,237,.6)', borderColor:'#7C3AED', borderWidth:1.5, borderRadius:3},
-        {label:'% Ativados / Desbloqueados',   data:_fpPctAtiv, backgroundColor:'rgba(255,107,0,.6)',  borderColor:'#FF6B00', borderWidth:1.5, borderRadius:3},
+        {label:'% Entregue / Renovados',       data:_fpPctEnt,  backgroundColor:'rgba(68,68,68,.6)',    borderColor:'#444444', borderWidth:1.5, borderRadius:3},
+        {label:'% Desbloqueados / Entregue',   data:_fpPctDesb, backgroundColor:'rgba(119,119,119,.6)', borderColor:'#777777', borderWidth:1.5, borderRadius:3},
+        {label:'% Ativados / Desbloqueados',   data:_fpPctAtiv, backgroundColor:'rgba(26,26,26,.6)',   borderColor:'#1A1A1A', borderWidth:1.5, borderRadius:3},
       ]
     },
     options:{responsive:true, maintainAspectRatio:false,
@@ -2250,7 +2318,7 @@ function initCharts() {
       labels: FUNIL_DATA.map(d=>safraLabel(d.safra)),
       datasets:[
         {label:'TC Ativos (Fisico)', data:FUNIL_DATA.map(d=>d.ativos_tc), backgroundColor:'rgba(0,158,227,.7)', borderColor:'#009EE3', borderWidth:1.5, borderRadius:3},
-        {label:'TD Ativos', data:FUNIL_DATA.map(d=>d.ativos_td), backgroundColor:'rgba(0,166,80,.7)', borderColor:'#00A650', borderWidth:1.5, borderRadius:3},
+        {label:'TD Ativos', data:FUNIL_DATA.map(d=>d.ativos_td), backgroundColor:'rgba(68,68,68,.7)', borderColor:'#444444', borderWidth:1.5, borderRadius:3},
       ]
     },
     options:{responsive:true, maintainAspectRatio:false,
@@ -2270,7 +2338,7 @@ function initCharts() {
       labels: FUNIL_DATA.map(d=>safraLabel(d.safra)),
       datasets:[
         {label:'TPV TC (R$)', data:FUNIL_DATA.map(d=>d.tpv_tc), backgroundColor:'rgba(0,158,227,.7)', borderColor:'#009EE3', borderWidth:1.5, borderRadius:3},
-        {label:'TPV TD (R$)', data:FUNIL_DATA.map(d=>d.tpv_td), backgroundColor:'rgba(0,166,80,.7)', borderColor:'#00A650', borderWidth:1.5, borderRadius:3},
+        {label:'TPV TD (R$)', data:FUNIL_DATA.map(d=>d.tpv_td), backgroundColor:'rgba(68,68,68,.7)', borderColor:'#444444', borderWidth:1.5, borderRadius:3},
       ]
     },
     options:{responsive:true, maintainAspectRatio:false,
@@ -2290,8 +2358,8 @@ function initCharts() {
       datasets:[
         {label:'Base Renovada',       data:FUNIL_DATA.map(d=>d.base), backgroundColor:'rgba(255,230,0,.4)', borderColor:'#FFE600', borderWidth:1.5, borderRadius:3},
         {label:'Ativados (TC ou TD)', data:FUNIL_DATA.map(d=>getFunilAtivos(d)), backgroundColor:'rgba(0,158,227,.6)', borderColor:'#009EE3', borderWidth:1.5, borderRadius:3},
-        {label:'Ativos TC',           data:FUNIL_DATA.map(d=>d.ativos_tc), backgroundColor:'rgba(0,166,80,.6)', borderColor:'#00A650', borderWidth:1.5, borderRadius:3},
-        {label:'Ativos TD',           data:FUNIL_DATA.map(d=>d.ativos_td), backgroundColor:'rgba(255,107,0,.6)', borderColor:'#FF6B00', borderWidth:1.5, borderRadius:3},
+        {label:'Ativos TC',           data:FUNIL_DATA.map(d=>d.ativos_tc), backgroundColor:'rgba(68,68,68,.6)', borderColor:'#444444', borderWidth:1.5, borderRadius:3},
+        {label:'Ativos TD',           data:FUNIL_DATA.map(d=>d.ativos_td), backgroundColor:'rgba(26,26,26,.6)', borderColor:'#1A1A1A', borderWidth:1.5, borderRadius:3},
       ]
     },
     options:{responsive:true, maintainAspectRatio:false,
@@ -2311,8 +2379,8 @@ function initCharts() {
       labels: FUNIL_DATA.map(d=>safraLabel(d.safra)),
       datasets:[
         {label:'% Ativados / Base', data:FUNIL_DATA.map(d=>d.base?+(getFunilAtivos(d)/d.base*100).toFixed(1):0), backgroundColor:'rgba(0,158,227,.6)', borderColor:'#009EE3', borderWidth:1.5, borderRadius:3},
-        {label:'% TC / Ativados',  data:FUNIL_DATA.map(d=>{const a=getFunilAtivos(d); return a?+(d.ativos_tc/a*100).toFixed(1):0;}), backgroundColor:'rgba(0,166,80,.6)', borderColor:'#00A650', borderWidth:1.5, borderRadius:3},
-        {label:'% TD / Ativados',  data:FUNIL_DATA.map(d=>{const a=getFunilAtivos(d); return a?+(d.ativos_td/a*100).toFixed(1):0;}), backgroundColor:'rgba(255,107,0,.6)', borderColor:'#FF6B00', borderWidth:1.5, borderRadius:3},
+        {label:'% TC / Ativados',  data:FUNIL_DATA.map(d=>{const a=getFunilAtivos(d); return a?+(d.ativos_tc/a*100).toFixed(1):0;}), backgroundColor:'rgba(68,68,68,.6)', borderColor:'#444444', borderWidth:1.5, borderRadius:3},
+        {label:'% TD / Ativados',  data:FUNIL_DATA.map(d=>{const a=getFunilAtivos(d); return a?+(d.ativos_td/a*100).toFixed(1):0;}), backgroundColor:'rgba(26,26,26,.6)', borderColor:'#1A1A1A', borderWidth:1.5, borderRadius:3},
       ]
     },
     options:{responsive:true, maintainAspectRatio:false,
@@ -2331,9 +2399,9 @@ function initCharts() {
     data:{
       labels: FUNIL_DATA.map(d=>safraLabel(d.safra)),
       datasets:[
-        {label:'Ativados Únicos (TC ou TD)', data:FUNIL_DATA.map(d=>getFunilAtivos(d)), backgroundColor:'rgba(124,58,237,.7)', borderColor:'#7C3AED', borderWidth:1.5, borderRadius:3},
+        {label:'Ativados Únicos (TC ou TD)', data:FUNIL_DATA.map(d=>getFunilAtivos(d)), backgroundColor:'rgba(119,119,119,.7)', borderColor:'#777777', borderWidth:1.5, borderRadius:3},
         {label:'Ativos TC', data:FUNIL_DATA.map(d=>d.ativos_tc), backgroundColor:'rgba(0,158,227,.7)', borderColor:'#009EE3', borderWidth:1.5, borderRadius:3},
-        {label:'Ativos TD', data:FUNIL_DATA.map(d=>d.ativos_td), backgroundColor:'rgba(0,166,80,.7)', borderColor:'#00A650', borderWidth:1.5, borderRadius:3},
+        {label:'Ativos TD', data:FUNIL_DATA.map(d=>d.ativos_td), backgroundColor:'rgba(68,68,68,.7)', borderColor:'#444444', borderWidth:1.5, borderRadius:3},
       ]
     },
     options:{responsive:true, maintainAspectRatio:false,
@@ -2353,7 +2421,7 @@ function initCharts() {
       labels: FUNIL_DATA.map(d=>safraLabel(d.safra)),
       datasets:[
         {label:'TPV TC (R$)', data:FUNIL_DATA.map(d=>d.tpv_tc), backgroundColor:'rgba(0,158,227,.7)', borderColor:'#009EE3', borderWidth:1.5, borderRadius:3},
-        {label:'TPV TD (R$)', data:FUNIL_DATA.map(d=>d.tpv_td), backgroundColor:'rgba(0,166,80,.7)', borderColor:'#00A650', borderWidth:1.5, borderRadius:3},
+        {label:'TPV TD (R$)', data:FUNIL_DATA.map(d=>d.tpv_td), backgroundColor:'rgba(68,68,68,.7)', borderColor:'#444444', borderWidth:1.5, borderRadius:3},
       ]
     },
     options:{responsive:true, maintainAspectRatio:false,
@@ -2371,7 +2439,7 @@ function initCharts() {
     data:{
       labels: FUNIL_DATA.map(d=>safraLabel(d.safra)),
       datasets:[
-        {label:'Antes (90d)', data:FUNIL_DATA.map(d=>{ const s=SPENDING_ANTES.find(x=>x.safra===d.safra); return s?(s.tpv_tc_antes+s.tpv_td_antes):0; }), backgroundColor:'rgba(255,107,0,.5)', borderColor:'#FF6B00', borderWidth:1.5, borderRadius:3},
+        {label:'Antes (90d)', data:FUNIL_DATA.map(d=>{ const s=SPENDING_ANTES.find(x=>x.safra===d.safra); return s?(s.tpv_tc_antes+s.tpv_td_antes):0; }), backgroundColor:'rgba(26,26,26,.5)', borderColor:'#1A1A1A', borderWidth:1.5, borderRadius:3},
         {label:'Depois (90d)', data:FUNIL_DATA.map(d=>d.tpv_tc+d.tpv_td), backgroundColor:'rgba(0,158,227,.6)', borderColor:'#009EE3', borderWidth:1.5, borderRadius:3},
       ]
     },
@@ -2391,7 +2459,7 @@ function initCharts() {
     data:{
       labels: FUNIL_DATA.map(d=>safraLabel(d.safra)),
       datasets:[
-        {label:'TC Antes (90d)', data:FUNIL_DATA.map(d=>{ const s=SPENDING_ANTES.find(x=>x.safra===d.safra); return s?s.tpv_tc_antes:0; }), backgroundColor:'rgba(255,107,0,.5)', borderColor:'#FF6B00', borderWidth:1.5, borderRadius:3},
+        {label:'TC Antes (90d)', data:FUNIL_DATA.map(d=>{ const s=SPENDING_ANTES.find(x=>x.safra===d.safra); return s?s.tpv_tc_antes:0; }), backgroundColor:'rgba(26,26,26,.5)', borderColor:'#1A1A1A', borderWidth:1.5, borderRadius:3},
         {label:'TC Depois (90d)', data:FUNIL_DATA.map(d=>d.tpv_tc), backgroundColor:'rgba(0,158,227,.6)', borderColor:'#009EE3', borderWidth:1.5, borderRadius:3},
       ]
     },
@@ -2410,8 +2478,8 @@ function initCharts() {
     data:{
       labels: FUNIL_DATA.map(d=>safraLabel(d.safra)),
       datasets:[
-        {label:'TD Antes (90d)', data:FUNIL_DATA.map(d=>{ const s=SPENDING_ANTES.find(x=>x.safra===d.safra); return s?s.tpv_td_antes:0; }), backgroundColor:'rgba(255,107,0,.5)', borderColor:'#FF6B00', borderWidth:1.5, borderRadius:3},
-        {label:'TD Depois (90d)', data:FUNIL_DATA.map(d=>d.tpv_td), backgroundColor:'rgba(0,166,80,.6)', borderColor:'#00A650', borderWidth:1.5, borderRadius:3},
+        {label:'TD Antes (90d)', data:FUNIL_DATA.map(d=>{ const s=SPENDING_ANTES.find(x=>x.safra===d.safra); return s?s.tpv_td_antes:0; }), backgroundColor:'rgba(26,26,26,.5)', borderColor:'#1A1A1A', borderWidth:1.5, borderRadius:3},
+        {label:'TD Depois (90d)', data:FUNIL_DATA.map(d=>d.tpv_td), backgroundColor:'rgba(68,68,68,.6)', borderColor:'#444444', borderWidth:1.5, borderRadius:3},
       ]
     },
     options:{responsive:true, maintainAspectRatio:false,
@@ -2439,12 +2507,12 @@ function buildCicloSafraTable() {
 
   // Ciclos: label, chave, cor texto, rgb fundo, peso renovação (C_REN proxy)
   const CICLOS_DEF = [
-    { label:'01. 1 A 30 D',       k:'c1', col:'#4ade80', rgb:'74,222,128',   wRen:0.25 },
-    { label:'02. 31 A 60 D',      k:'c2', col:'#34d399', rgb:'52,211,153',   wRen:0.30 },
-    { label:'03. 61 A 90 D',      k:'c3', col:'#22d3ee', rgb:'34,211,238',   wRen:0.20 },
-    { label:'04. 91 A 120 D',     k:'c4', col:'#fbbf24', rgb:'251,191,36',   wRen:0.12 },
-    { label:'05. 121 A 180 D',    k:'c5', col:'#fb923c', rgb:'251,146,60',   wRen:0.08 },
-    { label:'06. ACIMA DE 180 D', k:'c6', col:'#f87171', rgb:'248,113,113',  wRen:0.05 },
+    { label:'01. 1 A 30 D',       k:'c1', col:'#FFE600', rgb:'255,230,0',    wRen:0.25 },
+    { label:'02. 31 A 60 D',      k:'c2', col:'#E0C200', rgb:'224,194,0',    wRen:0.30 },
+    { label:'03. 61 A 90 D',      k:'c3', col:'#AAAAAA', rgb:'170,170,170',  wRen:0.20 },
+    { label:'04. 91 A 120 D',     k:'c4', col:'#777777', rgb:'119,119,119',  wRen:0.12 },
+    { label:'05. 121 A 180 D',    k:'c5', col:'#444444', rgb:'68,68,68',     wRen:0.08 },
+    { label:'06. ACIMA DE 180 D', k:'c6', col:'#1A1A1A', rgb:'26,26,26',     wRen:0.05 },
     // 07. NAO ATIVO removido a pedido
   ];
 
@@ -2632,13 +2700,13 @@ function buildFaixaTable() {
 
   // Cores por faixa
   const FAIXA_COR = {
-    '00. CARTAO NAO ENTREGUE': '#94a3b8',
-    '01. ATE 2 DIAS':          '#4ade80',
-    '02. ATE 5 DIAS':          '#34d399',
-    '03. ATE 7 DIAS':          '#fbbf24',
-    '04. ATE 10 DIAS':         '#fb923c',
-    '05. ACIMA DE 10 DIAS':    '#f87171',
-    '06. NAO RENOVADO':        '#475569',
+    '00. CARTAO NAO ENTREGUE': '#1A1A1A',
+    '01. ATE 2 DIAS':          '#FFE600',
+    '02. ATE 5 DIAS':          '#E0C200',
+    '03. ATE 7 DIAS':          '#AAAAAA',
+    '04. ATE 10 DIAS':         '#777777',
+    '05. ACIMA DE 10 DIAS':    '#444444',
+    '06. NAO RENOVADO':        '#888888',
   };
 
   const thS = 'padding:6px 10px;font-size:10px;text-transform:uppercase;letter-spacing:.3px;text-align:center;white-space:nowrap;';
@@ -2721,12 +2789,12 @@ function buildEntregaCicloTable() {
   table.style.display = ''; empty.style.display = 'none';
 
   const CICLOS_LABEL = {
-    '01. 1 A 30 D':       {label:'01. 1 A 30 D',       col:'#4ade80'},
-    '02. 31 A 60 D':      {label:'02. 31 A 60 D',      col:'#34d399'},
-    '03. 61 A 90 D':      {label:'03. 61 A 90 D',      col:'#22d3ee'},
-    '04. 91 A 120 D':     {label:'04. 91 A 120 D',     col:'#fbbf24'},
-    '05. 121 A 180 D':    {label:'05. 121 A 180 D',    col:'#fb923c'},
-    '06. ACIMA DE 180 D': {label:'06. ACIMA DE 180 D', col:'#f87171'},
+    '01. 1 A 30 D':       {label:'01. 1 A 30 D',       col:'#FFE600'},
+    '02. 31 A 60 D':      {label:'02. 31 A 60 D',      col:'#E0C200'},
+    '03. 61 A 90 D':      {label:'03. 61 A 90 D',      col:'#AAAAAA'},
+    '04. 91 A 120 D':     {label:'04. 91 A 120 D',     col:'#777777'},
+    '05. 121 A 180 D':    {label:'05. 121 A 180 D',    col:'#444444'},
+    '06. ACIMA DE 180 D': {label:'06. ACIMA DE 180 D', col:'#1A1A1A'},
     // '07. NAO ATIVO' removido a pedido
   };
   const ORDEM_CICLO = Object.keys(CICLOS_LABEL);
@@ -2760,13 +2828,13 @@ function buildEntregaCicloTable() {
   const fmt = v => v>=1000?(v/1000).toFixed(1)+'K':String(v);
 
   const FAIXA_COR2 = {
-    '01. ATE 2 DIAS':          '#16a34a',
-    '02. ATE 5 DIAS':          '#0d9488',
-    '03. ATE 7 DIAS':          '#d97706',
-    '04. ATE 10 DIAS':         '#ea580c',
-    '05. ACIMA DE 10 DIAS':    '#dc2626',
-    '00. CARTAO NAO ENTREGUE': '#64748b',
-    '06. NAO RENOVADO':        '#94a3b8',
+    '01. ATE 2 DIAS':          '#FFE600',
+    '02. ATE 5 DIAS':          '#E0C200',
+    '03. ATE 7 DIAS':          '#AAAAAA',
+    '04. ATE 10 DIAS':         '#777777',
+    '05. ACIMA DE 10 DIAS':    '#444444',
+    '00. CARTAO NAO ENTREGUE': '#1A1A1A',
+    '06. NAO RENOVADO':        '#888888',
   };
 
   // Cabeçalho
@@ -2880,7 +2948,7 @@ function buildFaixaDiasChart() {
   });
 
   // Paleta de cores: verde (rápido) → vermelho (lento)
-  const palette = ['#4ade80','#34d399','#fbbf24','#fb923c','#f87171','#94a3b8','#c084fc'];
+  const palette = ['#FFE600','#E0C200','#AAAAAA','#777777','#444444','#1A1A1A','#888888'];
 
   // Volume absoluto por safra (para cálculo de share)
   const absTotals = safras.map(s => Object.values(CHART_DATA[s]||{}).reduce((a,v)=>a+v,0));
@@ -2946,18 +3014,18 @@ function buildSpendingTimeline() {
   const OFF = [-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6];
   // Paleta por safra: antigas → cinza · médias → azul · recentes → amarelo
   const palette = [
-    '#b0bec5', // Abr/25 – cinza claro
-    '#90a4ae', // Mai/25
-    '#78909c', // Jun/25
-    '#607d8b', // Jul/25 – cinza escuro
-    '#60a5fa', // Ago/25 – azul claro
-    '#3b82f6', // Set/25
-    '#2563eb', // Out/25
-    '#1d4ed8', // Nov/25 – azul escuro
-    '#fbbf24', // Dez/25 – amarelo
-    '#f59e0b', // Jan/26
-    '#d97706', // Fev/26
-    '#b45309', // Mar/26* – âmbar escuro
+    '#CCCCCC', // Abr/25 – cinza claro
+    '#BBBBBB', // Mai/25
+    '#AAAAAA', // Jun/25
+    '#888888', // Jul/25 – cinza médio
+    '#5bc8f5', // Ago/25 – azul claro
+    '#009EE3', // Set/25
+    '#0077B5', // Out/25
+    '#005599', // Nov/25 – azul escuro
+    '#FFE600', // Dez/25 – amarelo
+    '#E0C200', // Jan/26
+    '#C8A800', // Fev/26
+    '#A89000', // Mar/26* – amarelo escuro
   ];
 
   // plugin inline para linha vertical no mes de expiracao (indice 6)
@@ -3321,12 +3389,15 @@ function updateCharts() {
   buildEntregaCicloTable();
   buildGrupo1Table();
   buildCicloUsoTable();
+  buildEng90();
   buildMixPublico();
   updateKPIs();
   buildTable();
   buildSlide();
-  // Se a aba Slide estiver ativa, rebuilda os gráficos
-  if (document.getElementById('tab-slide').classList.contains('active')) buildSlideCharts();
+  // Se a aba Apresentação estiver ativa, rebuilda os gráficos dela
+  if (document.getElementById('tab-slide') && document.getElementById('tab-slide').classList.contains('active')) {
+    requestAnimationFrame(() => requestAnimationFrame(() => buildSlideCharts()));
+  }
 }
 
 // ── KPIs ──────────────────────────────────────────────────────
@@ -3355,9 +3426,9 @@ function updateKPIs() {
 
   const pctRenovG1 = kpi.totalTelG1 ? (totalAll / kpi.totalTelG1 * 100).toFixed(1) + '% de renovação' : '—';
   setDelta('kpi-delta-total', pctRenovG1, kpi.totalTelG1 > 0);
-  setDelta('kpi-delta-renov', dRen!==null?(dRen>0?'▲ ':'▼ ')+Math.abs(dRen)+'% M/M':'—', dRen===null||dRen>=0);
-  setDelta('kpi-delta-reimis', dRei!==null?(dRei<0?'▼ ':'▲ ')+Math.abs(dRei)+'% M/M':'—', dRei===null||dRei<=0);
-  setDelta('kpi-delta-dias',   dDm!==null?(dDm<0?'▼ ':'▲ ')+Math.abs(dDm)+'d M/M':'—', dDm===null||dDm<=0);
+  setDelta('kpi-delta-renov', dRen!==null?(dRen>0?'▲ ':'▼ ')+Math.abs(dRen)+'% △':'—', dRen===null||dRen>=0);
+  setDelta('kpi-delta-reimis', dRei!==null?(dRei<0?'▼ ':'▲ ')+Math.abs(dRei)+'% △':'—', dRei===null||dRei<=0);
+  setDelta('kpi-delta-dias',   dDm!==null?(dDm<0?'▼ ':'▲ ')+Math.abs(dDm)+'d △':'—', dDm===null||dDm<=0);
   setDelta('kpi-delta-taxa', '▲ vs início do período', true);
 
   // Aba unificada Renovações + Reemissões
@@ -3503,7 +3574,7 @@ function buildTable() {
   const tbl = document.getElementById('tableRenov');
   if(!tbl) return;
   tbl.innerHTML = `<thead><tr>
-    <th>Mês (Exp.)</th><th>Vol. G1</th><th>Renovados</th><th>Var. M/M</th><th>% Conv.</th><th>Status</th>
+    <th>Mês (Exp.)</th><th>Vol. G1</th><th>Renovados</th><th>Var. △</th><th>% Conv.</th><th>Status</th>
   </tr></thead>`;
   const tbody = document.createElement('tbody');
   D.meses.forEach((m,i) => {
@@ -3787,9 +3858,9 @@ function getFunilStages(tel, sol, ent, desb, ativ) {
   return [
     {label:'Expirados',     value: tel,  color:'#FFE600', dark:true},
     {label:'Renovados',     value: sol,  color:'#009EE3', dark:false},
-    {label:'Entregue',      value: ent,  color:'#00A650', dark:false},
-    {label:'Desbloqueados', value: desb, color:'#7C3AED', dark:false},
-    {label:'Ativados',      value: ativ, color:'#FF6B00', dark:false},
+    {label:'Entregue',      value: ent,  color:'#444444', dark:false},
+    {label:'Desbloqueados', value: desb, color:'#777777', dark:false},
+    {label:'Ativados',      value: ativ, color:'#1A1A1A', dark:false},
   ];
 }
 
@@ -3910,6 +3981,232 @@ function buildSumario() {
   </tr>`;
 }
 
+// ── ENGAJAMENTO <90D ─────────────────────────────────────────
+const eng90Charts = {};
+
+function buildEng90() {
+  // Mapeamento ciclo → chave ENTREGA_CICLO
+  const EC = {c1:'01. 1 A 30 D', c2:'02. 31 A 60 D', c3:'03. 61 A 90 D'};
+  const CORES = {c1:'#FFE600', c2:'#AAAAAA', c3:'#555555'};
+  const NOMES = {c1:'01. 1 A 30 D', c2:'02. 31 A 60 D', c3:'03. 61 A 90 D'};
+  const fmtK  = n => n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? (n/1e3).toFixed(0)+'K' : String(Math.round(n)||0);
+  const fmtP  = v => v.toFixed(1) + '%';
+  const pctOf = (a,b) => b > 0 ? +(a/b*100).toFixed(1) : null;
+
+  // Safras completas (últimas 12)
+  const safras = MONTHLY.filter(m => m.completo).slice(-12);
+  if (safras.length < 2) return;
+
+  // Taxa por ciclo e safra
+  const taxas = {}; // taxas[ck][safra] = %
+  ['c1','c2','c3'].forEach(ck => {
+    taxas[ck] = {};
+    safras.forEach(mo => {
+      const safra = mesToSafraYYYYMM(mo.mes);
+      const ec    = (typeof ENTREGA_CICLO !== 'undefined') ? (ENTREGA_CICLO[safra] || {}) : {};
+      const cs    = CICLO_SAFRA.find(c => c.safra === safra) || {};
+      const eleg  = (ec[EC[ck]] || {}).total || 0;
+      const renov = cs[ck] || 0;
+      taxas[ck][safra] = eleg > 0 ? pctOf(renov, eleg) : null;
+    });
+  });
+
+  // Taxa total <90d por safra (c1+c2+c3)
+  const taxaTotal = {};
+  safras.forEach(mo => {
+    const safra = mesToSafraYYYYMM(mo.mes);
+    const ec = (typeof ENTREGA_CICLO !== 'undefined') ? (ENTREGA_CICLO[safra] || {}) : {};
+    const cs = CICLO_SAFRA.find(c => c.safra === safra) || {};
+    const elegTotal  = ['c1','c2','c3'].reduce((a,k) => a + ((ec[EC[k]] || {}).total || 0), 0);
+    const renovTotal = (cs.c1||0) + (cs.c2||0) + (cs.c3||0);
+    taxaTotal[safra] = elegTotal > 0 ? pctOf(renovTotal, elegTotal) : null;
+  });
+
+  const last  = safras[safras.length-1];
+  const prev  = safras[safras.length-2];
+  const lastSafra = mesToSafraYYYYMM(last.mes);
+  const prevSafra = mesToSafraYYYYMM(prev.mes);
+
+  // ── KPIs ──────────────────────────────────────────────────────
+  const kpiEl = document.getElementById('eng90-kpis');
+  if (kpiEl) {
+    const kpiCards = ['c1','c2','c3'].map(ck => {
+      const curr = taxas[ck][lastSafra];
+      const prv  = taxas[ck][prevSafra];
+      const mom  = (curr != null && prv != null) ? curr - prv : null;
+      const momStr = mom != null ? `${mom >= 0 ? '+' : ''}${mom.toFixed(1)}pp △` : '—';
+      const momCls = mom == null ? '' : mom >= 0 ? 'up' : 'down';
+      return `<div class="kpi-card" style="border-top:3px solid ${CORES[ck]}">
+        <div class="kpi-label">${NOMES[ck]}</div>
+        <div class="kpi-value" style="color:${CORES[ck]};font-size:22px">${curr != null ? fmtP(curr) : '—'}</div>
+        <div class="kpi-sub">${last.mes}</div>
+        ${mom != null ? `<span class="kpi-delta ${momCls}">${momStr}</span>` : ''}
+      </div>`;
+    }).join('');
+    // Total <90d
+    const totCurr = taxaTotal[lastSafra];
+    const totPrev = taxaTotal[prevSafra];
+    const totMom  = (totCurr != null && totPrev != null) ? totCurr - totPrev : null;
+    kpiEl.innerHTML = kpiCards + `<div class="kpi-card orange">
+      <div class="kpi-label">Total &lt;90 dias</div>
+      <div class="kpi-value" style="font-size:22px">${totCurr != null ? fmtP(totCurr) : '—'}</div>
+      <div class="kpi-sub">C1+C2+C3 combinados</div>
+      ${totMom != null ? `<span class="kpi-delta ${totMom>=0?'up':'down'}">${totMom>=0?'+':''}${totMom.toFixed(1)}pp △</span>` : ''}
+    </div>`;
+  }
+
+  // ── Insight dinâmico ─────────────────────────────────────────
+  const lastSafraKey = mesToSafraYYYYMM(last.mes);
+  const ec_last = (typeof ENTREGA_CICLO !== 'undefined') ? (ENTREGA_CICLO[lastSafraKey] || {}) : {};
+  const cs_last = CICLO_SAFRA.find(c => c.safra === lastSafraKey) || {};
+  const elegLast90  = ['c1','c2','c3'].reduce((a,k) => a + ((ec_last[EC[k]] || {}).total || 0), 0);
+  const renovLast90 = (cs_last.c1||0) + (cs_last.c2||0) + (cs_last.c3||0);
+  const pctLast90   = elegLast90 > 0 ? (renovLast90/elegLast90*100).toFixed(0) : '—';
+
+  // Subtítulo insight — auto-atualiza com o mês
+  const subtitleEl = document.querySelector('#eng90-tabela-wrap')?.previousElementSibling;
+  const insightMsg = elegLast90 > 0
+    ? `Dos <strong>${fmtK(elegLast90)}</strong> vencidos com uso nos últimos 90 dias em <strong>${last.mes.replace('*','')}</strong>, <strong>${fmtK(renovLast90)} (${pctLast90}%)</strong> já são renovados/reemitidos.`
+    : '';
+
+  // ── Tabela ciclo × safra ──────────────────────────────────────
+  const tblWrap = document.getElementById('eng90-tabela-wrap');
+  if (tblWrap) {
+    const thS  = 'padding:6px 10px;font-size:10px;text-transform:uppercase;letter-spacing:.3px;font-weight:700;white-space:nowrap;text-align:center;border-bottom:2px solid #334155;color:#94a3b8;background:#1e293b';
+    const tdS  = 'padding:6px 10px;text-align:center;font-size:11px;border-bottom:1px solid #f0f0f0;font-variant-numeric:tabular-nums';
+    const lastIdx = safras.length - 1;
+
+    // Célula com % e MoM apenas na última coluna
+    const pctCell = (curr, prv, isLast) => {
+      if (curr == null) return `<td style="${tdS}color:#94a3b8">—</td>`;
+      const [bg,col] = curr >= 90 ? ['#dcfce7','#166534'] : curr >= 80 ? ['#dbeafe','#1e40af'] : curr >= 70 ? ['#fef9c3','#854d0e'] : ['#fee2e2','#991b1b'];
+      const badge = `<span style="background:${bg};color:${col};padding:2px 6px;border-radius:4px;font-weight:700;font-size:11px">${curr.toFixed(1)}%</span>`;
+      if (!isLast || prv == null) return `<td style="${tdS}">${badge}</td>`;
+      const mom = curr - prv;
+      const momCol = mom >= 1 ? '#16a34a' : mom <= -1 ? '#dc2626' : '#64748b';
+      return `<td style="${tdS};background:rgba(0,0,0,.02)">
+        ${badge}
+        <span style="font-size:9px;font-weight:800;color:${momCol};margin-left:5px">${mom>=0?'+':''}${mom.toFixed(1)}pp △</span>
+      </td>`;
+    };
+
+    // Célula de volume
+    const volCell = (eleg, renov, isLast) => {
+      if (!eleg) return `<td style="${tdS}color:#94a3b8">—</td>`;
+      const lastStyle = isLast ? 'background:rgba(255,107,0,.05);' : '';
+      return `<td style="${tdS}${lastStyle}">
+        <span style="font-weight:700;color:#1e293b">${fmtK(renov)}</span>
+        <span style="color:#94a3b8;font-size:9px"> /${fmtK(eleg)}</span>
+      </td>`;
+    };
+
+    let thead = `<tr class="dark-row" style="background:#1e293b">
+      <th style="${thS};text-align:left" rowspan="2">CICLO USO</th>`;
+    safras.forEach((mo, si) => {
+      const isLast = si === lastIdx;
+      thead += `<th style="${thS}${isLast?';background:#0f172a;color:#FFE600':''}">${mo.mes.replace('*','')}</th>`;
+    });
+    thead += `</tr><tr class="dark-row" style="background:#1e293b">`;
+    safras.forEach((mo, si) => {
+      const isLast = si === lastIdx;
+      thead += `<th style="${thS}font-size:8px${isLast?';background:#0f172a;color:#fbbf24':''}">${isLast?'% · △':'%'}</th>`;
+    });
+    thead += `</tr>`;
+
+    const rows = ['c1','c2','c3','_total','_vol'].map((ck, ri) => {
+      const isVol = ck === '_vol';
+      const isTot = ck === '_total';
+      const nome  = isVol ? '<em style="color:#64748b">↳ elegíveis/renovados</em>'
+                  : isTot ? '<strong>Total &lt;90 dias</strong>'
+                  : NOMES[ck];
+      const col   = isTot ? '#FF6B00' : isVol ? '#94a3b8' : CORES[ck];
+      const bg    = isVol ? '#fafafa' : ri%2===0?'#fff':'#f8fafc';
+      let row = `<tr style="background:${bg}" onmouseenter="this.style.background='#eff6ff'" onmouseleave="this.style.background='${bg}'">
+        <td style="padding:6px 12px;font-size:11px;font-weight:${isVol?'400':'700'};color:${col};white-space:nowrap;border-bottom:1px solid #f0f0f0">${nome}</td>`;
+
+      safras.forEach((mo, si) => {
+        const safra   = mesToSafraYYYYMM(mo.mes);
+        const prvSafra= si > 0 ? mesToSafraYYYYMM(safras[si-1].mes) : null;
+        const isLast  = si === lastIdx;
+        const ec_s    = (typeof ENTREGA_CICLO !== 'undefined') ? (ENTREGA_CICLO[safra] || {}) : {};
+        const cs_s    = CICLO_SAFRA.find(c => c.safra === safra) || {};
+
+        if (isVol) {
+          const eleg  = ['c1','c2','c3'].reduce((a,k) => a + ((ec_s[EC[k]] || {}).total || 0), 0);
+          const renov = (cs_s.c1||0) + (cs_s.c2||0) + (cs_s.c3||0);
+          row += volCell(eleg, renov, isLast);
+        } else {
+          const curr = isTot ? taxaTotal[safra] : taxas[ck][safra];
+          const prv  = prvSafra ? (isTot ? taxaTotal[prvSafra] : taxas[ck][prvSafra]) : null;
+          row += pctCell(curr, prv, isLast);
+        }
+      });
+      return row + '</tr>';
+    }).join('');
+
+    const tblContent = `
+      ${insightMsg ? `<div style="padding:10px 14px;background:#fff7ed;border-left:3px solid #009EE3;border-radius:6px;font-size:12px;color:#7c3a00;margin-bottom:12px">${insightMsg}</div>` : ''}
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead>${thead}</thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+    tblWrap.innerHTML = tblContent;
+
+    // Replica para a aba Apresentação
+    const tblSlide = document.getElementById('eng90-tabela-wrap-slide');
+    if (tblSlide) tblSlide.innerHTML = tblContent;
+    const kpiSlide = document.getElementById('eng90-kpis-slide');
+    const kpiSrc   = document.getElementById('eng90-kpis');
+    if (kpiSlide && kpiSrc) kpiSlide.innerHTML = kpiSrc.innerHTML;
+  }
+
+  // ── Gráfico de linha ──────────────────────────────────────────
+  if (eng90Charts.trend) { eng90Charts.trend.destroy(); eng90Charts.trend = null; }
+  const cvTrend = document.getElementById('chartEng90Trend');
+  if (cvTrend) {
+    const labels = safras.map(mo => mo.mes.replace('*',''));
+    eng90Charts.trend = new Chart(cvTrend, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          ...['c1','c2','c3'].map(ck => ({
+            label: NOMES[ck],
+            data: safras.map(mo => taxas[ck][mesToSafraYYYYMM(mo.mes)]),
+            borderColor: CORES[ck],
+            backgroundColor: 'transparent',
+            borderWidth: 2, pointRadius: 3, tension: .3, spanGaps: true
+          })),
+          {
+            label: 'Total <90d',
+            data: safras.map(mo => taxaTotal[mesToSafraYYYYMM(mo.mes)]),
+            borderColor: '#009EE3', backgroundColor: 'rgba(0,158,227,.06)',
+            borderWidth: 2.5, pointRadius: 4, tension: .3, fill: true, spanGaps: true,
+            borderDash: [5,3]
+          }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode:'index', intersect:false },
+        plugins: {
+          legend: { position:'top', labels:{boxWidth:12,font:{size:11}} },
+          datalabels: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ctx.parsed.y != null ? `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}%` : null
+            }
+          }
+        },
+        scales: {
+          x: { grid:{display:false}, ticks:{font:{size:10}} },
+          y: { min:40, max:100, ticks:{callback:v=>v+'%',font:{size:10}}, grid:{color:'#f0f0f0'} }
+        }
+      }
+    });
+  }
+}
+
 // ── MIX PÚBLICO ──────────────────────────────────────────────
 const mpCharts = {};
 
@@ -3959,7 +4256,7 @@ function buildMixPublico() {
       <div class="kpi-sub">${pico.mes} (${pico.pRen}%) → ${last.mes} (${last.pRen}%)</div>
     </div>
     <div class="kpi-card orange">
-      <div class="kpi-label">Variação M/M (última safra)</div>
+      <div class="kpi-label">Variação △ (última safra)</div>
       <div class="kpi-value" style="color:${quedaMoM<0?'var(--red)':'var(--green)'}">${fmtPct(quedaMoM)}</div>
       <div class="kpi-sub">${preUlt.mes} → ${last.mes}</div>
     </div>
@@ -4030,21 +4327,21 @@ function buildMixPublico() {
     }
   });
 
-  // ── Gráfico 2: Delta M/M em pp ────────────────────────────────
+  // ── Gráfico 2: Delta △ em pp ────────────────────────────────
   const deltas = data.map((d, i) => i===0 ? 0 : +(d.pRen - data[i-1].pRen).toFixed(1));
   if (mpCharts.delta) { mpCharts.delta.destroy(); }
   mpCharts.delta = new Chart(document.getElementById('chartMpDelta'), {
     type: 'bar',
     data: { labels,
-      datasets:[{ label:'Variação M/M (pp)', data: deltas,
-        backgroundColor: deltas.map(v => v >= 0 ? 'rgba(0,166,80,.7)' : 'rgba(255,59,48,.7)'),
-        borderColor: deltas.map(v => v >= 0 ? '#00A650' : '#FF3B30'),
+      datasets:[{ label:'Variação △ (pp)', data: deltas,
+        backgroundColor: deltas.map(v => v >= 0 ? 'rgba(255,230,0,.8)' : 'rgba(26,26,26,.7)'),
+        borderColor: deltas.map(v => v >= 0 ? '#FFE600' : '#1A1A1A'),
         borderWidth:1, borderRadius:4 }]
     },
     options: { responsive:true, maintainAspectRatio:false,
       plugins:{ legend:{display:false},
         datalabels:{display:true, anchor:'end', align:ctx=>ctx.raw>=0?'top':'bottom', offset:1,
-          color:ctx=>ctx.raw>=0?'#00A650':'#FF3B30', font:{size:9,weight:'bold'},
+          color:ctx=>ctx.raw>=0?'#1a1a1a':'#ffffff', font:{size:9,weight:'bold'},
           formatter:v=>v===0?null:(v>0?'+':'')+v.toFixed(1)+'pp'} },
       scales:{
         x:{grid:{display:false},ticks:{font:{size:10}}},
@@ -4056,7 +4353,7 @@ function buildMixPublico() {
 
   // ── Gráfico 3: Stacked bar — share ciclos nos renovados ───────
   const cicloLabels = ['01. 1 A 30 D','02. 31 A 60 D','03. 61 A 90 D','04. 91 A 120 D','05. 121 A 180 D','06. ACIMA DE 180 D','07. NAO ATIVO'];
-  const cicloColors = ['#4ade80','#34d399','#22d3ee','#fbbf24','#fb923c','#f87171','#94a3b8'];
+  const cicloColors = ['#FFE600','#E0C200','#AAAAAA','#777777','#444444','#1A1A1A','#CCCCCC'];
   const cicloKeys   = ['c1sh','c2sh','c3sh','c4sh','c5sh','c6sh','c7sh'];
   if (mpCharts.cicloStack) { mpCharts.cicloStack.destroy(); }
   mpCharts.cicloStack = new Chart(document.getElementById('chartMpCicloStack'), {
@@ -4114,7 +4411,7 @@ function buildMixPublico() {
     type: 'line',
     data:{ labels, datasets:[
       { label:'% Reemissões / Total', data: reemArr,
-        borderColor:'#FF6B00', backgroundColor:'rgba(255,107,0,.1)',
+        borderColor:'#009EE3', backgroundColor:'rgba(0,158,227,.1)',
         borderWidth:2, pointRadius:4, fill:true, tension:.3 }
     ]},
     options:{ responsive:true, maintainAspectRatio:false,
@@ -4134,7 +4431,7 @@ function buildMixPublico() {
     type: 'line',
     data:{ labels, datasets:[
       { label:'06. ACIMA DE 180 D % renovados', data: data.map(d=>d.c6sh),
-        borderColor:'#f87171', borderWidth:2, pointRadius:3, tension:.3, borderDash:[5,3] },
+        borderColor:'#1A1A1A', borderWidth:2, pointRadius:3, tension:.3, borderDash:[5,3] },
       { label:'07. NAO ATIVO % renovados', data: data.map(d=>d.c7sh),
         borderColor:'#64748b', borderWidth:2.5, pointRadius:4, tension:.3,
         backgroundColor:'rgba(100,116,132,.08)', fill:true },
@@ -4347,9 +4644,20 @@ function buildGrupo1Table() {
   const tdL = 'padding:6px 10px;font-size:12px;font-variant-numeric:tabular-nums;border-bottom:1px solid #f0f0f0;';
   const fmtKT = n => n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? (n/1e3).toFixed(0)+'K' : String(Math.round(n)||0);
   const pctBadge = (p, vol) => {
-    const [bg, col] = p >= 85 ? ['#dcfce7','#166534'] : p >= 75 ? ['#dbeafe','#1e40af'] : p >= 65 ? ['#fef9c3','#854d0e'] : ['#fee2e2','#991b1b'];
-    const volLabel = vol != null ? `<span style="display:block;font-size:9px;color:#64748b;font-weight:600;margin-top:2px">(${fmtKT(vol)})</span>` : '';
-    return `<span style="background:${bg};color:${col};padding:2px 7px;border-radius:4px;font-weight:700;font-size:11px">${p.toFixed(1)}%</span>${volLabel}`;
+    const [bg, col, bar] = p >= 85
+      ? ['#dcfce7','#166534','#22c55e']
+      : p >= 75
+      ? ['#dbeafe','#1e40af','#60a5fa']
+      : p >= 65
+      ? ['#fef9c3','#854d0e','#fbbf24']
+      : ['#fee2e2','#991b1b','#f87171'];
+    const volChip = vol != null
+      ? `<span style="background:#f1f5f9;color:#475569;padding:1px 6px;border-radius:20px;font-size:9px;font-weight:700;white-space:nowrap">${fmtKT(vol)}</span>`
+      : '';
+    return `<div style="display:inline-flex;align-items:center;gap:5px;white-space:nowrap">
+      <span style="background:${bg};color:${col};padding:3px 8px;border-radius:5px;font-weight:800;font-size:11px;letter-spacing:-.2px">${p.toFixed(1)}%</span>
+      ${volChip}
+    </div>`;
   };
   const numFmt = n => n.toLocaleString('pt-BR');
 
@@ -4411,14 +4719,14 @@ function buildGrupo1Table() {
   const tPCReem= totExp ? totRnv/totExp*100 : 0;
   const tPEnt  = totRnv ? totEnt/totRnv*100 : 0;
   const tPDesb = totEnt ? totDesb/totEnt*100 : 0;
-  html += `<tr style="background:#1e293b;color:#fff;font-weight:800">
+  html += `<tr class="dark-row" style="background:#1e293b;color:#fff;font-weight:800">
     <td style="${tdL}color:#94a3b8;font-weight:800" colspan="2">Total Amostra</td>
     <td style="${tdS}color:#f1f5f9">${numFmt(totExp)}</td>
     <td style="${tdS}color:#FFE600">100,0%</td>
-    <td style="${tdS}font-weight:800">${tPRen.toFixed(1)}% <span style="font-size:9px;color:#94a3b8;font-weight:400">(${fmtKT(totRen)})</span></td>
-    <td style="${tdS}font-weight:800">${tPCReem.toFixed(1)}% <span style="font-size:9px;color:#94a3b8;font-weight:400">(${fmtKT(totRnv)})</span></td>
-    <td style="${tdS}font-weight:800">${tPEnt.toFixed(1)}% <span style="font-size:9px;color:#94a3b8;font-weight:400">(${fmtKT(totEnt)})</span></td>
-    <td style="${tdS}font-weight:800">${tPDesb.toFixed(1)}% <span style="font-size:9px;color:#94a3b8;font-weight:400">(${fmtKT(totDesb)})</span></td>
+    <td style="${tdS}font-weight:800">${tPRen.toFixed(1)}%  <span style="background:rgba(255,255,255,.15);color:#94a3b8;padding:1px 6px;border-radius:20px;font-size:9px;font-weight:700">${fmtKT(totRen)}</span></td>
+    <td style="${tdS}font-weight:800">${tPCReem.toFixed(1)}% <span style="background:rgba(255,255,255,.15);color:#94a3b8;padding:1px 6px;border-radius:20px;font-size:9px;font-weight:700">${fmtKT(totRnv)}</span></td>
+    <td style="${tdS}font-weight:800">${tPEnt.toFixed(1)}%   <span style="background:rgba(255,255,255,.15);color:#94a3b8;padding:1px 6px;border-radius:20px;font-size:9px;font-weight:700">${fmtKT(totEnt)}</span></td>
+    <td style="${tdS}font-weight:800">${tPDesb.toFixed(1)}%  <span style="background:rgba(255,255,255,.15);color:#94a3b8;padding:1px 6px;border-radius:20px;font-size:9px;font-weight:700">${fmtKT(totDesb)}</span></td>
   </tr>`;
 
   html += `</tbody></table>`;
@@ -4442,8 +4750,8 @@ function buildCicloUsoTable() {
   const EC_KEYS = ALL_EC_KEYS.filter(k => selECSet.size === 0 || selECSet.has(k));
   const CK_MAP  = {'01. 1 A 30 D':'c1','02. 31 A 60 D':'c2','03. 61 A 90 D':'c3',
                    '04. 91 A 120 D':'c4','05. 121 A 180 D':'c5','06. ACIMA DE 180 D':'c6'};
-  const cicloColors = {'01. 1 A 30 D':'#4ade80','02. 31 A 60 D':'#34d399','03. 61 A 90 D':'#22d3ee',
-                       '04. 91 A 120 D':'#fbbf24','05. 121 A 180 D':'#fb923c','06. ACIMA DE 180 D':'#f87171'};
+  const cicloColors = {'01. 1 A 30 D':'#FFE600','02. 31 A 60 D':'#E0C200','03. 61 A 90 D':'#AAAAAA',
+                       '04. 91 A 120 D':'#777777','05. 121 A 180 D':'#444444','06. ACIMA DE 180 D':'#1A1A1A'};
 
   const _sMM    = getSelectedSafrasSet();
   const monthly = MONTHLY.filter(m => _sMM.has(mesToSafraYYYYMM(m.mes)));
@@ -4475,7 +4783,7 @@ function buildCicloUsoTable() {
   // Cabeçalho em 3 níveis: Ano → Safra (colspan=3) → Eleg|Renov|%
   function makeHeader(yearColor, renovLabel) {
     // linha 1: anos
-    let h1 = `<tr style="background:#0f172a;color:#fff">
+    let h1 = `<tr class="dark-row" style="background:#0f172a;color:#fff">
       <th style="${thS}text-align:left;color:#94a3b8" rowspan="3">CICLO USO</th>`;
     yearsArr.forEach(([year, rows]) => {
       h1 += `<th style="${thS}${tdSep}color:${yearColor}" colspan="${rows.length*3}">${year}</th>`;
@@ -4483,7 +4791,7 @@ function buildCicloUsoTable() {
     h1 += `</tr>`;
 
     // linha 2: safras (colspan=3 cada)
-    let h2 = `<tr style="background:#1e293b;color:#fff">`;
+    let h2 = `<tr class="dark-row" style="background:#1e293b;color:#fff">`;
     yearsArr.forEach(([, rows]) => {
       rows.forEach(({safra, mo}, si) => {
         const bl = si===0 ? tdSep : '';
@@ -4494,7 +4802,7 @@ function buildCicloUsoTable() {
     h2 += `</tr>`;
 
     // linha 3: Eleg | Renov | %
-    let h3 = `<tr style="background:#1e293b;color:#fff">`;
+    let h3 = `<tr class="dark-row" style="background:#1e293b;color:#fff">`;
     yearsArr.forEach(([, rows]) => {
       rows.forEach(({}, si) => {
         const bl = si===0 ? tdSep : '';
@@ -4544,7 +4852,7 @@ function buildCicloUsoTable() {
     });
 
     // Total geral — usa apenas ciclos selecionados (soma ENTREGA_CICLO e CICLO_SAFRA filtrados)
-    let tot = `<tr style="background:#0f172a;color:#fff;font-weight:800">
+    let tot = `<tr class="dark-row" style="background:#0f172a;color:#fff;font-weight:800">
       <td style="padding:5px 8px;font-size:10px;font-weight:800;color:#FFE600">Total geral</td>`;
     yearsArr.forEach(([, rows]) => {
       rows.forEach(({safra, mo}, si) => {
@@ -4650,7 +4958,7 @@ function buildInsights() {
     </div>
     <div class="kpi-card purple">
       <div class="kpi-label">Desbloqueados</div>
-      <div class="kpi-value" style="color:#7C3AED">${fmtN(totalDesb)}</div>
+      <div class="kpi-value" style="color:#777777">${fmtN(totalDesb)}</div>
       <div class="kpi-sub">${pctStr(totalDesb,totalEnt)} dos entregues</div>
     </div>
     <div class="kpi-card orange">
@@ -4743,9 +5051,9 @@ function buildInsights() {
 
   const funilSteps = [
     {label:'Expirados → Renovados',       rate:pctN(baseUlt,telUlt), color:'#009EE3'},
-    {label:'Renovados → Entregues',        rate:taxaEntUlt,           color:'#00A650'},
-    {label:'Entregues → Desbloqueados',    rate:taxaDesbUlt,          color:'#7C3AED'},
-    {label:'Desbloqueados → Ativados',     rate:taxaActivUlt,         color:'#FF6B00'},
+    {label:'Renovados → Entregues',        rate:taxaEntUlt,           color:'#444444'},
+    {label:'Entregues → Desbloqueados',    rate:taxaDesbUlt,          color:'#777777'},
+    {label:'Desbloqueados → Ativados',     rate:taxaActivUlt,         color:'#1A1A1A'},
   ];
 
   const ultContent = document.getElementById('insights-ult-content');
@@ -4763,7 +5071,7 @@ function buildInsights() {
       </div>
       <div class="kpi-card purple">
         <div class="kpi-label">Desbloqueados</div>
-        <div class="kpi-value" style="color:#7C3AED">${fmtN(desbUlt)}</div>
+        <div class="kpi-value" style="color:#777777">${fmtN(desbUlt)}</div>
         <div class="kpi-sub">${pctStr(desbUlt,entUlt)} dos entregues</div>
       </div>
       <div class="kpi-card orange">
@@ -4880,7 +5188,7 @@ function buildInsights() {
 
   const CK = ['c1','c2','c3','c4','c5','c6','c7'];
   const CL = {c1:'C1 — Mensal-',c2:'C2 — Bimestral',c3:'C3 — Trimestral',c4:'C4 — Quadrimestral',c5:'C5 — Semestral',c6:'C6 — Anual+',c7:'C7 — Superativo'};
-  const CC = {c1:'#FFE600',c2:'#009EE3',c3:'#00A650',c4:'#7C3AED',c5:'#FF6B00',c6:'#FF3B30',c7:'#1A1A1A'};
+  const CC = {c1:'#FFE600',c2:'#009EE3',c3:'#444444',c4:'#777777',c5:'#1A1A1A',c6:'#FF3B30',c7:'#AAAAAA'};
   const CS = {c1:'#333',c2:'#fff',c3:'#fff',c4:'#fff',c5:'#fff',c6:'#fff',c7:'#fff'};
   const cicloTotal = CK.reduce((a,k) => a + (csPen[k]||0), 0);
   const dominantK  = CK.reduce((best,k) => (csPen[k]||0) > (csPen[best]||0) ? k : best, 'c1');
@@ -4998,6 +5306,197 @@ function buildInsights() {
 // ── GRÁFICOS DA ABA SLIDE PROPOSTO ────────────────────────────
 const slideCharts = {};
 
+function buildApresentacaoInsights() {
+  const el = document.getElementById('slide-insights-bloco');
+  if (!el) return;
+
+  const fmtP = v => v.toFixed(1) + '%';
+  const fmtK = n => n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? (n/1e3).toFixed(0)+'K' : String(Math.round(n));
+  const pctOf = (a,b) => b ? +(a/b*100).toFixed(1) : 0;
+
+  // Safras completas em ordem cronológica
+  const complete = MONTHLY.filter(m => m.completo);
+  if (complete.length < 3) { el.innerHTML = ''; return; }
+
+  // Taxas de renovação por safra
+  const rates = complete.map(mo => ({
+    mes: mo.mes,
+    safra: mesToSafraYYYYMM(mo.mes),
+    pRen:  TOTAL_GRUPO1[mesToSafraYYYYMM(mo.mes)] ? pctOf(mo.ren, TOTAL_GRUPO1[mesToSafraYYYYMM(mo.mes)]) : pctOf(mo.ren, mo.tel),
+    pComb: TOTAL_GRUPO1[mesToSafraYYYYMM(mo.mes)] ? pctOf(mo.ren+mo.rei, TOTAL_GRUPO1[mesToSafraYYYYMM(mo.mes)]) : pctOf(mo.ren+mo.rei, mo.tel),
+    vol: mo.ren, volComb: mo.ren+mo.rei,
+    tel: TOTAL_GRUPO1[mesToSafraYYYYMM(mo.mes)] || mo.tel
+  }));
+
+  const last  = rates[rates.length - 1];
+  const prev  = rates[rates.length - 2];
+  const prev2 = rates[rates.length - 3];
+  const peak  = [...rates].sort((a,b) => b.pRen - a.pRen)[0];
+  const worst = [...rates].sort((a,b) => a.pRen - b.pRen)[0];
+
+  // Tendência últimas 3 safras
+  const trend3  = last.pRen - prev2.pRen;
+  const mmChange = last.pRen - prev.pRen;
+
+  // Mix C6 última safra
+  const csLast = CICLO_SAFRA.find(c => c.safra === last.safra) || {};
+  const csPrev = CICLO_SAFRA.find(c => c.safra === prev.safra) || {};
+  const CK6 = ['c1','c2','c3','c4','c5','c6'];
+  const totLast = CK6.reduce((a,k)=>a+(csLast[k]||0),0);
+  const totPrev = CK6.reduce((a,k)=>a+(csPrev[k]||0),0);
+  const c6ShareLast = totLast ? pctOf(csLast.c6||0, totLast) : 0;
+  const c6SharePrev = totPrev ? pctOf(csPrev.c6||0, totPrev) : 0;
+  const c6Delta = c6ShareLast - c6SharePrev;
+
+  // Volume base elegível
+  const volDelta = last.tel && prev.tel ? ((last.tel - prev.tel)/prev.tel*100).toFixed(1) : null;
+
+  // Gera os cards
+  const cards = [];
+  const trendIcon = trend3 > 1 ? '📈' : trend3 < -1 ? '📉' : '➡️'; // kept for compat
+
+  // 1. Tendência geral
+  const trendDir = trend3 > 1 ? 'crescimento' : trend3 < -1 ? 'queda' : 'estabilidade';
+  const trendCls  = trend3 > 1 ? 'good' : trend3 < -1 ? 'alert' : 'info';
+  cards.push({
+    cls: trendCls,
+    titulo: `Tendência de ${trendDir}: ${trend3 > 0 ? '+' : ''}${trend3.toFixed(1)}pp (últimas 3 safras)`,
+    highlight: `Taxa: <strong>${fmtP(prev2.pRen)}</strong> em ${prev2.mes} → <strong>${fmtP(prev.pRen)}</strong> em ${prev.mes} → <strong>${fmtP(last.pRen)}</strong> em ${last.mes}. Volume último mês: <strong>${fmtK(last.vol)}</strong> renovações sobre <strong>${fmtK(last.tel)}</strong> expirados.`,
+    insight: trend3 < -2
+      ? `Queda acumulada de <strong>${Math.abs(trend3).toFixed(1)}pp</strong> em 3 meses — tendência estrutural de queda na conversão, não ruído pontual.`
+      : trend3 > 2
+      ? `Alta de <strong>${trend3.toFixed(1)}pp</strong> em 3 meses — melhora consistente e sustentada na aderência à comunicação proativa.`
+      : `Performance dentro da faixa histórica — sem tendência clara de alta ou queda no período.`,
+    hipotese: trend3 < -2
+      ? 'O mix da base está se deslocando para usuários de menor engajamento (crescimento do C6 >180d), reduzindo a taxa agregada.'
+      : trend3 > 2
+      ? 'Campanhas proativas mais eficazes ou entrada de safras com perfil mais ativo (maior share C1-C3).'
+      : 'Sem hipóteses de mudança estrutural — base e comportamento estáveis no período.'
+  });
+
+  // 2. Variação △
+  const mmCls = mmChange > 1 ? 'good' : mmChange < -1 ? 'warn' : 'info';
+  cards.push({
+    cls: mmCls,
+    titulo: `△ ${prev.mes} → ${last.mes}: ${mmChange >= 0 ? '+' : ''}${mmChange.toFixed(1)}pp`,
+    highlight: `Renovações em ${last.mes}: <strong>${fmtK(last.vol)} usuários</strong> (${fmtP(last.pRen)}) vs <strong>${fmtK(prev.vol)}</strong> (${fmtP(prev.pRen)}) no mês anterior. Base elegível: <strong>${fmtK(last.tel)}</strong> expirados${volDelta ? ` (${parseFloat(volDelta) >= 0 ? '+' : ''}${volDelta}% △)` : ''}.`,
+    insight: Math.abs(mmChange) > 3
+      ? (mmChange < 0
+          ? `Queda de <strong>${Math.abs(mmChange).toFixed(1)}pp</strong> acima do ruído esperado — relevante para investigação e acompanhamento.`
+          : `Alta de <strong>${mmChange.toFixed(1)}pp</strong> acima do normal — pode indicar safra com perfil mais favorável ou campanha mais eficaz.`)
+      : `Variação de <strong>${Math.abs(mmChange).toFixed(1)}pp</strong> dentro da margem de ruído estatístico — sem impacto significativo.`,
+    hipotese: Math.abs(mmChange) > 3
+      ? (mmChange < 0
+          ? 'Possível sazonalidade, mudança no perfil da safra (mais inativos entrando) ou queda na eficácia da comunicação proativa 90 dias antes.'
+          : 'Safra com maior concentração de usuários ativos (C1-C3) ou comunicação proativa com melhor timing neste ciclo.')
+      : 'Flutuação normal entre safras — sem hipótese de mudança estrutural.'
+  });
+
+  // 3. Mix C6
+  if (Math.abs(c6Delta) >= 1) {
+    cards.push({
+      cls: c6Delta > 2 ? 'alert' : c6Delta < -2 ? 'good' : 'info',
+      titulo: `Mix C6 (>180d): ${c6ShareLast.toFixed(1)}% ${c6Delta > 0 ? '▲' : '▼'} ${Math.abs(c6Delta).toFixed(1)}pp vs mês anterior`,
+      highlight: `Em ${last.mes}, <strong>${c6ShareLast.toFixed(0)}%</strong> dos renovados pertencem ao ciclo >180d (usaram o cartão pela última vez há mais de 6 meses). Em ${prev.mes} era <strong>${c6SharePrev.toFixed(0)}%</strong>.`,
+      insight: c6Delta > 2
+        ? `Crescimento de <strong>${c6Delta.toFixed(1)}pp</strong> do C6 está pressionando a taxa geral — este grupo tem historicamente menor propensão à renovação ativa.`
+        : c6Delta < -2
+        ? `Redução de <strong>${Math.abs(c6Delta).toFixed(1)}pp</strong> do C6 está favorecendo a taxa — mais usuários ativos no mix renovado.`
+        : `Variação marginal no mix (<strong>${Math.abs(c6Delta).toFixed(1)}pp</strong>) sem impacto relevante na conversão agregada.`,
+      hipotese: c6Delta > 2
+        ? 'Usuários C1-C3 (alta frequência) já renovaram em safras anteriores — o estoque elegível restante concentra perfis de menor engajamento natural.'
+        : 'Entrada de coortes com perfil mais ativo ou melhora nas comunicações direcionadas a ciclos intermediários (C3-C5).'
+    });
+  }
+
+  // 4. Pico histórico
+  if (peak.mes !== last.mes) {
+    const quedaDoPico = last.pRen - peak.pRen;
+    cards.push({
+      cls: quedaDoPico < -5 ? 'warn' : 'info',
+      titulo: `Referência histórica: pico em ${peak.mes} com ${fmtP(peak.pRen)}`,
+      highlight: `Melhor taxa histórica: <strong>${peak.mes} — ${fmtP(peak.pRen)}</strong>. Pior safra: <strong>${worst.mes} — ${fmtP(worst.pRen)}</strong>. Taxa atual (${last.mes}): <strong>${fmtP(last.pRen)}</strong> (${quedaDoPico >= 0 ? '+' : ''}${quedaDoPico.toFixed(1)}pp vs pico).`,
+      insight: quedaDoPico < -5
+        ? `A safra atual está <strong>${Math.abs(quedaDoPico).toFixed(1)}pp abaixo</strong> do pico histórico — diferença relevante que justifica análise comparativa do perfil das safras.`
+        : `Distância de apenas <strong>${Math.abs(quedaDoPico).toFixed(1)}pp</strong> do pico — performance dentro do intervalo histórico aceitável.`,
+      hipotese: quedaDoPico < -5
+        ? 'Safras de pico concentravam mais usuários C1-C3 (alta frequência de uso). Verificar se a comunicação proativa está chegando com a mesma eficácia a esse perfil.'
+        : 'Performance alinhada ao histórico — sem desvio que justifique investigação imediata.'
+    });
+  }
+
+  // 5. Volume da base elegível
+  {
+    const volDeltaPct = last.tel && prev.tel ? ((last.tel - prev.tel) / prev.tel * 100) : null;
+    const volDeltaStr = volDeltaPct != null
+      ? `${volDeltaPct >= 0 ? '+' : ''}${volDeltaPct.toFixed(1)}% △ vs ${prev.mes}`
+      : '—';
+    const reemissoes = last.volComb - last.vol;
+    cards.push({
+      cls: volDeltaPct != null && Math.abs(volDeltaPct) > 15 ? 'warn' : 'info',
+      titulo: `Base elegível ${last.mes}: ${fmtK(last.tel)} expirados (${volDeltaStr})`,
+      highlight: `Em ${last.mes}, <strong>${fmtK(last.tel)}</strong> cartões venceram no Grupo 1. Convertidos: <strong>${fmtK(last.vol)}</strong> renovados + <strong>${fmtK(reemissoes)}</strong> reemitidos = <strong>${fmtK(last.volComb)}</strong> total (${fmtP(last.pComb)}).`,
+      insight: volDeltaPct != null
+        ? (volDeltaPct > 15
+            ? `Volume de expirados <strong>cresceu ${volDeltaPct.toFixed(1)}%</strong> vs mês anterior — safra maior que a média; base em expansão.`
+            : volDeltaPct < -15
+            ? `Volume de expirados <strong>caiu ${Math.abs(volDeltaPct).toFixed(1)}%</strong> vs mês anterior — safra menor, possível sazonalidade ou mudança na coorte.`
+            : `Volume de expirados estável (<strong>${volDeltaStr}</strong>) — sem variação expressiva no tamanho da safra.`)
+        : 'Volume não disponível para comparação.',
+      hipotese: 'Safras maiores podem diluir a taxa se a composição incluir mais usuários C6 (inativos). Compare sempre volume e taxa em conjunto.'
+    });
+  }
+
+  const cardHTML = cards.map(c => `
+    <div class="insight-card ${c.cls}" style="margin-bottom:12px">
+      <div class="insight-icon">${c.icon}</div>
+      <div style="flex:1">
+        <div class="insight-title">${c.title}</div>
+        <div class="insight-text" style="margin-top:4px">${c.body}</div>
+        <div style="margin-top:8px;padding:6px 10px;background:rgba(0,0,0,.04);border-radius:6px;font-size:11px;color:#475569">
+          <strong>Hipótese:</strong> ${c.hipotese}
+        </div>
+      </div>
+    </div>`).join('');
+
+  el.innerHTML = `
+    <div class="section-title" style="margin-top:0">
+      Highlights & Hipóteses
+      <span class="badge">Auto · ${last.mes}</span>
+    </div>
+    <div class="insights-grid" style="grid-template-columns:repeat(2,1fr);margin-top:12px">
+      ${cards.map(c => `
+        <div class="insight-card ${c.cls}" style="margin-bottom:12px;align-items:flex-start">
+          <div style="flex:1">
+            <div class="insight-title" style="font-size:13px;margin-bottom:12px">${c.titulo}</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;gap:8px;align-items:flex-start">
+                <span style="font-size:14px;flex-shrink:0;margin-top:1px">📊</span>
+                <div style="font-size:11px;color:#374151;line-height:1.55">
+                  <span style="font-weight:800;color:#1e293b;text-transform:uppercase;font-size:9px;letter-spacing:.6px;display:block;margin-bottom:3px">Highlight — o que aconteceu</span>
+                  ${c.highlight}
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;align-items:flex-start">
+                <span style="font-size:14px;flex-shrink:0;margin-top:1px">💡</span>
+                <div style="font-size:11px;color:#374151;line-height:1.55">
+                  <span style="font-weight:800;color:#1e293b;text-transform:uppercase;font-size:9px;letter-spacing:.6px;display:block;margin-bottom:3px">Insight — o que significa</span>
+                  ${c.insight}
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;align-items:flex-start;padding:8px 10px;background:rgba(0,0,0,.04);border-radius:6px">
+                <span style="font-size:14px;flex-shrink:0;margin-top:1px">🔍</span>
+                <div style="font-size:11px;color:#475569;line-height:1.55">
+                  <span style="font-weight:800;color:#64748b;text-transform:uppercase;font-size:9px;letter-spacing:.6px;display:block;margin-bottom:3px">Hipótese — possível causa</span>
+                  ${c.hipotese}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+}
+
 function _buildEntregaSlide() {
   // Clona o HTML da tabela buildEntregaCicloTable para o slide
   const srcHead = document.getElementById('entregaCicloThead');
@@ -5022,17 +5521,145 @@ function buildSlideCharts() {
     const txComb = _totE ? ((_totR + _totRei) / _totE * 100).toFixed(1) + '%' : '—';
     const elRen  = document.getElementById('conceito-taxa-renov');
     const elComb = document.getElementById('conceito-taxa-comb');
-    if (elRen)  elRen.innerHTML  = `<strong style="color:#4ade80">${txRen}</strong> de taxa de <strong style="color:#fff">Renovação.</strong>`;
-    if (elComb) elComb.innerHTML = `<strong style="color:#5bc8f5">${txComb}</strong> de taxa combinada <strong style="color:#fff">(Renovação + Reemissão).</strong>`;
+    if (elRen)  elRen.textContent  = txRen;
+    if (elComb) elComb.textContent = txComb;
+
+    // ── Insights automáticos ──────────────────────────────────────
+    buildApresentacaoInsights();
 
     // ── Tabela Entrega por Ciclo (copia para o slide) ─────────────
     _buildEntregaSlide();
 
+    // ── Gráfico Combo: Grupo 1 Volume + % Conversão ───────────────
+    if (slideCharts.grupo1Combo) { slideCharts.grupo1Combo.destroy(); slideCharts.grupo1Combo = null; }
+    const cvG1 = document.getElementById('chartSlideGrupo1Combo');
+    if (cvG1) {
+      const _selG1 = getSelectedSafrasSet();
+      const g1Data = MONTHLY.filter(m => m.completo && _selG1.has(mesToSafraYYYYMM(m.mes))).slice(-14);
+      const g1Labels = g1Data.map(mo => mo.mes.replace('*',''));
+      const g1Eleg   = g1Data.map(mo => TOTAL_GRUPO1[mesToSafraYYYYMM(mo.mes)] || mo.tel || 0);
+      const g1PctComb = g1Data.map(mo => {
+        const eleg = TOTAL_GRUPO1[mesToSafraYYYYMM(mo.mes)] || mo.tel || 0;
+        return eleg ? +((mo.ren + mo.rei) / eleg * 100).toFixed(1) : null;
+      });
+      slideCharts.grupo1Combo = new Chart(cvG1, {
+        type: 'bar',
+        data: {
+          labels: g1Labels,
+          datasets: [
+            {
+              label: 'Elegíveis (Volume)',
+              data: g1Eleg,
+              backgroundColor: 'rgba(26,26,26,.18)',
+              borderColor: '#444444', borderWidth: 1,
+              yAxisID: 'yVol', order: 2,
+              datalabels: {
+                display: true, anchor: 'end', align: 'top',
+                color: '#444444', font: { size: 9, weight: 'bold' },
+                formatter: v => v >= 1e3 ? (v/1e3).toFixed(0)+'K' : (v > 0 ? String(v) : '')
+              }
+            },
+            {
+              type: 'line',
+              label: '% Conversão Combinada',
+              data: g1PctComb,
+              borderColor: '#FFE600', backgroundColor: 'transparent',
+              borderWidth: 2.5, pointRadius: 4, pointBackgroundColor: '#FFE600',
+              tension: .3, yAxisID: 'yPct', order: 1,
+              datalabels: {
+                display: true, anchor: 'end', align: 'top',
+                color: '#1a1a1a', font: { size: 10, weight: 'bold' },
+                formatter: v => v != null ? v.toFixed(1) + '%' : ''
+              }
+            }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          layout: { padding: { top: 32 } },
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: false },
+            datalabels: { display: false }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { font: { size: 10 }, color: '#888' },
+              border: { display: false }
+            },
+            yVol: {
+              type: 'linear', position: 'left',
+              min: 0, max: 150000,
+              display: false
+            },
+            yPct: {
+              type: 'linear', position: 'right',
+              min: -30, max: 100,
+              display: false
+            }
+          }
+        }
+      });
+    }
+
+    // ── Gráfico Line: Eng90 tendência C1/C2/C3/Total ──────────────
+    if (slideCharts.eng90Line) { slideCharts.eng90Line.destroy(); slideCharts.eng90Line = null; }
+    const cvEng90 = document.getElementById('chartSlideEng90Line');
+    if (cvEng90) {
+      const EC90 = {c1:'01. 1 A 30 D', c2:'02. 31 A 60 D', c3:'03. 61 A 90 D'};
+      const _selE = getSelectedSafrasSet();
+      const eng90Safras = MONTHLY.filter(m => m.completo && _selE.has(mesToSafraYYYYMM(m.mes))).slice(-12);
+      const eng90Labels = eng90Safras.map(mo => mo.mes.replace('*',''));
+      const calcEng = (ck, mo) => {
+        const safra = mesToSafraYYYYMM(mo.mes);
+        const ec = (typeof ENTREGA_CICLO !== 'undefined') ? (ENTREGA_CICLO[safra] || {}) : {};
+        const cs = CICLO_SAFRA.find(c => c.safra === safra) || {};
+        const eleg = (ec[EC90[ck]] || {}).total || 0;
+        return eleg > 0 ? +(( cs[ck]||0)/eleg*100).toFixed(1) : null;
+      };
+      const calcEng90Total = mo => {
+        const safra = mesToSafraYYYYMM(mo.mes);
+        const ec = (typeof ENTREGA_CICLO !== 'undefined') ? (ENTREGA_CICLO[safra] || {}) : {};
+        const cs = CICLO_SAFRA.find(c => c.safra === safra) || {};
+        const eleg = ['c1','c2','c3'].reduce((a,k) => a + ((ec[EC90[k]] || {}).total || 0), 0);
+        const renov = (cs.c1||0) + (cs.c2||0) + (cs.c3||0);
+        return eleg > 0 ? +(renov/eleg*100).toFixed(1) : null;
+      };
+      slideCharts.eng90Line = new Chart(cvEng90, {
+        type: 'line',
+        data: {
+          labels: eng90Labels,
+          datasets: [
+            { label:'C1 · 1–30d',  data: eng90Safras.map(mo=>calcEng('c1',mo)), borderColor:'#FFE600', backgroundColor:'transparent', borderWidth:2, pointRadius:3, tension:.3 },
+            { label:'C2 · 31–60d', data: eng90Safras.map(mo=>calcEng('c2',mo)), borderColor:'#AAAAAA', backgroundColor:'transparent', borderWidth:2, pointRadius:3, tension:.3 },
+            { label:'C3 · 61–90d', data: eng90Safras.map(mo=>calcEng('c3',mo)), borderColor:'#555555', backgroundColor:'transparent', borderWidth:2, pointRadius:3, tension:.3 },
+            { label:'Total <90d',  data: eng90Safras.map(mo=>calcEng90Total(mo)), borderColor:'#1A1A1A', backgroundColor:'rgba(26,26,26,.08)', borderWidth:3, pointRadius:4, fill:true, tension:.3 }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } },
+            datalabels: { display: false }
+          },
+          scales: {
+            x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+            y: { min: 70, max: 105, ticks: { callback: v => v+'%', font: { size: 10 } }, grid: { color: '#f0f0f0' } }
+          }
+        }
+      });
+    }
+
     // ── Dados de ciclo — limite Jul/26 ────────────────────────────
     const CK       = ['c1','c2','c3','c4','c5','c6'];
     const CK_LABEL = ['01. 1 A 30 D','02. 31 A 60 D','03. 61 A 90 D','04. 91 A 120 D','05. 121 A 180 D','06. ACIMA DE 180 D'];
-    const CK_COLOR = ['#4ade80','#34d399','#22d3ee','#fbbf24','#fb923c','#f87171'];
-    const safras   = CICLO_SAFRA.filter(cs => cs.safra <= '202607').slice(-14);
+    const CK_COLOR = ['#FFE600','#E0C200','#AAAAAA','#777777','#444444','#1A1A1A'];
+    const _sMMslide = getSelectedSafrasSet();
+    const safras   = CICLO_SAFRA
+      .filter(cs => cs.safra <= '202607' && _sMMslide.has(cs.safra))
+      .slice(-14);
     const labels   = safras.map(cs => safraLabel(cs.safra));
 
     // ── Gráfico 5: Mix 100% empilhado (até Jul/26, com rótulos) ───
@@ -5075,6 +5702,70 @@ function buildSlideCharts() {
         }
       };
 
+      // ── Gráfico de EXPIRADOS (mix dos elegíveis) ─────────────────
+      const EC_KEY_MAP = {'c1':'01. 1 A 30 D','c2':'02. 31 A 60 D','c3':'03. 61 A 90 D','c4':'04. 91 A 120 D','c5':'05. 121 A 180 D','c6':'06. ACIMA DE 180 D'};
+      if (slideCharts.mixExp) { slideCharts.mixExp.destroy(); slideCharts.mixExp = null; }
+      const cvExp = document.getElementById('chartSlideMixExpirados');
+      if (cvExp) {
+        const totaisExp = safras.map(cs => {
+          const ec = (typeof ENTREGA_CICLO !== 'undefined') ? (ENTREGA_CICLO[cs.safra] || {}) : {};
+          return CK.reduce((a, k) => a + ((ec[EC_KEY_MAP[k]] || {}).total || 0), 0) || TOTAL_GRUPO1[cs.safra] || 0;
+        });
+        const expData = CK.map((k, i) => ({
+          label: CK_LABEL[i],
+          data: safras.map((cs, si) => {
+            const ec = (typeof ENTREGA_CICLO !== 'undefined') ? (ENTREGA_CICLO[cs.safra] || {}) : {};
+            const cicloTotal = (ec[EC_KEY_MAP[k]] || {}).total || 0;
+            const tot = totaisExp[si];
+            return tot ? +(cicloTotal / tot * 100).toFixed(1) : 0;
+          }),
+          backgroundColor: CK_COLOR[i],
+          stack: 's', borderWidth: 0
+        }));
+        const totaisExpPlugin = {
+          id: 'totalTopExp',
+          afterDatasetsDraw(chart) {
+            try {
+              const ctx2 = chart.ctx;
+              const lastMeta = chart.getDatasetMeta(chart.data.datasets.length - 1);
+              totaisExp.forEach((total, i) => {
+                if (!total) return;
+                const bar = lastMeta.data[i];
+                if (!bar) return;
+                ctx2.save();
+                ctx2.textAlign = 'center'; ctx2.textBaseline = 'bottom';
+                ctx2.font = 'bold 10px sans-serif'; ctx2.fillStyle = '#1e293b';
+                ctx2.fillText(fmtK(total), bar.x, bar.y - 3);
+                ctx2.restore();
+              });
+            } catch(e) {}
+          }
+        };
+        slideCharts.mixExp = new Chart(cvExp, {
+          type: 'bar',
+          data: { labels, datasets: expData },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            layout: { padding: { top: 22 } },
+            plugins: {
+              legend: { position:'bottom', labels:{boxWidth:10,font:{size:10}} },
+              datalabels: {
+                display: ctx => ctx.parsed && ctx.parsed.y >= 5,
+                anchor:'center', align:'center',
+                color: ctx => ctx.datasetIndex < 3 ? '#000000' : '#ffffff',
+                font: { size: 8, weight: 'bold' },
+                formatter: v => v.toFixed(0) + '%'
+              }
+            },
+            scales: {
+              x: { stacked:true, grid:{display:false}, ticks:{font:{size:10}} },
+              y: { stacked:true, min:0, max:100, ticks:{callback:v=>v+'%',font:{size:10}}, grid:{display:false} }
+            }
+          },
+          plugins: [totaisExpPlugin]
+        });
+      }
+
       slideCharts.mixCiclo = new Chart(cvMix, {
         type: 'bar',
         data: { labels, datasets: mixData },
@@ -5089,7 +5780,7 @@ function buildSlideCharts() {
                 return typeof v === 'number' && v >= 5;
               },
               anchor: 'center', align: 'center',
-              color: (ctx) => ['#4ade80','#34d399','#22d3ee'].includes(CK_COLOR[ctx.datasetIndex]) ? '#1a2e1a' : '#fff',
+              color: (ctx) => ctx.datasetIndex < 3 ? '#000000' : '#ffffff',
               font: { size: 8, weight: 'bold' },
               formatter: v => v.toFixed(0) + '%'
             }
@@ -5100,6 +5791,56 @@ function buildSlideCharts() {
           }
         },
         plugins: [totalTopPlugin]
+      });
+    }
+
+    // ── Gráfico Mix Trend: C1+C2+C3 vs C4+C5 vs C6 ───────────────
+    if (slideCharts.mixTrend) { slideCharts.mixTrend.destroy(); slideCharts.mixTrend = null; }
+    const cvMixTrend = document.getElementById('chartSlideMixTrend');
+    if (cvMixTrend) {
+      const CKall = ['c1','c2','c3','c4','c5','c6'];
+      const shareOf = (cs, keys) => {
+        const tot = CKall.reduce((a,k) => a + (cs[k]||0), 0);
+        if (!tot) return null;
+        return +(keys.reduce((a,k) => a + (cs[k]||0), 0) / tot * 100).toFixed(1);
+      };
+      slideCharts.mixTrend = new Chart(cvMixTrend, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Ativos · 0 a 90 dias',
+              data: safras.map(cs => shareOf(cs, ['c1','c2','c3'])),
+              borderColor: '#FFE600', backgroundColor: 'rgba(255,230,0,.10)',
+              borderWidth: 2.5, pointRadius: 3, fill: true, tension: .3
+            },
+            {
+              label: 'Intermediários · 91 a 180 dias',
+              data: safras.map(cs => shareOf(cs, ['c4','c5'])),
+              borderColor: '#888888', backgroundColor: 'transparent',
+              borderWidth: 1.5, pointRadius: 2, borderDash: [4,3], tension: .3
+            },
+            {
+              label: 'Inativos · acima de 180 dias',
+              data: safras.map(cs => shareOf(cs, ['c6'])),
+              borderColor: '#1A1A1A', backgroundColor: 'rgba(26,26,26,.08)',
+              borderWidth: 2.5, pointRadius: 3, fill: true, tension: .3
+            }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } },
+            datalabels: { display: false }
+          },
+          scales: {
+            x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+            y: { min: 0, max: 100, ticks: { callback: v => v+'%', font: { size: 10 } }, grid: { color: '#f0f0f0' } }
+          }
+        }
       });
     }
 
@@ -5117,7 +5858,7 @@ function buildSlideCharts() {
               const tot = CK.reduce((a,k)=>a+(cs[k]||0),0);
               return tot ? +((cs.c6||0)/tot*100).toFixed(1) : 0;
             }),
-            borderColor:'#f87171', backgroundColor:'rgba(248,113,113,.1)',
+            borderColor:'#1A1A1A', backgroundColor:'rgba(248,113,113,.1)',
             borderWidth:2, pointRadius:3, fill:true, tension:.3
           }]
         },
@@ -5138,13 +5879,13 @@ function buildSlideCharts() {
     // ── Gráfico 3: Curva acumulada Renovación/Reissue ─────────────
     if (typeof GRAFICO_CAMPANHAS === 'undefined') return;
     const gc = GRAFICO_CAMPANHAS;
-    // Janela dinâmica: 3 meses antes + mês atual + 4 meses depois
-    const _now   = new Date();
-    const _fmtYM = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-    const _from  = _fmtYM(new Date(_now.getFullYear(), _now.getMonth() - 3, 1));
-    const _to    = _fmtYM(new Date(_now.getFullYear(), _now.getMonth() + 4, 1));
-    const safrasGC = Object.keys(gc).filter(s => s >= _from && s <= _to).sort();
-    const palette  = ['#1d4ed8','#7c3aed','#db2777','#ea580c','#16a34a','#0891b2','#d97706','#dc2626'];
+    // Filtra pelas safras selecionadas no filtro global (converte YYYY-MM ↔ YYYYMM)
+    const _gcSel = getSelectedSafrasSet();
+    const _allGC = Object.keys(gc).sort();
+    const safrasGC = _gcSel.size > 0
+      ? _allGC.filter(s => _gcSel.has(s.replace('-','')))
+      : _allGC;
+    const palette  = ['#1A1A1A','#444444','#777777','#AAAAAA','#FFE600','#E0C200','#009EE3','#555555'];
     const datasets = [];
     safrasGC.forEach((safra, si) => {
       const cor = palette[si % palette.length];
@@ -5197,6 +5938,132 @@ function buildSlideCharts() {
         plugins:[vline]
       });
     }
+    // ── Insights por gráfico ──────────────────────────────────────
+    try {
+      const _fP = v => v != null ? v.toFixed(1)+'%' : '—';
+      const _fK = n => n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? (n/1e3).toFixed(0)+'K' : String(Math.round(n));
+      const _inj = (id, cls, html) => {
+        const el = document.getElementById(id); if (!el) return;
+        const bord = {good:'#16a34a',warn:'#d97706',alert:'#dc2626',info:'#64748b'}[cls]||'#64748b';
+        const bg   = {good:'#f0fdf4',warn:'#fffbeb',alert:'#fef2f2',info:'#f8fafc'}[cls]||'#f8fafc';
+        el.innerHTML = `<div style="margin-top:12px;padding:10px 14px;background:${bg};border-left:3px solid ${bord};border-radius:0 6px 6px 0;font-size:11.5px;color:#374151;line-height:1.6">${html}</div>`;
+      };
+
+      // — Insight Grupo 1 (tabela) —
+      {
+        const _sg1 = getSelectedSafrasSet();
+        const _g1d = MONTHLY.filter(m=>m.completo&&_sg1.has(mesToSafraYYYYMM(m.mes))).slice(-2);
+        if (_g1d.length>=2) {
+          const lm=_g1d[_g1d.length-1], pm=_g1d[_g1d.length-2];
+          const lv=TOTAL_GRUPO1[mesToSafraYYYYMM(lm.mes)]||lm.tel||0;
+          const pv=TOTAL_GRUPO1[mesToSafraYYYYMM(pm.mes)]||pm.tel||0;
+          const lp=lv?+((lm.ren+lm.rei)/lv*100).toFixed(1):null;
+          const pp=pv?+((pm.ren+pm.rei)/pv*100).toFixed(1):null;
+          const vd=pv?((lv-pv)/pv*100):null;
+          const pd=(lp!=null&&pp!=null)?lp-pp:null;
+          const cls=pd==null?'info':pd>1?'good':pd<-1?'warn':'info';
+          _inj('slide-insight-grupo1',cls,
+            `<strong>${lm.mes.replace('*','')}</strong>: <strong>${_fK(lv)}</strong> elegíveis`+
+            (vd!=null?` <span style="color:${vd>=0?'#16a34a':'#dc2626'}">(${vd>=0?'+':''}${vd.toFixed(1)}% vs mês anterior)</span>`:'')+
+            `. Taxa de conversão combinada: <strong>${_fP(lp)}</strong>`+
+            (pd!=null?` — <strong style="color:${pd>=0?'#16a34a':'#dc2626'}">${pd>=0?'+':''}${pd.toFixed(1)}pp vs ${pm.mes.replace('*','')}</strong>.`:'.')
+          );
+        }
+      }
+
+      // — Insight Eng90 —
+      {
+        const _EC = {c1:'01. 1 A 30 D',c2:'02. 31 A 60 D',c3:'03. 61 A 90 D'};
+        const _sE = getSelectedSafrasSet();
+        const _eS = MONTHLY.filter(m=>m.completo&&_sE.has(mesToSafraYYYYMM(m.mes))).slice(-2);
+        if (_eS.length>=2) {
+          const lm=_eS[_eS.length-1], pm=_eS[_eS.length-2];
+          const ls=mesToSafraYYYYMM(lm.mes), ps=mesToSafraYYYYMM(pm.mes);
+          const rates={};
+          ['c1','c2','c3'].forEach(ck=>{
+            const ecL=(typeof ENTREGA_CICLO!=='undefined')?(ENTREGA_CICLO[ls]||{}):{};
+            const ecP=(typeof ENTREGA_CICLO!=='undefined')?(ENTREGA_CICLO[ps]||{}):{};
+            const csL=CICLO_SAFRA.find(c=>c.safra===ls)||{};
+            const csP=CICLO_SAFRA.find(c=>c.safra===ps)||{};
+            const eL=(ecL[_EC[ck]]||{}).total||0, eP=(ecP[_EC[ck]]||{}).total||0;
+            const rL=eL>0?(csL[ck]||0)/eL*100:null, rP=eP>0?(csP[ck]||0)/eP*100:null;
+            rates[ck]={curr:rL,delta:rL!=null&&rP!=null?rL-rP:null};
+          });
+          const nm={c1:'C1 (0–30d)',c2:'C2 (31–60d)',c3:'C3 (61–90d)'};
+          const items=['c1','c2','c3'].map(ck=>
+            `${nm[ck]}: <strong>${_fP(rates[ck].curr)}</strong>`+
+            (rates[ck].delta!=null?` <span style="color:${rates[ck].delta>=0?'#16a34a':'#dc2626'}">(${rates[ck].delta>=0?'+':''}${rates[ck].delta.toFixed(1)}pp)</span>`:'')
+          ).join(' · ');
+          _inj('slide-insight-eng90','info',`<strong>${lm.mes.replace('*','')}:</strong> ${items}.`);
+        }
+      }
+
+      // — Insight Curva Campanha —
+      if (typeof GRAFICO_CAMPANHAS!=='undefined') {
+        const _gcK=Object.keys(GRAFICO_CAMPANHAS).sort();
+        if (_gcK.length>=1) {
+          const lk=_gcK[_gcK.length-1];
+          const renPts=(GRAFICO_CAMPANHAS[lk]['Renovación']||[]).filter(p=>p.x<=0).sort((a,b)=>a.x-b.x);
+          const d0=renPts.find(p=>p.x===0)||renPts[renPts.length-1];
+          const dm30=renPts.find(p=>p.x===-30)||renPts.find(p=>Math.abs(p.x+30)<3);
+          _inj('slide-insight-campanha','info',
+            `Safra <strong>${lk}</strong>: `+
+            (d0?`<strong>${d0.y.toFixed(1)}%</strong> de renovação acumulada no dia do vencimento (d0). `:'')+
+            (dm30?`<strong>${dm30.y.toFixed(1)}%</strong> já renovados 30 dias antes. `:'')+
+            'Curva segue padrão histórico — pico de reemissões nas primeiras 2 semanas pós-vencimento.'
+          );
+        }
+      }
+
+      // — Insight Mix Expirados + Mix Renovados —
+      if (safras.length>=2) {
+        const lS=safras[safras.length-1], pS=safras[safras.length-2];
+        const CKx=['c1','c2','c3','c4','c5','c6'];
+        const totL=CKx.reduce((a,k)=>a+(lS[k]||0),0), totP=CKx.reduce((a,k)=>a+(pS[k]||0),0);
+        const c1L=totL?(lS.c1||0)/totL*100:0, c6L=totL?(lS.c6||0)/totL*100:0;
+        const c1P=totP?(pS.c1||0)/totP*100:0, c6P=totP?(pS.c6||0)/totP*100:0;
+        const c6D=c6L-c6P;
+        _inj('slide-insight-mix-exp', c6D>2?'warn':c6D<-2?'good':'info',
+          `Mix elegíveis em <strong>${safraLabel(lS.safra)}</strong>: `+
+          `C1 (0–30d) <strong>${c1L.toFixed(1)}%</strong> <span style="color:${(c1L-c1P)>=0?'#16a34a':'#dc2626'}">(${(c1L-c1P)>=0?'+':''}${(c1L-c1P).toFixed(1)}pp)</span> · `+
+          `C6 >180d <strong>${c6L.toFixed(1)}%</strong> <span style="color:${c6D<=0?'#16a34a':'#dc2626'}">(${c6D>=0?'+':''}${c6D.toFixed(1)}pp)</span>.`+
+          (c6D>2?' <strong style="color:#d97706">Crescimento de inativos</strong> no mix — pressiona taxa de conversão.' :
+           c6D<-2?' <strong style="color:#16a34a">Redução de inativos</strong> no mix — favorece conversão.' :
+           ' Mix de elegíveis estável.')
+        );
+        const c1LR=totL?(lS.c1||0)/totL*100:0, c6LR=totL?(lS.c6||0)/totL*100:0;
+        const c1PR=totP?(pS.c1||0)/totP*100:0;
+        const c1DR=c1LR-c1PR;
+        _inj('slide-insight-mix-ren', c1DR>2?'good':c6D>2?'warn':'info',
+          `Renovados em <strong>${safraLabel(lS.safra)}</strong>: `+
+          `C1 (0–30d) <strong>${c1LR.toFixed(1)}%</strong> <span style="color:${c1DR>=0?'#16a34a':'#dc2626'}">(${c1DR>=0?'+':''}${c1DR.toFixed(1)}pp)</span> · `+
+          `C6 >180d <strong>${c6LR.toFixed(1)}%</strong> <span style="color:${c6D<=0?'#16a34a':'#dc2626'}">(${c6D>=0?'+':''}${c6D.toFixed(1)}pp)</span>.`+
+          (c1DR>2?' <strong style="color:#16a34a">Maior share de ativos</strong> renovando — tendência positiva.' :
+           c6D>2?' Crescimento de C6 no mix de renovados — atenção à pressão na taxa.' :
+           ' Mix de renovados estável.')
+        );
+      }
+
+      // — Insight Mix Trend —
+      if (safras.length>=2) {
+        const lT=safras[safras.length-1], pT=safras[safras.length-2];
+        const CKt=['c1','c2','c3','c4','c5','c6'];
+        const totLT=CKt.reduce((a,k)=>a+(lT[k]||0),0), totPT=CKt.reduce((a,k)=>a+(pT[k]||0),0);
+        const ativL=totLT?['c1','c2','c3'].reduce((a,k)=>a+(lT[k]||0),0)/totLT*100:0;
+        const ativP=totPT?['c1','c2','c3'].reduce((a,k)=>a+(pT[k]||0),0)/totPT*100:0;
+        const c6T=totLT?(lT.c6||0)/totLT*100:0;
+        const aD=ativL-ativP;
+        _inj('slide-insight-mix-trend', aD>2?'good':aD<-2?'warn':'info',
+          `Ativos (0–90 dias): <strong>${ativL.toFixed(1)}%</strong> em <strong>${safraLabel(lT.safra)}</strong> `+
+          `<span style="color:${aD>=0?'#16a34a':'#dc2626'}">(${aD>=0?'+':''}${aD.toFixed(1)}pp)</span> · `+
+          `Inativos (>180 dias): <strong>${c6T.toFixed(1)}%</strong>. `+
+          (aD>2?'<strong style="color:#16a34a">Base qualificando</strong> — share de usuários ativos em crescimento.' :
+           aD<-2?'<strong style="color:#dc2626">Base deteriorando</strong> — share de usuários ativos em queda.' :
+           'Composição da base estável no período.')
+        );
+      }
+    } catch(ei) { console.warn('slide insights err', ei); }
+
   } catch(e) {
     console.error('buildSlideCharts error:', e);
   }
@@ -5211,6 +6078,7 @@ updateKPIs();
 buildTable();
 buildGrupo1Table();
 buildCicloUsoTable();
+buildEng90();
 buildMixPublico();
 buildSlide();
 buildInsights();
