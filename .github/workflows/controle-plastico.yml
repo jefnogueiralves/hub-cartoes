@@ -1,0 +1,37 @@
+name: Controle de Plastico — Atualizar Dashboard
+
+on:
+  schedule:
+    - cron: '0 12 * * 1-5'   # 9h Brasília = 12h UTC, seg a sex
+  workflow_dispatch:           # permite rodar manualmente
+
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Instalar dependências
+        run: |
+          pip install --quiet \
+            google-cloud-bigquery \
+            google-cloud-storage \
+            db-dtypes \
+            pandas \
+            google-auth \
+            google-auth-httplib2
+
+      - name: Atualizar dados e publicar no GCS
+        env:
+          GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
+          DASH_DIR: controle-plastico
+        run: |
+          python controle-plastico/scripts/atualizar_dados_ci.py

@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Controle de Plástico | Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!--DATA_BEGIN-->
+<script>
+// Auto-gerado em 21/05/2026
+const PLASTICO_DATA = {
+  updateDate: "21/05/2026",
+  rows: [
+    {safra:"202401",label:"Jan/24",emissaoTD:324958,emissaoTC:189344,reemissaoTotal:128061,reemissaoTD:76995,reemissaoTC:51067,tdCreditFirst:46291,tcDebitFirst:200204},
+    {safra:"202402",label:"Fev/24",emissaoTD:318665,emissaoTC:183975,reemissaoTotal:118624,reemissaoTD:71424,reemissaoTC:47200,tdCreditFirst:50732,tcDebitFirst:212097},
+    {safra:"202403",label:"Mar/24",emissaoTD:320545,emissaoTC:135018,reemissaoTotal:130943,reemissaoTD:77541,reemissaoTC:53403,tdCreditFirst:61184,tcDebitFirst:184481},
+    {safra:"202404",label:"Abr/24",emissaoTD:387320,emissaoTC:156617,reemissaoTotal:146120,reemissaoTD:89633,reemissaoTC:56488,tdCreditFirst:55705,tcDebitFirst:222373},
+    {safra:"202405",label:"Mai/24",emissaoTD:471686,emissaoTC:144640,reemissaoTotal:155546,reemissaoTD:99013,reemissaoTC:56533,tdCreditFirst:57012,tcDebitFirst:184341},
+    {safra:"202406",label:"Jun/24",emissaoTD:397132,emissaoTC:189474,reemissaoTotal:154376,reemissaoTD:95889,reemissaoTC:58488,tdCreditFirst:58059,tcDebitFirst:191773},
+    {safra:"202407",label:"Jul/24",emissaoTD:444768,emissaoTC:173096,reemissaoTotal:174039,reemissaoTD:109200,reemissaoTC:64839,tdCreditFirst:58047,tcDebitFirst:163407},
+    {safra:"202408",label:"Ago/24",emissaoTD:409393,emissaoTC:134293,reemissaoTotal:160613,reemissaoTD:104307,reemissaoTC:56306,tdCreditFirst:52201,tcDebitFirst:145023},
+    {safra:"202409",label:"Set/24",emissaoTD:431340,emissaoTC:180290,reemissaoTotal:159849,reemissaoTD:103030,reemissaoTC:56819,tdCreditFirst:58272,tcDebitFirst:150342},
+    {safra:"202410",label:"Out/24",emissaoTD:458211,emissaoTC:175389,reemissaoTotal:178438,reemissaoTD:115566,reemissaoTC:62873,tdCreditFirst:60534,tcDebitFirst:93090},
+    {safra:"202411",label:"Nov/24",emissaoTD:451181,emissaoTC:182712,reemissaoTotal:172142,reemissaoTD:107542,reemissaoTC:64601,tdCreditFirst:62607,tcDebitFirst:106148},
+    {safra:"202412",label:"Dez/24",emissaoTD:449693,emissaoTC:132644,reemissaoTotal:180147,reemissaoTD:116248,reemissaoTC:63900,tdCreditFirst:62807,tcDebitFirst:72420},
+    {safra:"202501",label:"Jan/25",emissaoTD:443639,emissaoTC:113592,reemissaoTotal:189935,reemissaoTD:125936,reemissaoTC:64000,tdCreditFirst:51557,tcDebitFirst:45811},
+    {safra:"202502",label:"Fev/25",emissaoTD:382651,emissaoTC:127010,reemissaoTotal:169558,reemissaoTD:112998,reemissaoTC:56561,tdCreditFirst:44871,tcDebitFirst:71415},
+    {safra:"202503",label:"Mar/25",emissaoTD:426647,emissaoTC:175855,reemissaoTotal:177813,reemissaoTD:118539,reemissaoTC:59275,tdCreditFirst:47406,tcDebitFirst:106064},
+    {safra:"202504",label:"Abr/25",emissaoTD:414586,emissaoTC:239136,reemissaoTotal:157540,reemissaoTD:100688,reemissaoTC:56853,tdCreditFirst:46936,tcDebitFirst:93559},
+    {safra:"202505",label:"Mai/25",emissaoTD:428458,emissaoTC:227388,reemissaoTotal:171304,reemissaoTD:107533,reemissaoTC:63772,tdCreditFirst:49041,tcDebitFirst:139848},
+    {safra:"202506",label:"Jun/25",emissaoTD:458364,emissaoTC:303651,reemissaoTotal:256779,reemissaoTD:155498,reemissaoTC:101282,tdCreditFirst:51149,tcDebitFirst:184324},
+    {safra:"202507",label:"Jul/25",emissaoTD:474647,emissaoTC:347940,reemissaoTotal:306656,reemissaoTD:184062,reemissaoTC:122595,tdCreditFirst:58350,tcDebitFirst:200048},
+    {safra:"202508",label:"Ago/25",emissaoTD:457904,emissaoTC:318873,reemissaoTotal:302654,reemissaoTD:182982,reemissaoTC:119673,tdCreditFirst:63483,tcDebitFirst:170842},
+    {safra:"202509",label:"Set/25",emissaoTD:503369,emissaoTC:293379,reemissaoTotal:333713,reemissaoTD:196708,reemissaoTC:137006,tdCreditFirst:62820,tcDebitFirst:176021},
+    {safra:"202510",label:"Out/25",emissaoTD:541506,emissaoTC:339414,reemissaoTotal:357618,reemissaoTD:212402,reemissaoTC:145216,tdCreditFirst:72006,tcDebitFirst:198408},
+    {safra:"202511",label:"Nov/25",emissaoTD:483826,emissaoTC:360626,reemissaoTotal:326385,reemissaoTD:187873,reemissaoTC:138512,tdCreditFirst:74507,tcDebitFirst:193735},
+    {safra:"202512",label:"Dez/25",emissaoTD:439649,emissaoTC:229630,reemissaoTotal:293931,reemissaoTD:172514,reemissaoTC:121418,tdCreditFirst:80302,tcDebitFirst:122050},
+    {safra:"202601",label:"Jan/26",emissaoTD:630717,emissaoTC:284364,reemissaoTotal:271467,reemissaoTD:166802,reemissaoTC:104666,tdCreditFirst:71299,tcDebitFirst:166889},
+    {safra:"202602",label:"Fev/26",emissaoTD:682338,emissaoTC:281993,reemissaoTotal:248933,reemissaoTD:153467,reemissaoTC:95466,tdCreditFirst:67660,tcDebitFirst:169545},
+    {safra:"202603",label:"Mar/26",emissaoTD:551789,emissaoTC:309164,reemissaoTotal:305363,reemissaoTD:176421,reemissaoTC:128943,tdCreditFirst:73838,tcDebitFirst:245554},
+    {safra:"202604",label:"Abr/26",emissaoTD:498875,emissaoTC:285310,reemissaoTotal:294509,reemissaoTD:173736,reemissaoTC:120773,tdCreditFirst:69874,tcDebitFirst:205319},
+    {safra:"202605",label:"Mai/26",emissaoTD:337450,emissaoTC:200044,reemissaoTotal:238350,reemissaoTD:134088,reemissaoTC:104262,tdCreditFirst:46922,tcDebitFirst:154459,partial:true},
+  ]
+};
+</script>
+<!--DATA_END-->
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#0f172a;color:#f1f5f9;min-height:100vh}
+.wrap{max-width:1440px;margin:0 auto;padding:24px}
+
+/* Header */
+header{display:flex;justify-content:space-between;align-items:center;padding-bottom:18px;border-bottom:1px solid #1e293b;margin-bottom:0}
+.hdr h1{font-size:22px;font-weight:700;letter-spacing:-.3px}
+.hdr p{font-size:12px;color:#475569;margin-top:3px}
+.badge{background:#1e293b;border:1px solid #334155;padding:5px 13px;border-radius:20px;font-size:12px;color:#64748b}
+.badge b{color:#10b981}
+
+/* Tabs */
+.tabs{display:flex;gap:2px;margin:18px 0 20px;background:#1e293b;padding:4px;border-radius:10px;width:fit-content}
+.tab{padding:8px 22px;border-radius:7px;border:none;background:transparent;color:#64748b;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s}
+.tab.active{background:#0f172a;color:#f1f5f9;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.tab:hover:not(.active){color:#94a3b8}
+
+/* Tab content */
+.tab-content{display:none}.tab-content.active{display:block}
+
+/* KPI Grid */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.kpi{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:18px;position:relative;overflow:hidden;cursor:default}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.kpi.c1::before{background:linear-gradient(90deg,#00d4aa,#34d399)}
+.kpi.c2::before{background:linear-gradient(90deg,#60a5fa,#818cf8)}
+.kpi.c3::before{background:linear-gradient(90deg,#fb923c,#f59e0b)}
+.kpi.c4::before{background:linear-gradient(90deg,#c084fc,#e879f9)}
+.kpi-lbl{font-size:11px;color:#475569;text-transform:uppercase;letter-spacing:.6px;font-weight:600;margin-bottom:8px}
+.kpi-val{font-size:28px;font-weight:700;letter-spacing:-1px;color:#f8fafc;line-height:1}
+.kpi-ref{font-size:11px;color:#64748b;margin-top:4px}
+.kpi-changes{display:flex;gap:10px;margin-top:10px;padding-top:9px;border-top:1px solid #1a2744}
+.chg{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600}
+.chg.up{color:#34d399}.chg.dn{color:#f87171}.chg.neu{color:#94a3b8}
+.chg-label{font-size:10px;color:#475569;font-weight:400;margin-left:1px}
+
+/* Insight cards */
+.insights{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.insight{background:#1e293b;border:1px solid #334155;border-radius:10px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px}
+.ins-icon{font-size:22px;flex-shrink:0;margin-top:1px}
+.ins-text{font-size:12px;color:#94a3b8;line-height:1.6}
+.ins-text strong{color:#e2e8f0;font-size:13px;display:block;margin-bottom:3px}
+
+/* Charts */
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.row1{margin-bottom:14px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}
+.card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:18px}
+.card-hdr{margin-bottom:14px}
+.card-hdr h3{font-size:14px;font-weight:600;color:#e2e8f0}
+.card-hdr p{font-size:11px;color:#475569;margin-top:3px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px}
+.leg{display:flex;align-items:center;gap:5px;font-size:11px;color:#94a3b8}
+.leg-dot{width:8px;height:8px;border-radius:50%}
+.leg-line{width:16px;height:2px;border-radius:2px}
+canvas{display:block;width:100%!important;height:100%!important}
+.ch{position:relative;width:100%}
+
+/* Secton label */
+.sec{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#334155;margin:4px 0 14px;padding-bottom:8px;border-bottom:1px solid #1e293b}
+
+/* Year filter for table tab */
+.year-btns{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.btn-csv{margin-left:auto;background:transparent;border:1px solid #334155;color:#94a3b8;padding:6px 14px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:500;transition:all .15s}
+.btn-csv:hover{border-color:#34d399;color:#34d399}
+.ybtn{background:#1e293b;border:1px solid #334155;color:#94a3b8;padding:6px 18px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:500;transition:all .15s}
+.ybtn:hover{border-color:#60a5fa;color:#60a5fa}
+.ybtn.active{background:#60a5fa;border-color:#60a5fa;color:#0f172a;font-weight:700}
+
+/* Table */
+.tbl-card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:18px}
+.tbl-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.tbl-top h3{font-size:14px;font-weight:600;color:#e2e8f0}
+.tbl-top span{font-size:11px;color:#475569}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px;min-width:860px}
+.th-grp th{background:#0f172a;padding:5px 10px;text-align:center;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #0f172a}
+.th-grp .g-td{color:#00d4aa;border-right:1px solid #1e293b}
+.th-grp .g-tc{color:#60a5fa;border-right:1px solid #1e293b}
+.th-grp .g-re{color:#fb923c}
+.th-grp .g-x{border-right:1px solid #1e293b}
+.th-sub th{background:#0f172a;padding:7px 10px;text-align:right;color:#475569;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;border-bottom:2px solid #334155;white-space:nowrap}
+.th-sub th:first-child{text-align:left}
+.bdr{border-right:1px solid #1e293b}
+tbody tr{border-bottom:1px solid #1a2744;transition:background .1s}
+tbody tr:hover{background:#162032}
+td{padding:8px 10px;text-align:right;color:#94a3b8;white-space:nowrap}
+td:first-child{text-align:left;color:#e2e8f0;font-weight:600}
+td.tot{color:#e2e8f0;font-weight:600}
+.partial-row td{color:#4b5563;font-style:italic}
+.partial-row td:first-child{color:#6b7280}
+.p-star{font-size:9px;color:#f59e0b;margin-left:2px;vertical-align:super;font-style:normal}
+tfoot tr{border-top:2px solid #334155}
+tfoot td{padding:8px 10px;text-align:right;color:#f1f5f9;font-weight:700;font-size:12px;background:#0f172a}
+tfoot td:first-child{text-align:left;color:#64748b}
+
+@media(max-width:1100px){.kpi-grid,.row2{grid-template-columns:1fr 1fr}.insights,.row3{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.kpi-grid,.insights,.row2,.row3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="hdr">
+    <h1>Controle de Plástico</h1>
+    <p>Emissão e Reemissão de Plásticos por Safra de Aquisição · TD &amp; TC</p>
+  </div>
+  <div class="badge">Atualizado em <b id="updDate"></b></div>
+</header>
+
+<div class="tabs">
+  <button class="tab active" data-tab="geral">Visão Geral</button>
+  <button class="tab" data-tab="emissao">Emissão</button>
+  <button class="tab" data-tab="reemissao">Reemissão</button>
+  <button class="tab" data-tab="tabela">Tabela</button>
+</div>
+
+<!-- ==================== TAB GERAL ==================== -->
+<div id="tab-geral" class="tab-content active">
+  <div class="kpi-grid">
+    <div class="kpi c1">
+      <div class="kpi-lbl">Emissão TD</div>
+      <div class="kpi-val" id="g-td-val">—</div>
+      <div class="kpi-ref" id="g-td-ref"></div>
+      <div class="kpi-changes">
+        <div class="chg" id="g-td-mom"><span class="chg-label">vs mês ant.</span></div>
+        <div class="chg" id="g-td-yoy"><span class="chg-label">vs mesmo mês ano ant.</span></div>
+      </div>
+    </div>
+    <div class="kpi c2">
+      <div class="kpi-lbl">Emissão TC</div>
+      <div class="kpi-val" id="g-tc-val">—</div>
+      <div class="kpi-ref" id="g-tc-ref"></div>
+      <div class="kpi-changes">
+        <div class="chg" id="g-tc-mom"><span class="chg-label">vs mês ant.</span></div>
+        <div class="chg" id="g-tc-yoy"><span class="chg-label">vs mesmo mês ano ant.</span></div>
+      </div>
+    </div>
+    <div class="kpi c3">
+      <div class="kpi-lbl">Reemissão</div>
+      <div class="kpi-val" id="g-re-val">—</div>
+      <div class="kpi-ref" id="g-re-ref"></div>
+      <div class="kpi-changes">
+        <div class="chg" id="g-re-mom"><span class="chg-label">vs mês ant.</span></div>
+        <div class="chg" id="g-re-yoy"><span class="chg-label">vs mesmo mês ano ant.</span></div>
+      </div>
+    </div>
+    <div class="kpi c4">
+      <div class="kpi-lbl">Total de Plásticos</div>
+      <div class="kpi-val" id="g-tot-val">—</div>
+      <div class="kpi-ref" id="g-tot-ref"></div>
+      <div class="kpi-changes">
+        <div class="chg" id="g-tot-mom"><span class="chg-label">vs mês ant.</span></div>
+        <div class="chg" id="g-tot-yoy"><span class="chg-label">vs mesmo mês ano ant.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="insights" id="insightCards"></div>
+
+  <div class="row1">
+    <div class="card">
+      <div class="card-hdr">
+        <h3>Emissão de Plásticos — Tendência Histórica</h3>
+        <p>Emissão TD (débito) e TC (crédito) por safra de aquisição</p>
+      </div>
+      <div class="legend">
+        <div class="leg"><div class="leg-line" style="background:#00d4aa"></div>Emissão TD</div>
+        <div class="leg"><div class="leg-line" style="background:#60a5fa"></div>Emissão TC</div>
+        <div class="leg"><div class="leg-line" style="background:#fb923c;opacity:.6"></div>Reemissão</div>
+      </div>
+      <div class="ch" style="height:260px"><canvas id="chartTrend"></canvas></div>
+    </div>
+  </div>
+
+  <div class="row2">
+    <div class="card">
+      <div class="card-hdr">
+        <h3>Variação Mensal (MoM) — Emissão TD</h3>
+        <p>% de crescimento vs mês anterior — verde = cresceu, vermelho = caiu</p>
+      </div>
+      <div class="ch" style="height:220px"><canvas id="chartMomTD"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-hdr">
+        <h3>Variação Mensal (MoM) — Emissão TC</h3>
+        <p>% de crescimento vs mês anterior — verde = cresceu, vermelho = caiu</p>
+      </div>
+      <div class="ch" style="height:220px"><canvas id="chartMomTC"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB EMISSÃO ==================== -->
+<div id="tab-emissao" class="tab-content">
+  <p class="sec">Análise de Emissão de Plásticos</p>
+
+  <div class="row1">
+    <div class="card">
+      <div class="card-hdr">
+        <h3>Emissão TD vs TC — Comparativo por Safra</h3>
+        <p>Volume total emitido para cada produto por safra de aquisição</p>
+      </div>
+      <div class="legend">
+        <div class="leg"><div class="leg-dot" style="background:#00d4aa"></div>Emissão TD</div>
+        <div class="leg"><div class="leg-dot" style="background:#60a5fa"></div>Emissão TC</div>
+      </div>
+      <div class="ch" style="height:260px"><canvas id="chartEmissaoComp"></canvas></div>
+    </div>
+  </div>
+
+  <div class="row2">
+    <div class="card">
+      <div class="card-hdr">
+        <h3>Comparativo Anual — Emissão TD</h3>
+        <p>Mesmos meses em 2024, 2025 e 2026 lado a lado</p>
+      </div>
+      <div class="legend">
+        <div class="leg"><div class="leg-dot" style="background:#334155"></div>2024</div>
+        <div class="leg"><div class="leg-dot" style="background:#00d4aa"></div>2025</div>
+        <div class="leg"><div class="leg-dot" style="background:#34d399"></div>2026</div>
+      </div>
+      <div class="ch" style="height:260px"><canvas id="chartYoyTD"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-hdr">
+        <h3>Comparativo Anual — Emissão TC</h3>
+        <p>Mesmos meses em 2024, 2025 e 2026 lado a lado</p>
+      </div>
+      <div class="legend">
+        <div class="leg"><div class="leg-dot" style="background:#334155"></div>2024</div>
+        <div class="leg"><div class="leg-dot" style="background:#60a5fa"></div>2025</div>
+        <div class="leg"><div class="leg-dot" style="background:#818cf8"></div>2026</div>
+      </div>
+      <div class="ch" style="height:260px"><canvas id="chartYoyTC"></canvas></div>
+    </div>
+  </div>
+
+  <div class="row1">
+    <div class="card">
+      <div class="card-hdr">
+        <h3>Emissões Cross-Product por Safra</h3>
+        <p>TD para Credit First (clientes TD que receberam TC) · TC para Debit First (clientes TC que receberam TD)</p>
+      </div>
+      <div class="legend">
+        <div class="leg"><div class="leg-line" style="background:#c084fc"></div>Emissão TD para Credit First</div>
+        <div class="leg"><div class="leg-line" style="background:#f472b6"></div>Emissão TC para Debit First</div>
+      </div>
+      <div class="ch" style="height:220px"><canvas id="chartCross"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB REEMISSÃO ==================== -->
+<div id="tab-reemissao" class="tab-content">
+  <p class="sec">Análise de Reemissão de Plásticos</p>
+
+  <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr)">
+    <div class="kpi c3">
+      <div class="kpi-lbl">Reemissão Total</div>
+      <div class="kpi-val" id="r-tot-val">—</div>
+      <div class="kpi-ref" id="r-tot-ref"></div>
+      <div class="kpi-changes">
+        <div class="chg" id="r-tot-mom"><span class="chg-label">vs mês ant.</span></div>
+        <div class="chg" id="r-tot-yoy"><span class="chg-label">vs mesmo mês ano ant.</span></div>
+      </div>
+    </div>
+    <div class="kpi c1">
+      <div class="kpi-lbl">Reemissão TD</div>
+      <div class="kpi-val" id="r-td-val">—</div>
+      <div class="kpi-ref" id="r-td-ref"></div>
+      <div class="kpi-changes">
+        <div class="chg" id="r-td-mom"><span class="chg-label">vs mês ant.</span></div>
+        <div class="chg" id="r-td-yoy"><span class="chg-label">vs mesmo mês ano ant.</span></div>
+      </div>
+    </div>
+    <div class="kpi c2">
+      <div class="kpi-lbl">Reemissão TC</div>
+      <div class="kpi-val" id="r-tc-val">—</div>
+      <div class="kpi-ref" id="r-tc-ref"></div>
+      <div class="kpi-changes">
+        <div class="chg" id="r-tc-mom"><span class="chg-label">vs mês ant.</span></div>
+        <div class="chg" id="r-tc-yoy"><span class="chg-label">vs mesmo mês ano ant.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row1">
+    <div class="card">
+      <div class="card-hdr">
+        <h3>Reemissão — Tendência Total, TD e TC</h3>
+        <p>Volume de plásticos reemitidos por safra de aquisição</p>
+      </div>
+      <div class="legend">
+        <div class="leg"><div class="leg-line" style="background:#fb923c"></div>Total</div>
+        <div class="leg"><div class="leg-line" style="background:#00d4aa;opacity:.8"></div>Reemissão TD</div>
+        <div class="leg"><div class="leg-line" style="background:#60a5fa;opacity:.8"></div>Reemissão TC</div>
+      </div>
+      <div class="ch" style="height:260px"><canvas id="chartReemiTrend"></canvas></div>
+    </div>
+  </div>
+
+  <div class="row2">
+    <div class="card">
+      <div class="card-hdr">
+        <h3>Reemissão como % da Emissão</h3>
+        <p>Proporção de reemissão sobre o total emitido no mesmo mês</p>
+      </div>
+      <div class="ch" style="height:250px"><canvas id="chartReemiPct"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-hdr">
+        <h3>Composição da Reemissão — TD vs TC</h3>
+        <p>Distribuição percentual entre reemissão TD e TC por safra</p>
+      </div>
+      <div class="ch" style="height:250px"><canvas id="chartReemiStack"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB TABELA ==================== -->
+<div id="tab-tabela" class="tab-content">
+  <div class="year-btns">
+    <button class="ybtn active" data-year="all">Todos</button>
+    <button class="ybtn" data-year="2024">2024</button>
+    <button class="ybtn" data-year="2025">2025</button>
+    <button class="ybtn" data-year="2026">2026</button>
+    <button class="btn-csv" id="btnExportCSV">⬇ Exportar CSV</button>
+  </div>
+  <div class="tbl-card">
+    <div class="tbl-top">
+      <h3>Controle Plástico — Dados por Safra</h3>
+      <span>* mês em andamento (parcial)</span>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr class="th-grp">
+            <th style="background:#1e293b"></th>
+            <th class="g-td bdr">Emissão TD</th>
+            <th class="g-tc bdr">Emissão TC</th>
+            <th class="g-re bdr" colspan="3">Reemissão</th>
+            <th class="g-x bdr">TD → Credit First</th>
+            <th>TC → Debit First</th>
+          </tr>
+          <tr class="th-sub">
+            <th style="text-align:left">Safra</th>
+            <th class="bdr">EMT_TD_DEBT_FIRST</th>
+            <th class="bdr">EMIT_TC_CRED_FIRST</th>
+            <th>Total</th><th>TD</th><th class="bdr">TC</th>
+            <th class="bdr">EMT_TD_CRED_FIRST</th>
+            <th>EMIT_TC_DEBT_FIRST</th>
+          </tr>
+        </thead>
+        <tbody id="tblBody"></tbody>
+        <tfoot id="tblFoot"></tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+Chart.defaults.color = '#475569';
+Chart.defaults.font.family = "'Segoe UI',system-ui,sans-serif";
+
+const R = PLASTICO_DATA.rows;
+
+/* ---- Utilities ---- */
+function fmt(n){ return n==null?'—':Math.round(n).toLocaleString('pt-BR'); }
+function fmtK(n){
+  if(n>=1e6) return (n/1e6).toFixed(1).replace('.',',')+' M';
+  if(n>=1e3) return (n/1e3).toFixed(0).replace('.',',')+' k';
+  return Math.round(n).toLocaleString('pt-BR');
+}
+function pct(a,b){ return b===0?0:((a-b)/b*100); }
+function fmtPct(p){ return (p>=0?'+':'')+p.toFixed(1)+'%'; }
+function chgClass(p){ return p>0?'up':p<0?'dn':'neu'; }
+function arrow(p){ return p>1?'↑':p<-1?'↓':'→'; }
+
+/* ---- Find reference rows ---- */
+const complete = R.filter(r=>!r.partial);
+const last = complete[complete.length-1];
+const prev = complete[complete.length-2];
+const lastSafra = last.safra;
+const prevSafra = prev.safra;
+const lastYear = lastSafra.slice(0,4);
+const lastMonth = lastSafra.slice(4);
+const yoyRow = R.find(r=>r.safra === (String(+lastYear-1)+lastMonth));
+
+/* ---- Grid & Tick helpers ---- */
+const GC = 'rgba(30,41,59,.9)', TC2 = '#334155';
+function sX(rotate){ return{grid:{color:GC},ticks:{color:TC2,font:{size:10},maxRotation:rotate||45}}; }
+function sY(){ return{grid:{color:GC},ticks:{color:TC2,font:{size:10},callback:v=>fmtK(v)}}; }
+function sPct(){ return{grid:{color:GC},ticks:{color:TC2,font:{size:10},callback:v=>v.toFixed(1)+'%'}}; }
+function ttFmt(label,v){ return `${label}: ${fmt(v)}`; }
+function ttFmtPct(label,v){ return `${label}: ${v.toFixed(1)}%`; }
+
+/* ---- Charts store ---- */
+const CH = {};
+function kill(id){ if(CH[id]){CH[id].destroy();delete CH[id];} }
+
+/* ===================== INIT KPIs ===================== */
+function initKPIs(){
+  // Last complete month
+  function setKpi(valId, refId, momId, yoyId, curr, p, yoy, lbl){
+    document.getElementById(valId).textContent = fmtK(curr);
+    document.getElementById(refId).textContent = lbl;
+    const momPct = pct(curr, p);
+    const momEl = document.getElementById(momId);
+    momEl.innerHTML = `<span>${arrow(momPct)} ${fmtPct(momPct)}</span><span class="chg-label">&nbsp;vs mês ant.</span>`;
+    momEl.className = 'chg '+chgClass(momPct);
+    if(yoy){
+      const yoyPct = pct(curr, yoy);
+      const yoyEl = document.getElementById(yoyId);
+      yoyEl.innerHTML = `<span>${arrow(yoyPct)} ${fmtPct(yoyPct)}</span><span class="chg-label">&nbsp;vs mesmo mês ano ant.</span>`;
+      yoyEl.className = 'chg '+chgClass(yoyPct);
+    }
+  }
+
+  const totalLast = last.emissaoTD + last.emissaoTC + last.reemissaoTotal;
+  const totalPrev = prev.emissaoTD + prev.emissaoTC + prev.reemissaoTotal;
+  const totalYoy  = yoyRow ? yoyRow.emissaoTD + yoyRow.emissaoTC + yoyRow.reemissaoTotal : null;
+  const ref = `${last.label} (último mês completo)`;
+
+  setKpi('g-td-val','g-td-ref','g-td-mom','g-td-yoy', last.emissaoTD, prev.emissaoTD, yoyRow?.emissaoTD, ref);
+  setKpi('g-tc-val','g-tc-ref','g-tc-mom','g-tc-yoy', last.emissaoTC, prev.emissaoTC, yoyRow?.emissaoTC, ref);
+  setKpi('g-re-val','g-re-ref','g-re-mom','g-re-yoy', last.reemissaoTotal, prev.reemissaoTotal, yoyRow?.reemissaoTotal, ref);
+  setKpi('g-tot-val','g-tot-ref','g-tot-mom','g-tot-yoy', totalLast, totalPrev, totalYoy, ref);
+
+  // Reemissão tab KPIs
+  setKpi('r-tot-val','r-tot-ref','r-tot-mom','r-tot-yoy', last.reemissaoTotal, prev.reemissaoTotal, yoyRow?.reemissaoTotal, ref);
+  setKpi('r-td-val','r-td-ref','r-td-mom','r-td-yoy',   last.reemissaoTD, prev.reemissaoTD, yoyRow?.reemissaoTD, ref);
+  setKpi('r-tc-val','r-tc-ref','r-tc-mom','r-tc-yoy',   last.reemissaoTC, prev.reemissaoTC, yoyRow?.reemissaoTC, ref);
+}
+
+/* ===================== INIT INSIGHTS ===================== */
+function initInsights(){
+  const tdMom = pct(last.emissaoTD, prev.emissaoTD);
+  const tcMom = pct(last.emissaoTC, prev.emissaoTC);
+  const reMom = pct(last.reemissaoTotal, prev.reemissaoTotal);
+  const tdYoy = yoyRow ? pct(last.emissaoTD, yoyRow.emissaoTD) : null;
+  const tcYoy = yoyRow ? pct(last.emissaoTC, yoyRow.emissaoTC) : null;
+  const reYoy = yoyRow ? pct(last.reemissaoTotal, yoyRow.reemissaoTotal) : null;
+
+  const ins = [
+    {
+      icon: tdMom >= 0 ? '📈' : '📉',
+      title: `Emissão TD em ${last.label}: ${fmt(last.emissaoTD)}`,
+      body: `${arrow(tdMom)} <b>${fmtPct(tdMom)}</b> vs ${prev.label} (${fmt(last.emissaoTD - prev.emissaoTD)} cartões)` +
+            (tdYoy!=null ? ` · ${arrow(tdYoy)} <b>${fmtPct(tdYoy)}</b> YoY vs ${yoyRow.label}` : '')
+    },
+    {
+      icon: tcMom >= 0 ? '📈' : '📉',
+      title: `Emissão TC em ${last.label}: ${fmt(last.emissaoTC)}`,
+      body: `${arrow(tcMom)} <b>${fmtPct(tcMom)}</b> vs ${prev.label} (${fmt(last.emissaoTC - prev.emissaoTC)} cartões)` +
+            (tcYoy!=null ? ` · ${arrow(tcYoy)} <b>${fmtPct(tcYoy)}</b> YoY vs ${yoyRow.label}` : '')
+    },
+    {
+      icon: reMom >= 0 ? '🔄' : '✅',
+      title: `Reemissão em ${last.label}: ${fmt(last.reemissaoTotal)}`,
+      body: `${arrow(reMom)} <b>${fmtPct(reMom)}</b> vs ${prev.label} (${fmt(last.reemissaoTotal - prev.reemissaoTotal)} plásticos)` +
+            (reYoy!=null ? ` · ${arrow(reYoy)} <b>${fmtPct(reYoy)}</b> YoY vs ${yoyRow.label}` : '')
+    }
+  ];
+
+  const cont = document.getElementById('insightCards');
+  cont.innerHTML = ins.map(i=>`
+    <div class="insight">
+      <div class="ins-icon">${i.icon}</div>
+      <div class="ins-text"><strong>${i.title}</strong>${i.body}</div>
+    </div>`).join('');
+}
+
+/* ===================== GERAL CHARTS ===================== */
+function initGeralCharts(){
+  const labels = R.map(r=>r.label);
+
+  kill('chartTrend');
+  CH.chartTrend = new Chart(document.getElementById('chartTrend'),{
+    type:'line',
+    data:{
+      labels,
+      datasets:[
+        {label:'Emissão TD',data:R.map(r=>r.emissaoTD),borderColor:'#00d4aa',backgroundColor:'rgba(0,212,170,.06)',fill:true,tension:.3,borderWidth:2.5,pointRadius:2.5},
+        {label:'Emissão TC',data:R.map(r=>r.emissaoTC),borderColor:'#60a5fa',backgroundColor:'rgba(96,165,250,.04)',fill:true,tension:.3,borderWidth:2.5,pointRadius:2.5},
+        {label:'Reemissão',data:R.map(r=>r.reemissaoTotal),borderColor:'rgba(251,146,60,.6)',backgroundColor:'transparent',fill:false,tension:.3,borderWidth:1.5,pointRadius:2,borderDash:[5,3]},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ttFmt(ctx.dataset.label,ctx.raw)}}},
+      scales:{x:sX(),y:sY()}}
+  });
+
+  // MoM TD
+  const momTD = R.slice(1).map((r,i)=>({label:r.label,val:pct(r.emissaoTD,R[i].emissaoTD)}));
+  kill('chartMomTD');
+  CH.chartMomTD = new Chart(document.getElementById('chartMomTD'),{
+    type:'bar',
+    data:{
+      labels:momTD.map(d=>d.label),
+      datasets:[{
+        label:'MoM %',
+        data:momTD.map(d=>+d.val.toFixed(2)),
+        backgroundColor:momTD.map(d=>d.val>=0?'rgba(52,211,153,.75)':'rgba(248,113,113,.75)'),
+        borderColor:momTD.map(d=>d.val>=0?'#34d399':'#f87171'),
+        borderWidth:1,borderRadius:3,
+      }]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw.toFixed(1)}%`}}},
+      scales:{x:sX(60),y:sPct()}}
+  });
+
+  // MoM TC
+  const momTC = R.slice(1).map((r,i)=>({label:r.label,val:pct(r.emissaoTC,R[i].emissaoTC)}));
+  kill('chartMomTC');
+  CH.chartMomTC = new Chart(document.getElementById('chartMomTC'),{
+    type:'bar',
+    data:{
+      labels:momTC.map(d=>d.label),
+      datasets:[{
+        label:'MoM %',
+        data:momTC.map(d=>+d.val.toFixed(2)),
+        backgroundColor:momTC.map(d=>d.val>=0?'rgba(96,165,250,.75)':'rgba(248,113,113,.75)'),
+        borderColor:momTC.map(d=>d.val>=0?'#60a5fa':'#f87171'),
+        borderWidth:1,borderRadius:3,
+      }]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw.toFixed(1)}%`}}},
+      scales:{x:sX(60),y:sPct()}}
+  });
+}
+
+/* ===================== EMISSÃO CHARTS ===================== */
+function initEmissaoCharts(){
+  const labels = R.map(r=>r.label);
+
+  kill('chartEmissaoComp');
+  CH.chartEmissaoComp = new Chart(document.getElementById('chartEmissaoComp'),{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[
+        {label:'Emissão TD',data:R.map(r=>r.emissaoTD),backgroundColor:'rgba(0,212,170,.7)',borderColor:'#00d4aa',borderWidth:1,borderRadius:3},
+        {label:'Emissão TC',data:R.map(r=>r.emissaoTC),backgroundColor:'rgba(96,165,250,.7)',borderColor:'#60a5fa',borderWidth:1,borderRadius:3},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ttFmt(ctx.dataset.label,ctx.raw)}}},
+      scales:{x:sX(),y:sY()}}
+  });
+
+  // YoY TD
+  const MONTHS_PT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const years = ['2024','2025','2026'];
+  const monthLabels = MONTHS_PT.slice(0,12);
+
+  function yoyData(field, yr){
+    return monthLabels.map((_,mi)=>{
+      const safra = `${yr}${String(mi+1).padStart(2,'0')}`;
+      const row = R.find(r=>r.safra===safra);
+      return row ? row[field] : null;
+    });
+  }
+
+  const yoyColors = {TD:['#334155','#00d4aa','#34d399'], TC:['#334155','#60a5fa','#818cf8']};
+
+  kill('chartYoyTD');
+  CH.chartYoyTD = new Chart(document.getElementById('chartYoyTD'),{
+    type:'bar',
+    data:{
+      labels:monthLabels,
+      datasets:years.map((yr,i)=>({
+        label:yr,data:yoyData('emissaoTD',yr),
+        backgroundColor:yoyColors.TD[i]+'cc',borderColor:yoyColors.TD[i],borderWidth:1,borderRadius:2,
+        spanGaps:false
+      }))
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ttFmt(ctx.dataset.label,ctx.raw)}}},
+      scales:{x:sX(0),y:sY()}}
+  });
+
+  kill('chartYoyTC');
+  CH.chartYoyTC = new Chart(document.getElementById('chartYoyTC'),{
+    type:'bar',
+    data:{
+      labels:monthLabels,
+      datasets:years.map((yr,i)=>({
+        label:yr,data:yoyData('emissaoTC',yr),
+        backgroundColor:yoyColors.TC[i]+'cc',borderColor:yoyColors.TC[i],borderWidth:1,borderRadius:2,
+        spanGaps:false
+      }))
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ttFmt(ctx.dataset.label,ctx.raw)}}},
+      scales:{x:sX(0),y:sY()}}
+  });
+
+  kill('chartCross');
+  CH.chartCross = new Chart(document.getElementById('chartCross'),{
+    type:'line',
+    data:{
+      labels,
+      datasets:[
+        {label:'TD → Credit First',data:R.map(r=>r.tdCreditFirst),borderColor:'#c084fc',backgroundColor:'transparent',fill:false,tension:.3,borderWidth:2,pointRadius:2.5},
+        {label:'TC → Debit First',data:R.map(r=>r.tcDebitFirst),borderColor:'#f472b6',backgroundColor:'transparent',fill:false,tension:.3,borderWidth:2,pointRadius:2.5},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ttFmt(ctx.dataset.label,ctx.raw)}}},
+      scales:{x:sX(),y:sY()}}
+  });
+}
+
+/* ===================== REEMISSÃO CHARTS ===================== */
+function initReemissaoCharts(){
+  const labels = R.map(r=>r.label);
+
+  kill('chartReemiTrend');
+  CH.chartReemiTrend = new Chart(document.getElementById('chartReemiTrend'),{
+    type:'line',
+    data:{
+      labels,
+      datasets:[
+        {label:'Total',data:R.map(r=>r.reemissaoTotal),borderColor:'#fb923c',backgroundColor:'rgba(251,146,60,.07)',fill:true,tension:.3,borderWidth:2.5,pointRadius:2.5},
+        {label:'Reemissão TD',data:R.map(r=>r.reemissaoTD),borderColor:'rgba(0,212,170,.8)',backgroundColor:'transparent',fill:false,tension:.3,borderWidth:2,pointRadius:2,borderDash:[5,3]},
+        {label:'Reemissão TC',data:R.map(r=>r.reemissaoTC),borderColor:'rgba(96,165,250,.8)',backgroundColor:'transparent',fill:false,tension:.3,borderWidth:2,pointRadius:2,borderDash:[2,2]},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ttFmt(ctx.dataset.label,ctx.raw)}}},
+      scales:{x:sX(),y:sY()}}
+  });
+
+  // Reemissão % of emissão
+  const pctData = R.map(r=>{
+    const emTotal = r.emissaoTD + r.emissaoTC;
+    return emTotal>0 ? +((r.reemissaoTotal/emTotal)*100).toFixed(2) : 0;
+  });
+  kill('chartReemiPct');
+  CH.chartReemiPct = new Chart(document.getElementById('chartReemiPct'),{
+    type:'line',
+    data:{
+      labels,
+      datasets:[{
+        label:'Reemissão / Emissão %',
+        data:pctData,
+        borderColor:'#f59e0b',
+        backgroundColor:'rgba(245,158,11,.08)',
+        fill:true,tension:.3,borderWidth:2.5,pointRadius:2.5
+      }]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw.toFixed(1)}%`}}},
+      scales:{x:sX(),y:sPct()}}
+  });
+
+  // Reemissão stacked TD/TC
+  kill('chartReemiStack');
+  CH.chartReemiStack = new Chart(document.getElementById('chartReemiStack'),{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[
+        {label:'Reemissão TD',data:R.map(r=>r.reemissaoTD),backgroundColor:'rgba(0,212,170,.7)',borderColor:'#00d4aa',borderWidth:1,stack:'s'},
+        {label:'Reemissão TC',data:R.map(r=>r.reemissaoTC),backgroundColor:'rgba(96,165,250,.7)',borderColor:'#60a5fa',borderWidth:1,stack:'s'},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ttFmt(ctx.dataset.label,ctx.raw)}}},
+      scales:{x:{...sX(),stacked:true},y:{...sY(),stacked:true}}}
+  });
+}
+
+/* ===================== TABLE ===================== */
+function renderTable(year){
+  const rows = year==='all' ? [...R].reverse() : [...R].filter(r=>r.safra.startsWith(year)).reverse();
+  const body = document.getElementById('tblBody');
+  const foot = document.getElementById('tblFoot');
+  body.innerHTML=''; foot.innerHTML='';
+
+  let sEmTD=0,sEmTC=0,sReTot=0,sReTD=0,sReTC=0,sTdCF=0,sTcDF=0;
+
+  rows.forEach(r=>{
+    sEmTD+=r.emissaoTD; sEmTC+=r.emissaoTC;
+    sReTot+=r.reemissaoTotal; sReTD+=r.reemissaoTD; sReTC+=r.reemissaoTC;
+    sTdCF+=r.tdCreditFirst; sTcDF+=r.tcDebitFirst;
+    const tr = document.createElement('tr');
+    if(r.partial) tr.classList.add('partial-row');
+    tr.innerHTML = `
+      <td>${r.label}${r.partial?'<span class="p-star">*</span>':''}</td>
+      <td class="bdr">${fmt(r.emissaoTD)}</td>
+      <td class="bdr">${fmt(r.emissaoTC)}</td>
+      <td>${fmt(r.reemissaoTotal)}</td><td>${fmt(r.reemissaoTD)}</td><td class="bdr">${fmt(r.reemissaoTC)}</td>
+      <td class="bdr">${fmt(r.tdCreditFirst)}</td>
+      <td>${fmt(r.tcDebitFirst)}</td>`;
+    body.appendChild(tr);
+  });
+
+  const tf = document.createElement('tr');
+  tf.innerHTML=`<td>Total</td>
+    <td class="bdr tot">${fmt(sEmTD)}</td>
+    <td class="bdr tot">${fmt(sEmTC)}</td>
+    <td>${fmt(sReTot)}</td><td>${fmt(sReTD)}</td><td class="bdr">${fmt(sReTC)}</td>
+    <td class="bdr">${fmt(sTdCF)}</td>
+    <td>${fmt(sTcDF)}</td>`;
+  foot.appendChild(tf);
+}
+
+/* ===================== TAB SWITCHING ===================== */
+let rendered = {geral:false, emissao:false, reemissao:false};
+
+function activateTab(tab){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  document.querySelectorAll('.tab-content').forEach(d=>d.classList.toggle('active',d.id==='tab-'+tab));
+  if(tab==='geral' && !rendered.geral){ initGeralCharts(); rendered.geral=true; }
+  if(tab==='emissao' && !rendered.emissao){ initEmissaoCharts(); rendered.emissao=true; }
+  if(tab==='reemissao' && !rendered.reemissao){ initReemissaoCharts(); rendered.reemissao=true; }
+}
+
+document.querySelectorAll('.tab').forEach(b=>{
+  b.addEventListener('click',()=>activateTab(b.dataset.tab));
+});
+
+document.querySelectorAll('.ybtn').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.ybtn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    renderTable(b.dataset.year);
+  });
+});
+
+/* ===================== CSV EXPORT ===================== */
+function exportCSV(year){
+  const rows = year==='all' ? [...R].reverse() : [...R].filter(r=>r.safra.startsWith(year)).reverse();
+  const headers = ['Safra','Emissao_TD','Emissao_TC','Reemissao_Total','Reemissao_TD','Reemissao_TC','TD_Credit_First','TC_Debit_First'];
+  const lines = [headers.join(';')];
+  rows.forEach(r=>{
+    lines.push([
+      r.safra, r.emissaoTD, r.emissaoTC,
+      r.reemissaoTotal, r.reemissaoTD, r.reemissaoTC,
+      r.tdCreditFirst, r.tcDebitFirst
+    ].join(';'));
+  });
+  const blob = new Blob(['﻿'+lines.join('\n')], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `controle_plastico_${year==='all'?'todos':year}.csv`;
+  a.click();
+}
+
+document.getElementById('btnExportCSV').addEventListener('click', ()=>{
+  const active = document.querySelector('.ybtn.active');
+  exportCSV(active ? active.dataset.year : 'all');
+});
+
+/* ===================== BOOT ===================== */
+document.getElementById('updDate').textContent = PLASTICO_DATA.updateDate;
+initKPIs();
+initInsights();
+initGeralCharts();
+rendered.geral = true;
+renderTable('all');
+</script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+name: Melhorias Fluxo Listado — Publicar no GCS
+
+on:
+  schedule:
+    - cron: '0 12 * * 1-5'   # 9h Brasília = 12h UTC, seg a sex
+  workflow_dispatch:           # permite rodar manualmente
+  push:
+    paths:
+      - 'melhorias-fluxo-listado/melhorias-fluxo-listado.html'
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Autenticar no GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+      - name: Configurar gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Upload para GCS
+        run: |
+          gsutil -h "Content-Type:text/html" \
+            cp melhorias-fluxo-listado/melhorias-fluxo-listado.html \
+            gs://meli-sandbox/CARDSINDICATORSBR/dashboards_TDMP_MLB/melhorias-fluxo-listado.html
+          echo "✅ Publicado em gs://meli-sandbox/CARDSINDICATORSBR/dashboards_TDMP_MLB/melhorias-fluxo-listado.html"
+          echo "🔗 GCS: https://storage.cloud.google.com/meli-sandbox/CARDSINDICATORSBR/dashboards_TDMP_MLB/melhorias-fluxo-listado.html"
+          echo "🔗 Grid: https://grid.adminml.com/d/01KS5XWDPHGD4SJ2GSPD5EYQNQ/view"
