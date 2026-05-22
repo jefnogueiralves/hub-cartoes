@@ -1,6 +1,7 @@
 ﻿# Credenciais — NUNCA commitar
 grid_credentials.txt
 *.json
+!status.json
 service_account*.json
 gcp_key*.json
 .env
