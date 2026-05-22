@@ -38,7 +38,7 @@ GCS_URL = f"https://storage.googleapis.com/{BUCKET}/{PREFIX}/{OBJECT}"
 def log(msg):
     ts   = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     line = f"[{ts}] {msg}"
-    print(line)
+    print(line.encode(sys.stdout.encoding or "utf-8", errors="replace").decode(sys.stdout.encoding or "utf-8"))
     try:
         LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
         with open(LOG_FILE, "a", encoding="utf-8") as f:
@@ -48,7 +48,7 @@ def log(msg):
 
 
 def run_bq():
-    log("─── ETAPA 1: BigQuery ──────────────────────────────")
+    log("--- ETAPA 1: BigQuery ──────────────────────────────")
     script = SCRIPTS_DIR / "update_data.py"
     if not script.exists():
         log("AVISO: update_data.py não encontrado — usando dados existentes.")
@@ -68,7 +68,7 @@ def run_bq():
 
 
 def build_html():
-    log("─── ETAPA 2: Gerar HTML ────────────────────────────")
+    log("--- ETAPA 2: Gerar HTML ────────────────────────────")
     if not HTML_SRC.exists():
         log(f"ERRO: {HTML_SRC} não encontrado"); sys.exit(1)
     if not DATA_JS.exists():
@@ -98,7 +98,7 @@ def build_html():
 
 
 def upload_gcs(html_path: Path):
-    log("─── ETAPA 3: Upload GCS ────────────────────────────")
+    log("--- ETAPA 3: Upload GCS ────────────────────────────")
     try:
         from google.cloud import storage as gcs
     except ImportError:
@@ -132,7 +132,7 @@ def main():
     args = parser.parse_args()
 
     log("=" * 55)
-    log("Cartões Expirados — Publicação GCS")
+    log("Cartoes Expirados - Publicacao GCS")
     log("=" * 55)
 
     if not args.skip_bq:
