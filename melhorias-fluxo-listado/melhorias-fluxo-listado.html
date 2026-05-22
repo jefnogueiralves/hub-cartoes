@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Melhorias no Fluxo Listado — Análise de Impacto</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#0d0d0d;
+  --dark:#1a1f2e;
+  --blue:#1565C0;
+  --blue2:#1976D2;
+  --blue3:#42A5F5;
+  --blue4:#BBDEFB;
+  --blue5:#E3F2FD;
+  --yellow:#F9A825;
+  --yellow2:#FDD835;
+  --yellow3:#FFF9C4;
+  --gray1:#37474F;
+  --gray2:#546E7A;
+  --gray3:#90A4AE;
+  --gray4:#CFD8DC;
+  --gray5:#ECEFF1;
+  --white:#fff;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--dark);display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:16px}
+.wrapper{width:100%;max-width:1120px}
+.slide-box{position:relative;width:100%;padding-top:56.25%;border-radius:12px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.6)}
+.slide{position:absolute;top:0;left:0;width:100%;height:100%;background:var(--white);display:none;flex-direction:column;overflow:hidden}
+.slide.active{display:flex}
+
+/* HEADER */
+.sh{padding:14px 32px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.sh.b1{background:var(--blue)}.sh.b2{background:var(--blue2)}.sh.b3{background:#263238}.sh.bk{background:var(--black)}
+.sh.yl{background:var(--yellow)}
+.sh h2{color:var(--white);font-size:1.25em;font-weight:800;letter-spacing:-.3px}
+.sh.yl h2{color:var(--black)}
+.sh .tag{background:rgba(255,255,255,.18);color:var(--white);font-size:.65em;padding:3px 12px;border-radius:20px;font-weight:700;letter-spacing:.3px}
+.sh.yl .tag{background:rgba(0,0,0,.12);color:var(--black)}
+
+/* BODY */
+.sb{flex:1;padding:14px 28px 12px;overflow:hidden;display:flex;flex-direction:column;gap:10px;background:var(--gray5)}
+
+/* KPI ROW */
+.krow{display:flex;gap:10px;flex-shrink:0}
+.kcard{flex:1;background:var(--white);border-radius:8px;padding:12px 10px;text-align:center;border-top:3px solid var(--blue)}
+.kcard.yl{border-top-color:var(--yellow)}.kcard.gr{border-top-color:var(--gray2)}.kcard.dk{border-top-color:var(--black)}.kcard.b3{border-top-color:var(--blue3)}
+.kv{font-size:1.75em;font-weight:900;color:var(--black);line-height:1}
+.kl{font-size:.64em;color:var(--gray2);margin-top:4px;line-height:1.3}
+.kd{font-size:.68em;font-weight:700;margin-top:3px}
+.kd.up{color:var(--blue)}.kd.warn{color:var(--yellow)}.kd.neg{color:var(--gray2)}
+
+/* TWO COLUMNS */
+.tc{display:grid;grid-template-columns:1fr 1fr;gap:12px;flex:1;overflow:hidden}
+.col{display:flex;flex-direction:column;gap:8px;overflow:hidden}
+
+/* SECTION TITLE */
+.st{font-size:.65em;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+.st.yl{color:#7d5a00}.st.dk{color:var(--black)}
+
+/* INSIGHT */
+.ins{border-left:3px solid var(--blue);background:var(--blue5);padding:8px 12px;border-radius:0 5px 5px 0;font-size:.72em;color:var(--black);line-height:1.5}
+.ins.yl{border-color:var(--yellow);background:var(--yellow3)}
+.ins.dk{border-color:var(--black);background:var(--gray5)}
+.ins.gr{border-color:var(--gray3);background:var(--gray5)}
+.ins strong{font-weight:800}
+
+/* TABLES */
+table{width:100%;border-collapse:collapse;font-size:.7em}
+th{background:var(--blue);color:var(--white);padding:6px 8px;text-align:center;font-weight:700;font-size:.95em}
+th:first-child{text-align:left}
+td{padding:5px 8px;text-align:center;border-bottom:1px solid var(--gray4);color:var(--gray1)}
+td:first-child{text-align:left;font-weight:700;color:var(--black)}
+tr:nth-child(even) td{background:#F8FAFC}
+
+/* HEAT — blue palette */
+.hb5{background:var(--blue);color:var(--white);border-radius:3px;padding:1px 5px;font-weight:700}
+.hb4{background:var(--blue2);color:var(--white);border-radius:3px;padding:1px 5px;font-weight:700}
+.hb3{background:var(--blue3);color:var(--white);border-radius:3px;padding:1px 5px;font-weight:700}
+.hb2{background:var(--blue4);color:var(--black);border-radius:3px;padding:1px 5px}
+.hb1{background:var(--blue5);color:var(--gray1);border-radius:3px;padding:1px 5px}
+/* yellow heat */
+.hy3{background:var(--yellow);color:var(--black);border-radius:3px;padding:1px 5px;font-weight:700}
+.hy2{background:var(--yellow2);color:var(--black);border-radius:3px;padding:1px 5px}
+.hy1{background:var(--yellow3);color:#7d5a00;border-radius:3px;padding:1px 5px}
+/* partial / warning */
+.hp{background:var(--gray4);color:var(--gray1);border-radius:3px;padding:1px 5px;font-style:italic;font-size:.88em}
+/* highlight row */
+.hl td{background:var(--black)!important;color:var(--white)!important;font-weight:700}
+.hl td:first-child{color:var(--white)!important}
+
+/* BAR CHART */
+.bchart{display:flex;align-items:flex-end;gap:5px;height:110px;padding-bottom:22px;flex-shrink:0}
+.bg{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
+.bb{width:80%;border-radius:3px 3px 0 0;position:relative;min-height:3px}
+.bv{font-size:.55em;font-weight:800;position:absolute;top:-14px;left:0;right:0;text-align:center;white-space:nowrap;color:var(--black)}
+.bl{font-size:.56em;color:var(--gray2);margin-top:2px;text-align:center;white-space:nowrap}
+
+/* FUNNEL BARS */
+.frow{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.flbl{width:48px;font-size:.62em;color:var(--gray2);text-align:right;flex-shrink:0}
+.fw{flex:1;height:24px;background:var(--gray4);border-radius:3px;overflow:hidden}
+.ff{height:100%;border-radius:3px;display:flex;align-items:center;padding-left:8px;color:var(--white);font-weight:800;font-size:.65em}
+.fv{width:40px;font-size:.65em;font-weight:700;color:var(--gray1);flex-shrink:0}
+
+/* STEP CARDS */
+.scard{background:var(--white);border:1px solid var(--gray4);border-radius:7px;padding:10px 12px}
+.scard.b{border-left:3px solid var(--blue)}
+.scard.y{border-left:3px solid var(--yellow)}
+.scard.k{border-left:3px solid var(--black)}
+.snum{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;font-size:.65em;font-weight:800;margin-right:6px;flex-shrink:0}
+.snum.b{background:var(--blue);color:var(--white)}
+.snum.y{background:var(--yellow);color:var(--black)}
+.snum.k{background:var(--black);color:var(--white)}
+.stit{font-weight:800;font-size:.78em;color:var(--black);display:inline}
+.sbody{font-size:.68em;color:var(--gray1);margin-top:6px;line-height:1.5;padding-left:26px}
+.sbody li{margin-bottom:2px}
+
+/* ANSWER ROWS */
+.arow{display:grid;grid-template-columns:1.3fr 2fr;gap:10px;padding:5px 0;border-bottom:1px solid var(--gray4);font-size:.7em;align-items:start}
+.arow:last-child{border-bottom:none}
+.aq{color:var(--gray2);font-style:italic;line-height:1.4}
+.aa{color:var(--black);font-weight:600;line-height:1.4}
+.badge{display:inline-block;padding:1px 7px;border-radius:10px;font-size:.75em;font-weight:800;margin-right:4px}
+.b-b{background:var(--blue4);color:var(--blue)}
+.b-y{background:var(--yellow3);color:#7d5a00}
+.b-g{background:var(--gray4);color:var(--gray1)}
+
+/* TITLE SLIDE */
+.title-s{background:linear-gradient(135deg,var(--black) 0%,var(--blue) 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:44px 60px;color:var(--white)}
+.title-s h1{font-size:2.4em;font-weight:900;line-height:1.15;margin-bottom:10px}
+.title-s h3{font-size:1em;font-weight:400;opacity:.8;margin-bottom:26px}
+.pills{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;margin-bottom:26px}
+.pill{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:var(--white);padding:4px 14px;border-radius:20px;font-size:.72em;font-weight:600}
+.tmeta{font-size:.68em;opacity:.45;border-top:1px solid rgba(255,255,255,.15);padding-top:14px;width:100%}
+
+/* DIVIDER */
+.dv{height:1px;background:var(--gray4)}
+
+/* NAV */
+.nav{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:12px}
+.nav button{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:var(--white);padding:7px 20px;border-radius:5px;cursor:pointer;font-size:.88em;transition:background .2s}
+.nav button:hover{background:rgba(255,255,255,.18)}
+.ctr{color:var(--white);font-size:.75em;opacity:.6;min-width:50px;text-align:center}
+.pb{height:3px;background:rgba(255,255,255,.08);border-radius:2px;margin-bottom:8px;overflow:hidden}
+.pbf{height:100%;background:var(--blue3);border-radius:2px;transition:width .3s}
+
+.mini{font-size:.6em;color:var(--gray3);margin-top:2px}
+.ibul{display:flex;align-items:flex-start;gap:6px;font-size:.72em;color:var(--gray1);margin-bottom:5px;line-height:1.4}
+</style>
+</head>
+<body>
+<div class="wrapper">
+<div class="pb"><div class="pbf" id="prog" style="width:25%"></div></div>
+<div class="slide-box">
+
+<!-- SLIDE 1: A MELHORIA FUNCIONOU -->
+<div class="slide active">
+  <div class="sh b1"><h2>A Melhoria de UX Transformou o Canal Listado</h2><span class="tag">SLIDE 1 / 4</span></div>
+  <div class="sb">
+    <div class="krow">
+      <div class="kcard dk"><div class="kv">42%→56%</div><div class="kl">Conversão Out/25→Mar/26</div><div class="kd up">+14pp · Dropout 58%→44%</div></div>
+      <div class="kcard"><div class="kv">35.780</div><div class="kl">Emissões Listado Dez/25 (pré)</div></div>
+      <div class="kcard b3"><div class="kv">361.836</div><div class="kl">Emissões Listado Mar/26 (pico)</div><div class="kd up">↑ 10× vs Dez/25</div></div>
+      <div class="kcard yl"><div class="kv">54–58%</div><div class="kl">Share Listado Mar–Mai/26</div><div class="kd warn">era 7% em Dez/25</div></div>
+    </div>
+    <div class="tc">
+      <div class="col">
+        <div class="st">Funil de Conversão — evolução mensal</div>
+        <table>
+          <tr><th>Mês</th><th>Denominador</th><th>Numerador</th><th>Conversão</th><th>Dropout</th></tr>
+          <tr><td>Out/25</td><td>1.578.889</td><td>663.852</td><td class="hb1">42,1%</td><td>57,9%</td></tr>
+          <tr><td>Nov/25</td><td>1.150.477</td><td>552.099</td><td class="hb2">48,0%</td><td>52,0%</td></tr>
+          <tr><td>Dez/25</td><td>953.436</td><td>480.889</td><td class="hb2">50,4%</td><td>49,6%</td></tr>
+          <tr><td>Fev/26</td><td>1.421.129</td><td>740.473</td><td class="hb3">52,1%</td><td>47,9%</td></tr>
+          <tr class="hl"><td>Mar/26</td><td>1.285.792</td><td>722.405</td><td>56,2%</td><td>43,8%</td></tr>
+        </table>
+        <div class="ins dk"><strong>Jan/26 excluído:</strong> Denominador caiu para 611K (vs 953K Dez). Quebra de tracking durante implementação — não representa o padrão real.</div>
+        <div class="st" style="margin-top:4px">Dropout caindo</div>
+        <div class="frow"><div class="flbl">Out/25</div><div class="fw"><div class="ff" style="width:58%;background:#37474F">57,9%</div></div><div class="fv" style="color:#37474F">alto</div></div>
+        <div class="frow"><div class="flbl">Dez/25</div><div class="fw"><div class="ff" style="width:50%;background:#546E7A">49,6%</div></div><div class="fv" style="color:#546E7A">médio</div></div>
+        <div class="frow"><div class="flbl">Fev/26</div><div class="fw"><div class="ff" style="width:48%;background:#1976D2">47,9%</div></div><div class="fv" style="color:#1976D2">↓</div></div>
+        <div class="frow"><div class="flbl">Mar/26</div><div class="fw"><div class="ff" style="width:44%;background:#1565C0">43,8%</div></div><div class="fv" style="color:#1565C0">↓↓</div></div>
+      </div>
+      <div class="col">
+        <div class="st">Volume mensal Listado (absoluto)</div>
+        <div class="bchart">
+          <div class="bg"><div class="bb" style="height:40%;background:var(--gray3)"><span class="bv">144K</span></div><div class="bl">Mai/25</div></div>
+          <div class="bg"><div class="bb" style="height:62%;background:var(--gray2)"><span class="bv">224K</span></div><div class="bl">Nov/25</div></div>
+          <div class="bg"><div class="bb" style="height:10%;background:var(--gray4)"><span class="bv">36K</span></div><div class="bl">Dez/25</div></div>
+          <div class="bg"><div class="bb" style="height:76%;background:var(--blue3)"><span class="bv">275K</span></div><div class="bl">Fev/26</div></div>
+          <div class="bg"><div class="bb" style="height:100%;background:var(--blue)"><span class="bv">362K</span></div><div class="bl">Mar/26</div></div>
+          <div class="bg"><div class="bb" style="height:86%;background:var(--blue2)"><span class="bv">311K</span></div><div class="bl">Abr/26</div></div>
+          <div class="bg"><div class="bb" style="height:55%;background:var(--blue4)"><span class="bv" style="color:#37474F">197K</span></div><div class="bl">Mai/26*</div></div>
+        </div>
+        <div class="mini">* Mai/26 parcial</div>
+        <div class="st" style="margin-top:4px">Share Listado no mix total</div>
+        <table>
+          <tr><th>Mês</th><th>Total Emissões</th><th>Listado</th><th>Share</th></tr>
+          <tr><td>Dez/25</td><td>519.957</td><td>35.780</td><td class="hb1">6,9%</td></tr>
+          <tr><td>Fev/26</td><td>750.005</td><td>274.522</td><td class="hb3">36,6%</td></tr>
+          <tr class="hl"><td>Mar/26</td><td>625.629</td><td>361.836</td><td>57,8%</td></tr>
+          <tr><td>Abr/26</td><td>568.749</td><td>310.719</td><td class="hb4">54,6%</td></tr>
+          <tr><td>Mai/26*</td><td>362.651</td><td>197.477</td><td class="hb4">54,5%</td></tr>
+        </table>
+        <div class="ins"><strong>Novo baseline estrutural:</strong> Listado passou de canal instável (6–40%) para canal dominante e estável em 54–58%. Isso não é pico — é a nova realidade do mix.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 2: QUALIDADE — PROPENSÃO + ATIVAÇÃO -->
+<div class="slide">
+  <div class="sh b2"><h2>Qualidade do Crescimento — Propensão e Ativação</h2><span class="tag">SLIDE 2 / 4</span></div>
+  <div class="sb">
+    <div class="krow">
+      <div class="kcard dk"><div class="kv">63%</div><div class="kl">Baixa Propensão no total Mai/26</div><div class="kd warn">+1,3pp vs 3M anteriores</div></div>
+      <div class="kcard b3"><div class="kv">+3–6pp</div><div class="kl">Listado ativa ACIMA da média total</div><div class="kd up">↑ canal orgânico premium</div></div>
+      <div class="kcard yl"><div class="kv">−5–9pp</div><div class="kl">Gap Baixa Prop vs Listado geral</div><div class="kd warn">⚠ gap crescendo em Abr/26</div></div>
+      <div class="kcard gr"><div class="kv">27,9%</div><div class="kl">Listado Baixa Prop MOB0 Abr/26</div><div class="kd neg">menor dos últimos 12M</div></div>
+    </div>
+    <div class="tc">
+      <div class="col">
+        <div class="st">Ativação por Cohort — Total vs Listado (MOB 0–3)</div>
+        <table>
+          <tr><th>Cohort</th><th colspan="2">Total</th><th colspan="2">Listado</th></tr>
+          <tr><th></th><th>MOB0</th><th>MOB3</th><th>MOB0</th><th>MOB3</th></tr>
+          <tr><td>Mai/25</td><td class="hb2">35,2%</td><td class="hb1">30,9%</td><td class="hb3">40,3%</td><td class="hb2">36,2%</td></tr>
+          <tr><td>Out/25</td><td class="hb2">32,9%</td><td class="hb1">28,2%</td><td class="hb2">34,3%</td><td class="hb2">32,1%</td></tr>
+          <tr><td>Fev/26</td><td class="hb2">31,2%</td><td class="hp">14,0%*</td><td class="hb3">34,2%</td><td class="hp">15,0%*</td></tr>
+          <tr><td>Mar/26</td><td class="hb2">33,3%</td><td>—</td><td class="hb3">35,9%</td><td>—</td></tr>
+          <tr class="hl"><td>Abr/26</td><td>34,6%</td><td>—</td><td>36,8%</td><td>—</td></tr>
+        </table>
+        <div class="mini">* MOB3 Mai/26 parcial. Listado ativa consistentemente acima do total.</div>
+        <div class="ins"><strong>Listado é o melhor canal para ativação:</strong> usuário já está no ecossistema MP, ativação orgânica. Em todos os cohorts, supera o total em 2–6pp no MOB0.</div>
+      </div>
+      <div class="col">
+        <div class="st yl">Listado Baixa Propensão — Comparativo com Listado Total</div>
+        <table>
+          <tr><th>Cohort</th><th>Listado MOB0</th><th>Baixa Prop MOB0</th><th>Gap</th><th>MOB3 Baixa</th></tr>
+          <tr><td>Mai/25</td><td class="hb3">40,3%</td><td class="hb3">38,8%</td><td class="hb1">−1,5pp</td><td class="hb2">33,9%</td></tr>
+          <tr><td>Out/25</td><td class="hb2">34,3%</td><td class="hb1">26,8%</td><td class="hy2">−7,5pp</td><td class="hb1">26,8%</td></tr>
+          <tr><td>Fev/26</td><td class="hb3">34,2%</td><td class="hb2">28,5%</td><td class="hy2">−5,7pp</td><td class="hp">12,5%*</td></tr>
+          <tr><td>Mar/26</td><td class="hb3">35,9%</td><td class="hb2">31,0%</td><td class="hy1">−4,9pp</td><td>—</td></tr>
+          <tr class="hl"><td>Abr/26 ⚠</td><td>36,8%</td><td>27,9%</td><td style="background:#F9A825;color:#000;border-radius:3px;padding:1px 5px;font-weight:800">−8,9pp</td><td>—</td></tr>
+        </table>
+        <div class="mini">* Parcial. Abr/26 MOB1 completo esperado em Jun/26.</div>
+        <div class="ins yl"><strong>⚠ Ponto de atenção — Abr/26:</strong> Gap Baixa Prop chegou a −8,9pp. É o maior dos últimos 12 meses. Monitorar MOB1 de Abr/26 em junho: se ficar abaixo de 30%, sinaliza deterioração real de qualidade.</div>
+        <div class="ins" style="margin-top:6px"><strong>Pergunta ainda em aberto:</strong> A inteligência de ordem está ativa? Usuários Baixa Prop deveriam ver o card listing por <strong>último</strong> no carrossel — confirmar com IT.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 3: IMPACTO FINANCEIRO + DVC -->
+<div class="slide">
+  <div class="sh b3"><h2>Impacto Financeiro — Custo Controlável, Ativos Crescendo</h2><span class="tag">SLIDE 3 / 4</span></div>
+  <div class="sb">
+    <div class="krow">
+      <div class="kcard dk"><div class="kv">+R$9M</div><div class="kl">Issuing & Shipping acima do plano Q1</div><div class="kd warn">parte = alocação TC/TD incorreta</div></div>
+      <div class="kcard"><div class="kv">+7%</div><div class="kl">TPV acima do plano Q1</div><div class="kd up">↑ mais interchange</div></div>
+      <div class="kcard b3"><div class="kv">108%</div><div class="kl">Active Users vs Plano Q1</div><div class="kd up">↑ base ativa crescendo</div></div>
+      <div class="kcard yl"><div class="kv">~135K</div><div class="kl">Ativos novos gerados cohort Mar/26</div><div class="kd warn">vs ~13K em Dez/25</div></div>
+    </div>
+    <div class="tc">
+      <div class="col">
+        <div class="st">Volume absoluto de ativos — Efeito do crescimento</div>
+        <table>
+          <tr><th>Cohort</th><th>Emissão Listado</th><th>Taxa MOB1</th><th>Ativos est. MOB1</th><th>vs Dez/25</th></tr>
+          <tr><td>Dez/25</td><td>35.780</td><td class="hb1">35,7%</td><td class="hb1">~12.800</td><td>—</td></tr>
+          <tr><td>Fev/26</td><td>274.522</td><td class="hb3">37,9%</td><td class="hb3">~104.000</td><td class="hb3" style="font-weight:700">8,1×</td></tr>
+          <tr class="hl"><td>Mar/26</td><td>361.836</td><td>37,3%</td><td>~135.000</td><td style="background:var(--yellow);color:var(--black);font-weight:800">10,5×</td></tr>
+          <tr><td>Abr/26</td><td>310.719</td><td class="hp">~36%*</td><td class="hb2">~112.000*</td><td class="hb2" style="font-weight:700">8,7×*</td></tr>
+        </table>
+        <div class="mini">* Abr/26 MOB1 parcial. Estimativa com base em padrão histórico.</div>
+        <div class="ins" style="margin-top:6px"><strong>Argumento de volume:</strong> Mesmo com Baixa Prop ativando com desconto de ~5–9pp, o crescimento 10× em emissão faz com que o volume absoluto de ativos seja expressivamente maior. O interchange gerado compensa o custo incremental ao longo da curva de maturação.</div>
+
+        <div class="st" style="margin-top:6px">Curva de maturação — referência (Listado Mai/25)</div>
+        <div class="frow"><div class="flbl">MOB 0</div><div class="fw"><div class="ff" style="width:88%;background:var(--gray3)">40,3%</div></div></div>
+        <div class="frow"><div class="flbl">MOB 1</div><div class="fw"><div class="ff" style="width:96%;background:var(--blue3)">43,0%</div></div></div>
+        <div class="frow"><div class="flbl">MOB 3</div><div class="fw"><div class="ff" style="width:80%;background:var(--blue2)">36,2%</div></div></div>
+        <div class="frow"><div class="flbl">MOB 6</div><div class="fw"><div class="ff" style="width:66%;background:var(--blue)">29,8%</div></div></div>
+        <div class="frow"><div class="flbl">MOB 8</div><div class="fw"><div class="ff" style="width:58%;background:var(--black)">26,3%</div></div></div>
+      </div>
+      <div class="col">
+        <div class="st">Timeline do DVC — como o cenário evolui</div>
+        <div class="scard b" style="margin-bottom:7px">
+          <div><span class="snum b">1</span><span class="stit">Curto prazo (0–3M) — Pressão de custo</span></div>
+          <div class="sbody">
+            <li>Issuing +R$9M Q1 vs plano — custo real de emissão crescendo</li>
+            <li>Parte é alocação errada TC/TD — já identificada, em correção</li>
+            <li>Baixa Prop ativa mais lentamente — payback mais longo por usuário</li>
+          </div>
+        </div>
+        <div class="scard b" style="margin-bottom:7px">
+          <div><span class="snum b">2</span><span class="stit">Médio prazo (3–6M) — Compensação</span></div>
+          <div class="sbody">
+            <li>Cohorts Fev/Mar/26 maturando — TPV por ativo crescendo</li>
+            <li>Interchange de 135K ativos novos (Mar/26) começa a compensar custo</li>
+            <li>Active Users 108% plano — base sólida para DCV positivo</li>
+          </div>
+        </div>
+        <div class="scard k" style="margin-bottom:7px">
+          <div><span class="snum k">3</span><span class="stit">Longo prazo (6–12M) — Stacking</span></div>
+          <div class="sbody">
+            <li>Cada cohort novo (10× volume) acumula ativos que diluem custo fixo</li>
+            <li>DVC por unidade cai estruturalmente com a maturação</li>
+            <li>~20% dos emissores ainda ativos em MOB12 (base histórica)</li>
+          </div>
+        </div>
+        <div class="ins yl"><strong>Portal TC — argumento adicional:</strong> ~900K emissões via Listado Fev–Abr/26. Usuários orgânicos do app MP têm alto overlap com público de crédito. O custo de emissão de TD tem retorno amplificado quando consideramos a porta de entrada que abre para TC.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 4: CONCLUSÕES + PRÓXIMOS PASSOS -->
+<div class="slide">
+  <div class="sh bk"><h2>Conclusões Estratégicas e Próximos Passos</h2><span class="tag">SLIDE 4 / 4</span></div>
+  <div class="sb">
+    <div class="tc" style="gap:14px">
+      <div class="col">
+        <div class="st">Respostas às questões do time</div>
+        <div class="arow"><div class="aq">"Elevamos emissão por essa melhoria?"</div><div class="aa"><span class="badge b-b">✓</span>Sim. Listado 10× (36K→362K). Funil +14pp. A melhoria UX é o driver.</div></div>
+        <div class="arow"><div class="aq">"Volume não cai, conseguimos equilibrar em ativação?"</div><div class="aa"><span class="badge b-b">✓</span>Volume não caiu (+15% vs plano). Ativação estável: 31–35% MOB0 em linha com histórico.</div></div>
+        <div class="arow"><div class="aq">"DVC fica dentro do plano?"</div><div class="aa"><span class="badge b-y">⚠</span>Custo issuing +R$9M Q1 (parte = alocação TC/TD). TPV +7%. Breakeven em andamento.</div></div>
+        <div class="arow"><div class="aq">"Precisaremos de mais tempo?"</div><div class="aa"><span class="badge b-y">⚠</span>Sim. Baixa Prop ativa mais devagar. Payback completo = 6–12M por cohort. Argumento sustentável.</div></div>
+        <div class="arow"><div class="aq">"Empilhando, alcançaremos melhor DC?"</div><div class="aa"><span class="badge b-b">✓</span>Sim. 10× mais volume por cohort acumula ativos e dilui custo fixo estruturalmente.</div></div>
+        <div class="arow"><div class="aq">"Porta de entrada para TC?"</div><div class="aa"><span class="badge b-b">✓</span>~900K emissões Fev–Abr/26 = pipeline TC expressivo.</div></div>
+        <div class="dv" style="margin-top:4px"></div>
+        <div class="ins dk" style="margin-top:6px"><strong>Conclusão:</strong> A melhoria funcionou. Listado é o novo motor orgânico de emissão TD. Foco agora: qualificar o crescimento e atualizar o plano — não retroceder.</div>
+      </div>
+      <div class="col">
+        <div class="st">3 próximos passos estratégicos</div>
+        <div class="scard k" style="margin-bottom:7px">
+          <div><span class="snum k">1</span><span class="stit">Refazer o plano de emissões</span></div>
+          <div class="sbody">
+            <li>Atualizar projeção 2026 para <strong>~7,4M emissões</strong> (Carol já estimou)</li>
+            <li>Novo baseline Listado: 54–58% do mix (era 25–30% no plano original)</li>
+            <li>Corrigir alocação TC/TD para isolar o custo real de emissão</li>
+            <li>Alinhar com Juan Del Boca (Planning) o novo cenário DVC/TPV</li>
+          </div>
+        </div>
+        <div class="scard y" style="margin-bottom:7px">
+          <div><span class="snum y">2</span><span class="stit">Ações no canal enquanto tela de fricção não entra</span></div>
+          <div class="sbody">
+            <li>Verificar com IT se <strong>inteligência de ordem</strong> está ativa — Baixa Prop deve ver oferta por último no carrossel</li>
+            <li>Monitorar <strong>cohort Abr/26 MOB1</strong> em junho (MOB0=27,9%, pior dos 12M)</li>
+            <li>Ativar comunicação pós-emissão <strong>mais agressiva</strong> para Baixa Prop (push, in-app, email)</li>
+            <li>Analisar sub-faixas 0.20–0.36 vs 0.00–0.20 para calibrar elegibilidade</li>
+          </div>
+        </div>
+        <div class="scard b" style="margin-bottom:0">
+          <div><span class="snum b">3</span><span class="stit">Assumir novo cenário — com guardrails</span></div>
+          <div class="sbody">
+            <li>Aceitar Listado como canal dominante e estável: <strong>esse é o novo normal</strong></li>
+            <li>Monitoramento mensal: ativação Total / Listado / Baixa Prop por cohort</li>
+            <li>Priorizar no roadmap: <strong>tela de fricção para Baixa Prop</strong></li>
+            <li>Contar o story para Planning com dados de stacking e pipeline TC</li>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end slide-box -->
+<div class="nav">
+  <button onclick="go(-1)">← Anterior</button>
+  <span class="ctr" id="ctr">1 / 4</span>
+  <button onclick="go(1)">Próximo →</button>
+</div>
+<div style="color:rgba(255,255,255,.25);font-size:.65em;margin-top:7px;text-align:center">← → para navegar · Melhorias no Fluxo Listado · TDMP 2026 · Jefferson Nogueira</div>
+</div>
+
+<script>
+let cur=0;
+const slides=document.querySelectorAll('.slide');
+const total=slides.length;
+function go(d){
+  slides[cur].classList.remove('active');
+  cur=(cur+d+total)%total;
+  slides[cur].classList.add('active');
+  document.getElementById('ctr').textContent=(cur+1)+' / '+total;
+  document.getElementById('prog').style.width=((cur+1)/total*100)+'%';
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key==='ArrowDown')go(1);
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp')go(-1);
+});
+</script>
+</body>
+</html>
