@@ -565,7 +565,7 @@
     </div>
 
     <!-- Melhorias Fluxo Listado -->
-    <div class="dash-card">
+    <div class="dash-card" data-owner-only>
       <div class="card-glow" style="--accent:#00D4FF"></div>
       <div class="card-header">
         <div class="card-icon" style="background:rgba(0,212,255,.08);">📊</div>
@@ -623,7 +623,7 @@
     </div>
 
     <!-- Projeção Business Débito -->
-    <div class="dash-card">
+    <div class="dash-card" data-owner-only>
       <div class="card-glow" style="--accent:#B388FF"></div>
       <div class="card-header">
         <div class="card-icon" style="background:rgba(179,136,255,.08);">📈</div>
@@ -646,7 +646,7 @@
     </div>
 
     <!-- Tombamento Legado -->
-    <div class="dash-card">
+    <div class="dash-card" data-owner-only>
       <div class="card-glow" style="--accent:#FF4D6A"></div>
       <div class="card-header">
         <div class="card-icon" style="background:rgba(255,77,106,.08);">🔄</div>
@@ -669,7 +669,7 @@
     </div>
 
     <!-- Limite Médio Micro TC -->
-    <div class="dash-card">
+    <div class="dash-card" data-owner-only>
       <div class="card-glow" style="--accent:#009EE3"></div>
       <div class="card-header">
         <div class="card-icon" style="background:rgba(0,158,227,.08);">📏</div>
@@ -692,7 +692,7 @@
     </div>
 
     <!-- Lance pra Cartão -->
-    <div class="dash-card">
+    <div class="dash-card" data-owner-only>
       <div class="card-glow" style="--accent:#FFE600"></div>
       <div class="card-header">
         <div class="card-icon" style="background:rgba(255,230,0,.08);">🏆</div>
@@ -733,7 +733,16 @@
   // ── Owner mode ─────────────────────────────────────────────
   const isOwner = new URLSearchParams(location.search).has('owner');
 
-  if (isOwner) document.getElementById('ownerBar').classList.add('on');
+  if (isOwner) {
+    document.getElementById('ownerBar').classList.add('on');
+  } else {
+    // Remove cards exclusivos do owner
+    document.querySelectorAll('[data-owner-only]').forEach(el => el.remove());
+    // Atualiza chips: 3 publicados, 1 interno
+    const chips = document.querySelectorAll('.chip');
+    if (chips[0]) chips[0].innerHTML = `<div class="chip-dot" style="background:var(--green)"></div><strong style="color:var(--text)">3</strong>&nbsp;publicados`;
+    if (chips[1]) chips[1].innerHTML = `<div class="chip-dot" style="background:var(--orange)"></div><strong style="color:var(--text)">1</strong>&nbsp;interno`;
+  }
 
   document.querySelectorAll('.local-file').forEach(el => {
     if (!isOwner) {
