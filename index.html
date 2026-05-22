@@ -417,6 +417,94 @@
       line-height: 2;
     }
 
+    /* ── Lock button (fixed) ── */
+    .lock-btn {
+      position: fixed; bottom: 28px; right: 28px; z-index: 100;
+      width: 42px; height: 42px; border-radius: 50%;
+      background: var(--surface); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px; cursor: pointer;
+      transition: border-color .2s, background .2s, transform .2s, box-shadow .2s;
+    }
+    .lock-btn:hover { border-color: var(--border2); background: var(--surface2); transform: scale(1.1); }
+    .lock-btn.unlocked { border-color: rgba(255,230,0,.35); background: rgba(255,230,0,.08); box-shadow: 0 0 18px rgba(255,230,0,.15); }
+
+    /* ── Modal overlay ── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(7,9,15,.88);
+      backdrop-filter: blur(20px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity .25s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+    .modal-card {
+      background: #0D1020;
+      border: 1px solid var(--border2);
+      border-radius: 24px;
+      padding: 44px 40px 36px;
+      width: min(360px, 90vw);
+      text-align: center;
+      transform: translateY(24px) scale(.95);
+      transition: transform .28s cubic-bezier(.34,1.56,.64,1);
+      box-shadow: 0 40px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.04);
+    }
+    .modal-overlay.open .modal-card { transform: translateY(0) scale(1); }
+
+    .modal-lock-icon {
+      font-size: 40px; margin-bottom: 18px;
+      filter: drop-shadow(0 0 12px rgba(255,230,0,.3));
+    }
+    .modal-title { font-size: 19px; font-weight: 800; margin-bottom: 6px; }
+    .modal-sub { font-size: 13px; color: var(--muted); margin-bottom: 28px; line-height: 1.5; }
+
+    .modal-input {
+      width: 100%;
+      background: rgba(255,255,255,.05);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      padding: 13px 16px;
+      font-size: 16px; font-family: var(--mono);
+      color: var(--text); outline: none;
+      text-align: center; letter-spacing: 3px;
+      transition: border-color .2s, box-shadow .2s;
+      margin-bottom: 10px;
+    }
+    .modal-input:focus { border-color: var(--yellow); box-shadow: 0 0 0 3px rgba(255,230,0,.1); }
+    .modal-input.shake { animation: shake .38s ease; border-color: var(--red); }
+
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20%      { transform: translateX(-9px); }
+      40%      { transform: translateX(9px); }
+      60%      { transform: translateX(-5px); }
+      80%      { transform: translateX(5px); }
+    }
+
+    .modal-error { font-size: 12px; color: var(--red); min-height: 20px; margin-bottom: 12px; }
+
+    .modal-btn {
+      width: 100%; padding: 13px;
+      border-radius: 12px; border: none; cursor: pointer;
+      font-size: 14px; font-weight: 800;
+      background: linear-gradient(135deg, var(--yellow) 0%, var(--yellow2) 100%);
+      color: #1A1A1A;
+      transition: box-shadow .15s, transform .1s;
+      box-shadow: 0 4px 20px rgba(255,230,0,.2);
+    }
+    .modal-btn:hover { box-shadow: 0 4px 32px rgba(255,230,0,.45); }
+    .modal-btn:active { transform: scale(.97); }
+
+    .modal-cancel {
+      display: block; margin-top: 14px;
+      font-size: 12px; color: var(--muted);
+      cursor: pointer; background: none; border: none;
+      transition: color .15s; font-family: inherit;
+    }
+    .modal-cancel:hover { color: var(--text); }
+
     /* ── Responsive ── */
     @media (max-width: 680px) {
       header { padding: 36px 24px 32px; }
@@ -498,13 +586,9 @@
         </div>
       </div>
       <div class="card-footer">
-        <a class="btn btn-yellow" href="https://jefnogueiralves.github.io/td-indicadores-dash/" target="_blank" rel="noopener">
+        <a class="btn btn-primary" href="https://storage.googleapis.com/meli-sandbox/CARDSINDICATORSBR/dashboards_TDMP_MLB/td_indicadores.html" target="_blank" rel="noopener">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-          GitHub Pages
-        </a>
-        <a class="btn btn-primary" href="https://grid.adminml.com/d/01KPYFDX3NW80KGF0S0PWPDK1V/view" target="_blank" rel="noopener">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-          Grid
+          Abrir no GCS
         </a>
         <span class="run-badge" id="rb-td_indicadores"></span>
       </div>
@@ -529,9 +613,9 @@
         </div>
       </div>
       <div class="card-footer">
-        <a class="btn btn-primary" href="https://grid.adminml.com/d/01KPYH9GPN78Y3DZDV22XQY649/view" target="_blank" rel="noopener">
+        <a class="btn btn-primary" href="https://storage.googleapis.com/meli-sandbox/CARDSINDICATORSBR/dashboards_TDMP_MLB/cartoes_expirados.html" target="_blank" rel="noopener">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-          Abrir no Grid
+          Abrir no GCS
         </a>
         <span class="run-badge" id="rb-cartoes_expirados"></span>
       </div>
@@ -556,9 +640,9 @@
         </div>
       </div>
       <div class="card-footer">
-        <a class="btn btn-primary" href="https://grid.adminml.com/d/01KRPZ2TK8FA0Q9MJK2SRZBW2C/view" target="_blank" rel="noopener">
+        <a class="btn btn-primary" href="https://storage.googleapis.com/meli-sandbox/CARDSINDICATORSBR/dashboards_TDMP_MLB/controle_plastico.html" target="_blank" rel="noopener">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-          Abrir no Grid
+          Abrir no GCS
         </a>
         <span class="run-badge" id="rb-controle_plastico"></span>
       </div>
@@ -725,30 +809,49 @@
 
 </div><!-- .page -->
 
+<!-- ═══════ LOCK BUTTON ═══════ -->
+<button class="lock-btn" id="lockBtn" title="Acesso owner" onclick="toggleModal()">🔒</button>
+
+<!-- ═══════ MODAL ═══════ -->
+<div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
+  <div class="modal-card">
+    <div class="modal-lock-icon" id="modalIcon">🔒</div>
+    <div class="modal-title">Acesso Owner</div>
+    <div class="modal-sub">Digite a senha para acessar todos os dashboards e ferramentas internas.</div>
+    <input class="modal-input" id="modalInput" type="password"
+      placeholder="••••••••" autocomplete="off"
+      onkeydown="if(event.key==='Enter')tryUnlock(); if(event.key==='Escape')closeModal()">
+    <div class="modal-error" id="modalError"></div>
+    <button class="modal-btn" onclick="tryUnlock()">Entrar</button>
+    <button class="modal-cancel" onclick="closeModal()">Cancelar</button>
+  </div>
+</div>
+
 <script>
-(function () {
-  const STATUS_ICONS = { ok: '✅', warning: '⚠️', error: '❌', missed: '🔴' };
-  const STATUS_LABEL = { ok: 'ok', warning: 'aviso', error: 'erro', missed: 'ausente' };
+// ── Hash SHA-256 de "jeffito" ── não altere sem recalcular
+const OWNER_HASH = 'ca04fd80447a1ef05cca3068e48b2c88ee82f8531984046b2b233c4c55f244c1';
+const SK = 'hub_owner_v1';
 
-  // ── Owner mode ─────────────────────────────────────────────
-  const isOwner = new URLSearchParams(location.search).has('owner');
+const STATUS_ICONS = { ok: '✅', warning: '⚠️', error: '❌', missed: '🔴' };
+const STATUS_LABEL = { ok: 'ok', warning: 'aviso', error: 'erro', missed: 'ausente' };
 
-  if (isOwner) {
-    document.getElementById('ownerBar').classList.add('on');
-  } else {
-    // Remove cards exclusivos do owner
-    document.querySelectorAll('[data-owner-only]').forEach(el => el.remove());
-    // Atualiza chips: 3 publicados, 1 interno
-    const chips = document.querySelectorAll('.chip');
-    if (chips[0]) chips[0].innerHTML = `<div class="chip-dot" style="background:var(--green)"></div><strong style="color:var(--text)">3</strong>&nbsp;publicados`;
-    if (chips[1]) chips[1].innerHTML = `<div class="chip-dot" style="background:var(--orange)"></div><strong style="color:var(--text)">1</strong>&nbsp;interno`;
-  }
+// ── Helpers ─────────────────────────────────────────────────
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
 
+function setChips(pub, int) {
+  const chips = document.querySelectorAll('.chip');
+  if (chips[0]) chips[0].innerHTML = `<div class="chip-dot" style="background:var(--green)"></div><strong style="color:var(--text)">${pub}</strong>&nbsp;publicados`;
+  if (chips[1]) chips[1].innerHTML = `<div class="chip-dot" style="background:var(--orange)"></div><strong style="color:var(--text)">${int}</strong>&nbsp;interno${int !== 1 ? 's' : ''}`;
+}
+
+function activateOwner() {
+  // Mostra todos os cards owner-only
+  document.querySelectorAll('[data-owner-only]').forEach(el => el.style.display = '');
+  // Converte local-file spans em botões de copiar
   document.querySelectorAll('.local-file').forEach(el => {
-    if (!isOwner) {
-      el.closest('.card-footer').style.display = 'none';
-      return;
-    }
     const path  = el.dataset.path  || '';
     const label = el.dataset.label || path.split('\\').pop();
     const btn   = document.createElement('button');
@@ -764,8 +867,88 @@
     };
     el.replaceWith(btn);
   });
+  // Owner bar + lock button
+  document.getElementById('ownerBar').classList.add('on');
+  const lb = document.getElementById('lockBtn');
+  lb.textContent = '🔓'; lb.classList.add('unlocked');
+  lb.title = 'Owner ativo';
+  // Chips
+  setChips(4, 5);
+}
 
-  // ── Status do dia ───────────────────────────────────────────
+function deactivateOwner() {
+  document.querySelectorAll('[data-owner-only]').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.local-file').forEach(el => el.closest('.card-footer').style.display = 'none');
+  setChips(3, 1);
+}
+
+// ── Modal ───────────────────────────────────────────────────
+function openModal() {
+  const overlay = document.getElementById('modalOverlay');
+  const input   = document.getElementById('modalInput');
+  document.getElementById('modalError').textContent = '';
+  overlay.classList.add('open');
+  setTimeout(() => input.focus(), 280);
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.getElementById('modalInput').value = '';
+  document.getElementById('modalError').textContent = '';
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+}
+
+function toggleModal() {
+  const isOwner = sessionStorage.getItem(SK) === '1';
+  if (isOwner) {
+    // Já está desbloqueado — clicou no cadeado aberto → bloquear
+    sessionStorage.removeItem(SK);
+    location.reload();
+  } else {
+    openModal();
+  }
+}
+
+async function tryUnlock() {
+  const input = document.getElementById('modalInput');
+  const error = document.getElementById('modalError');
+  const val   = input.value.trim();
+  if (!val) return;
+
+  const hash = await sha256(val);
+  if (hash === OWNER_HASH) {
+    // ✅ Senha correta
+    sessionStorage.setItem(SK, '1');
+    document.getElementById('modalIcon').textContent = '🔓';
+    error.style.color = 'var(--green)';
+    error.textContent = '✓ Acesso liberado';
+    setTimeout(() => {
+      closeModal();
+      activateOwner();
+    }, 700);
+  } else {
+    // ❌ Senha errada
+    error.textContent = 'Senha incorreta. Tente novamente.';
+    input.classList.add('shake');
+    input.value = '';
+    setTimeout(() => input.classList.remove('shake'), 400);
+    input.focus();
+  }
+}
+
+// ── Init ────────────────────────────────────────────────────
+(function init() {
+  const isOwner = sessionStorage.getItem(SK) === '1';
+  if (isOwner) {
+    activateOwner();
+  } else {
+    deactivateOwner();
+  }
+
+  // Status do dia
   function fmtDate(iso) {
     return new Date(iso + 'T00:00:00').toLocaleDateString('pt-BR', {
       weekday: 'short', day: '2-digit', month: 'short'
@@ -775,31 +958,22 @@
   function renderPanel(data) {
     const panel = document.getElementById('statusPanel');
     document.getElementById('spDate').textContent = '· ' + fmtDate(data.date);
-
     const rowsEl = document.getElementById('spRows');
     rowsEl.innerHTML = '';
     Object.values(data.dashboards).forEach(d => {
       const row = document.createElement('div');
       row.className = 'sp-row ' + d.status;
-      row.innerHTML = `
-        <span>${STATUS_ICONS[d.status] || '?'}</span>
-        <span class="sp-name">${d.name}</span>
-        ${d.last_run ? `<span class="sp-time">${d.last_run}</span>` : ''}
-      `;
+      row.innerHTML = `<span>${STATUS_ICONS[d.status]||'?'}</span><span class="sp-name">${d.name}</span>${d.last_run?`<span class="sp-time">${d.last_run}</span>`:''}`;
       rowsEl.appendChild(row);
     });
-
-    const gen = data.generated_at ? data.generated_at.substring(11, 16) : '';
-    document.getElementById('spGenerated').textContent =
-      gen ? `checagem ${gen} · próxima ~11:30` : '';
-
-    Object.entries(data.dashboards).forEach(([id, d]) => {
+    const gen = data.generated_at ? data.generated_at.substring(11,16) : '';
+    document.getElementById('spGenerated').textContent = gen ? `checagem ${gen} · próxima ~11:30` : '';
+    Object.entries(data.dashboards).forEach(([id,d]) => {
       const badge = document.getElementById('rb-' + id);
       if (!badge) return;
       badge.className = 'run-badge visible ' + d.status;
-      badge.textContent = (d.last_run || STATUS_LABEL[d.status]);
+      badge.textContent = d.last_run || STATUS_LABEL[d.status];
     });
-
     panel.classList.add('loaded');
   }
 
