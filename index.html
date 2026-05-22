@@ -4,171 +4,471 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Hub Cartões · Jeff</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --yellow: #FFE600;
-      --blue:   #009EE3;
-      --green:  #00A650;
-      --red:    #FF3B30;
-      --orange: #FF6B00;
-      --purple: #7C4DFF;
-      --bg:     #F2F2F2;
-      --card:   #FFFFFF;
-      --text:   #1A1A1A;
-      --muted:  #666666;
-      --border: #E0E0E0;
+      --yellow:  #FFE600;
+      --yellow2: #FFC700;
+      --cyan:    #00D4FF;
+      --blue:    #009EE3;
+      --green:   #00E676;
+      --red:     #FF4D6A;
+      --orange:  #FF8C42;
+      --purple:  #B388FF;
+      --bg:      #07090F;
+      --surface: rgba(255,255,255,0.04);
+      --surface2: rgba(255,255,255,0.07);
+      --border:  rgba(255,255,255,0.08);
+      --border2: rgba(255,255,255,0.14);
+      --text:    #EEF2FF;
+      --muted:   rgba(238,242,255,0.45);
+      --mono:    'JetBrains Mono', monospace;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-    /* ── Header ── */
-    header { background: linear-gradient(135deg, #1A1A1A 0%, #2C2C2C 100%); color: #fff; padding: 36px 48px 32px; position: relative; overflow: hidden; }
-    header::before { content: ''; position: absolute; top: -80px; right: -80px; width: 360px; height: 360px; background: var(--yellow); border-radius: 50%; opacity: .07; pointer-events: none; }
-    header::after  { content: ''; position: absolute; bottom: -60px; right: 120px; width: 200px; height: 200px; background: var(--blue); border-radius: 50%; opacity: .06; pointer-events: none; }
-    .hd-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--yellow); color: #1A1A1A; font-size: 10px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 12px; border-radius: 20px; margin-bottom: 14px; }
-    header h1 { font-size: 36px; font-weight: 900; letter-spacing: -1px; margin-bottom: 6px; }
-    header h1 span { color: var(--yellow); }
-    header p { font-size: 14px; color: rgba(255,255,255,.55); max-width: 480px; }
-    .hd-meta { position: absolute; top: 36px; right: 48px; text-align: right; font-size: 11px; color: rgba(255,255,255,.35); line-height: 1.6; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ── Stats bar ── */
-    .stats-bar { background: #fff; border-bottom: 1px solid var(--border); padding: 14px 48px; display: flex; gap: 32px; align-items: center; flex-wrap: wrap; }
-    .stat { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
-    .stat strong { color: var(--text); font-weight: 700; }
-    .stat-dot { width: 8px; height: 8px; border-radius: 50%; }
+    html { scroll-behavior: smooth; }
 
-    /* ── Status do dia panel ── */
-    .status-panel { background: #fff; border-bottom: 2px solid var(--border); padding: 16px 48px; display: none; }
-    .status-panel.loaded { display: block; }
-    .sp-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-    .sp-title { font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); }
-    .sp-date  { font-size: 11px; color: var(--muted); }
-    .sp-rows  { display: flex; gap: 12px; flex-wrap: wrap; }
-    .sp-row   { display: flex; align-items: center; gap: 8px; background: #F8F8F8; border: 1px solid var(--border); border-radius: 10px; padding: 8px 14px; font-size: 13px; transition: background .15s; }
-    .sp-row.ok      { border-left: 3px solid var(--green); }
-    .sp-row.warning { border-left: 3px solid var(--orange); }
-    .sp-row.error   { border-left: 3px solid var(--red); }
-    .sp-row.missed  { border-left: 3px solid #ccc; }
-    .sp-icon  { font-size: 15px; }
-    .sp-name  { font-weight: 700; }
-    .sp-time  { font-size: 11px; color: var(--muted); }
-    .sp-msg   { font-size: 11px; color: var(--muted); }
-    .sp-footer { margin-top: 10px; font-size: 11px; color: #aaa; display: flex; align-items: center; gap: 6px; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
 
-    /* ── Main ── */
-    main { max-width: 1120px; margin: 0 auto; padding: 40px 24px 60px; }
-    .section-label { font-size: 11px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
-    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    /* ── Background dot grid ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background-image: radial-gradient(circle, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 36px 36px;
+      pointer-events: none;
+    }
 
-    /* ── Grid ── */
-    .dash-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 18px; margin-bottom: 48px; }
+    /* ── Page wrapper ── */
+    .page { position: relative; z-index: 1; }
 
-    /* ── Card ── */
-    .dash-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; transition: transform .18s ease, box-shadow .18s ease; }
-    .dash-card:hover { transform: translateY(-4px); box-shadow: 0 10px 36px rgba(0,0,0,.10); }
-    .card-accent { height: 4px; }
-    .card-header { padding: 20px 20px 16px; display: flex; align-items: flex-start; gap: 14px; }
-    .card-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
-    .card-info { flex: 1; min-width: 0; }
-    .card-title { font-size: 15px; font-weight: 700; margin-bottom: 2px; line-height: 1.3; }
-    .card-sub   { font-size: 12px; color: var(--muted); }
-    .status { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 10px; text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; }
-    .st-live     { background: #E7F9F0; color: #00A650; }
-    .st-internal { background: #FFF8E1; color: #F57C00; }
-    .card-body { padding: 0 20px 16px; flex: 1; }
-    .card-desc { font-size: 13px; color: var(--muted); line-height: 1.55; margin-bottom: 14px; }
-    .tags { display: flex; flex-wrap: wrap; gap: 6px; }
-    .tag  { font-size: 11px; background: #F4F4F4; color: #555; padding: 3px 9px; border-radius: 6px; font-weight: 500; }
+    /* ══════════════════════════════════════
+       HEADER
+    ══════════════════════════════════════ */
+    header {
+      position: relative;
+      padding: 56px 56px 48px;
+      overflow: hidden;
+      border-bottom: 1px solid var(--border);
+    }
 
-    /* ── Card footer ── */
-    .card-footer { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 15px; border-radius: 8px; font-size: 12px; font-weight: 700; text-decoration: none; border: none; cursor: pointer; transition: opacity .15s, transform .1s; white-space: nowrap; }
-    .btn:active { transform: scale(.97); }
-    .btn:hover  { opacity: .85; }
-    .btn-blue   { background: var(--blue);   color: #fff; }
-    .btn-yellow { background: var(--yellow); color: #1A1A1A; }
-    .btn-green  { background: var(--green);  color: #fff; }
-    .btn-off    { background: #EBEBEB; color: #999; cursor: default; }
-    .btn-off:hover { opacity: 1; }
-    .btn-owner  { background: #F0F7FF; color: var(--blue); border: 1px dashed var(--blue); cursor: pointer; }
-    .btn-owner:hover { background: #E0F0FF; opacity: 1; }
-    .owner-bar  { display: none; background: #FFF9E6; border-bottom: 1px solid #FFE066; padding: 7px 48px; font-size: 11px; color: #7a6300; gap: 6px; align-items: center; }
+    /* glowing orbs */
+    header::before {
+      content: '';
+      position: absolute; top: -160px; right: -120px;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(255,230,0,.10) 0%, transparent 65%);
+      border-radius: 50%; pointer-events: none;
+    }
+    header::after {
+      content: '';
+      position: absolute; bottom: -80px; left: 40%;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(0,212,255,.06) 0%, transparent 65%);
+      border-radius: 50%; pointer-events: none;
+    }
+
+    .hd-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--mono);
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 2.5px; text-transform: uppercase;
+      color: var(--yellow);
+      margin-bottom: 20px;
+    }
+    .hd-eyebrow::before {
+      content: '';
+      width: 28px; height: 1px;
+      background: linear-gradient(90deg, var(--yellow), transparent);
+    }
+
+    header h1 {
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 900;
+      letter-spacing: -2px;
+      line-height: 1;
+      margin-bottom: 14px;
+    }
+
+    header h1 .hl {
+      background: linear-gradient(90deg, var(--yellow) 0%, var(--yellow2) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    header p {
+      font-size: 15px;
+      color: var(--muted);
+      max-width: 500px;
+      line-height: 1.65;
+    }
+
+    .hd-meta {
+      position: absolute; top: 56px; right: 56px;
+      text-align: right;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: rgba(255,255,255,.2);
+      line-height: 2;
+    }
+
+    /* ── Stats chips ── */
+    .stats-row {
+      display: flex; flex-wrap: wrap; gap: 10px;
+      margin-top: 32px;
+    }
+
+    .chip {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 6px 14px;
+      font-size: 12px; font-weight: 600;
+      color: var(--muted);
+      transition: border-color .2s, color .2s;
+    }
+
+    .chip:hover { border-color: var(--border2); color: var(--text); }
+
+    .chip-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      animation: pulse 2.4s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: .5; transform: scale(.7); }
+    }
+
+    /* ══════════════════════════════════════
+       OWNER BAR
+    ══════════════════════════════════════ */
+    .owner-bar {
+      display: none;
+      align-items: center; gap: 8px;
+      padding: 10px 56px;
+      background: rgba(255,230,0,.06);
+      border-bottom: 1px solid rgba(255,230,0,.15);
+      font-family: var(--mono);
+      font-size: 11px; color: rgba(255,230,0,.8);
+    }
     .owner-bar.on { display: flex; }
 
-    /* ── Run status badge on card ── */
-    .run-badge { display: none; align-items: center; gap: 5px; font-size: 11px; padding: 4px 9px; border-radius: 8px; margin-left: auto; white-space: nowrap; }
+    /* ══════════════════════════════════════
+       STATUS DO DIA
+    ══════════════════════════════════════ */
+    .status-panel {
+      display: none;
+      padding: 16px 56px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0,212,255,.02);
+    }
+    .status-panel.loaded { display: block; }
+
+    .sp-header {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 12px;
+    }
+    .sp-title {
+      font-family: var(--mono);
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 2px; text-transform: uppercase;
+      color: var(--cyan);
+    }
+    .sp-date { font-size: 11px; color: var(--muted); }
+
+    .sp-rows { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .sp-row {
+      display: flex; align-items: center; gap: 9px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 14px;
+      font-size: 13px;
+      transition: border-color .2s;
+    }
+    .sp-row.ok      { border-left: 2px solid var(--green); }
+    .sp-row.warning { border-left: 2px solid var(--orange); }
+    .sp-row.error   { border-left: 2px solid var(--red); }
+    .sp-row.missed  { border-left: 2px solid rgba(255,255,255,.15); }
+
+    .sp-name { font-weight: 600; font-size: 13px; }
+    .sp-time { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+
+    .sp-footer {
+      margin-top: 10px;
+      font-family: var(--mono);
+      font-size: 10px; color: rgba(255,255,255,.2);
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    /* ══════════════════════════════════════
+       MAIN
+    ══════════════════════════════════════ */
+    main { max-width: 1200px; margin: 0 auto; padding: 48px 24px 80px; }
+
+    .section-label {
+      display: flex; align-items: center; gap: 14px;
+      font-family: var(--mono);
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 2.5px; text-transform: uppercase;
+      color: rgba(255,255,255,.25);
+      margin-bottom: 24px;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1; height: 1px;
+      background: linear-gradient(90deg, var(--border), transparent);
+    }
+
+    /* ── Dash grid ── */
+    .dash-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 16px;
+      margin-bottom: 56px;
+    }
+
+    /* ══════════════════════════════════════
+       CARD
+    ══════════════════════════════════════ */
+    .dash-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      display: flex; flex-direction: column;
+      transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+      animation: fadeUp .5s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* stagger */
+    .dash-card:nth-child(1) { animation-delay: .05s; }
+    .dash-card:nth-child(2) { animation-delay: .10s; }
+    .dash-card:nth-child(3) { animation-delay: .15s; }
+    .dash-card:nth-child(4) { animation-delay: .20s; }
+    .dash-card:nth-child(5) { animation-delay: .25s; }
+
+    .dash-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--border2);
+      box-shadow: 0 0 0 1px var(--border2),
+                  0 20px 60px rgba(0,0,0,.4),
+                  0 0 40px rgba(255,255,255,.02);
+    }
+
+    /* ── Card top glow line ── */
+    .card-glow {
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, var(--accent, #fff) 40%, transparent 100%);
+      opacity: .6;
+    }
+
+    /* ── Card header ── */
+    .card-header {
+      padding: 22px 22px 16px;
+      display: flex; align-items: flex-start; gap: 14px;
+    }
+
+    .card-icon {
+      width: 46px; height: 46px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 21px; flex-shrink: 0;
+      border: 1px solid rgba(255,255,255,.08);
+    }
+
+    .card-info { flex: 1; min-width: 0; }
+
+    .card-title {
+      font-size: 15px; font-weight: 700;
+      margin-bottom: 3px; line-height: 1.2;
+      color: var(--text);
+    }
+
+    .card-sub { font-size: 12px; color: var(--muted); }
+
+    .status {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-family: var(--mono);
+      font-size: 9px; font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 100px;
+      text-transform: uppercase; letter-spacing: 1px;
+      white-space: nowrap; flex-shrink: 0;
+    }
+
+    .status-dot { width: 5px; height: 5px; border-radius: 50%; }
+
+    .st-live     { background: rgba(0,230,118,.12); color: #00E676; border: 1px solid rgba(0,230,118,.2); }
+    .st-live .status-dot { background: #00E676; animation: pulse 2s infinite; }
+    .st-internal { background: rgba(255,140,66,.10); color: var(--orange); border: 1px solid rgba(255,140,66,.18); }
+    .st-internal .status-dot { background: var(--orange); }
+
+    /* ── Card body ── */
+    .card-body { padding: 0 22px 18px; flex: 1; }
+
+    .card-desc {
+      font-size: 13px; color: var(--muted);
+      line-height: 1.6; margin-bottom: 14px;
+    }
+
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .tag {
+      font-size: 11px; font-weight: 500;
+      background: rgba(255,255,255,.05);
+      color: rgba(255,255,255,.4);
+      border: 1px solid rgba(255,255,255,.06);
+      padding: 3px 9px; border-radius: 6px;
+      transition: color .15s, border-color .15s;
+    }
+
+    .dash-card:hover .tag {
+      color: rgba(255,255,255,.55);
+      border-color: rgba(255,255,255,.1);
+    }
+
+    /* ── Card footer ── */
+    .card-footer {
+      padding: 14px 22px;
+      border-top: 1px solid var(--border);
+      display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border-radius: 9px;
+      font-size: 12px; font-weight: 700;
+      text-decoration: none; border: none; cursor: pointer;
+      transition: opacity .15s, transform .1s, box-shadow .15s;
+      white-space: nowrap;
+    }
+    .btn:active { transform: scale(.96); }
+    .btn:hover  { opacity: .88; }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #009EE3 0%, #007BC0 100%);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(0,158,227,.25);
+    }
+    .btn-primary:hover { box-shadow: 0 4px 24px rgba(0,158,227,.45); opacity: 1; }
+
+    .btn-yellow {
+      background: linear-gradient(135deg, #FFE600 0%, #FFC700 100%);
+      color: #1A1A1A;
+      box-shadow: 0 4px 16px rgba(255,230,0,.2);
+    }
+    .btn-yellow:hover { box-shadow: 0 4px 24px rgba(255,230,0,.4); opacity: 1; }
+
+    .btn-green {
+      background: linear-gradient(135deg, #00C853 0%, #00A642 100%);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(0,200,83,.2);
+    }
+    .btn-green:hover { box-shadow: 0 4px 24px rgba(0,200,83,.4); opacity: 1; }
+
+    .btn-owner {
+      background: rgba(255,230,0,.08);
+      color: var(--yellow);
+      border: 1px solid rgba(255,230,0,.2);
+      font-family: var(--mono); font-size: 11px;
+    }
+    .btn-owner:hover { background: rgba(255,230,0,.14); border-color: rgba(255,230,0,.4); opacity: 1; }
+
+    /* ── Run badge ── */
+    .run-badge {
+      display: none; align-items: center; gap: 5px;
+      font-family: var(--mono);
+      font-size: 10px; font-weight: 500;
+      padding: 4px 9px; border-radius: 7px;
+      margin-left: auto; white-space: nowrap;
+    }
     .run-badge.visible { display: inline-flex; }
-    .run-badge.ok      { background: #E7F9F0; color: var(--green); }
-    .run-badge.warning { background: #FFF3E0; color: var(--orange); }
-    .run-badge.error   { background: #FFF0F0; color: var(--red); }
-    .run-badge.missed  { background: #F4F4F4; color: #999; }
+    .run-badge.ok      { background: rgba(0,230,118,.1); color: var(--green); }
+    .run-badge.warning { background: rgba(255,140,66,.1); color: var(--orange); }
+    .run-badge.error   { background: rgba(255,77,106,.1); color: var(--red); }
+    .run-badge.missed  { background: rgba(255,255,255,.05); color: var(--muted); }
 
     /* ── Footer ── */
-    footer { text-align: center; padding: 28px 24px; border-top: 1px solid var(--border); font-size: 12px; color: #aaa; line-height: 1.8; }
-    footer strong { color: var(--muted); }
+    footer {
+      text-align: center;
+      padding: 32px 24px;
+      border-top: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 11px; color: rgba(255,255,255,.15);
+      line-height: 2;
+    }
 
-    @media (max-width: 640px) {
-      header { padding: 24px 20px 20px; }
-      header h1 { font-size: 26px; }
-      .hd-meta { display: none; }
-      .stats-bar { padding: 12px 20px; gap: 20px; }
-      .status-panel { padding: 14px 20px; }
-      main { padding: 28px 16px 48px; }
+    /* ── Responsive ── */
+    @media (max-width: 680px) {
+      header { padding: 36px 24px 32px; }
+      .hd-meta, header::before, header::after { display: none; }
+      .status-panel, .owner-bar { padding-left: 24px; padding-right: 24px; }
+      main { padding: 32px 16px 60px; }
       .dash-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
+<div class="page">
 
 <!-- ═══════ HEADER ═══════ -->
 <header>
-  <div class="hd-meta">Mercado Pago Brasil<br>Cards Indicators</div>
-  <div class="hd-badge">
-    <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="#1A1A1A"/></svg>
-    Hub · Jeff
-  </div>
-  <h1>Dashboards <span>Cartões</span></h1>
+  <div class="hd-meta">Mercado Pago Brasil<br>Cards Indicators<br>mai/2026</div>
+  <div class="hd-eyebrow">Hub · Jefferson Nogueira</div>
+  <h1>Dashboards<br><span class="hl">Cartões</span></h1>
   <p>Central de acesso a todos os dashboards e ferramentas criados para acompanhamento de cartões no Mercado Pago Brasil.</p>
+  <div class="stats-row">
+    <div class="chip">
+      <div class="chip-dot" style="background:var(--green)"></div>
+      <strong style="color:var(--text)">4</strong>&nbsp;publicados
+    </div>
+    <div class="chip">
+      <div class="chip-dot" style="background:var(--orange)"></div>
+      <strong style="color:var(--text)">5</strong>&nbsp;internos
+    </div>
+    <div class="chip">
+      <div class="chip-dot" style="background:var(--cyan); animation-delay:.8s"></div>
+      atualiza 09:30 · 11:30
+    </div>
+  </div>
 </header>
 
 <!-- ═══════ OWNER BAR ═══════ -->
 <div class="owner-bar" id="ownerBar">
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7a6300" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/></svg>
-  Modo owner ativo — você está vendo os caminhos dos arquivos locais
-</div>
-
-<!-- ═══════ STATS BAR ═══════ -->
-<div class="stats-bar">
-  <div class="stat">
-    <div class="stat-dot" style="background:var(--green)"></div>
-    <strong>5</strong> publicados
-  </div>
-  <div class="stat">
-    <div class="stat-dot" style="background:var(--orange)"></div>
-    <strong>4</strong> internos
-  </div>
-  <div class="stat">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-    Atualizado mai/2026
-  </div>
-  <div class="stat" style="margin-left:auto">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    jefferson.nogueira@mercadopago.com.br
-  </div>
+  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/></svg>
+  owner mode ativo — caminhos locais visíveis
 </div>
 
 <!-- ═══════ STATUS DO DIA ═══════ -->
 <div class="status-panel" id="statusPanel">
   <div class="sp-header">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-    <span class="sp-title">Atualizações de hoje</span>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    <span class="sp-title">Status do dia</span>
     <span class="sp-date" id="spDate"></span>
   </div>
   <div class="sp-rows" id="spRows"></div>
   <div class="sp-footer">
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
     <span id="spGenerated"></span>
-    · atualiza às 09:30 e 11:30
   </div>
 </div>
 
@@ -181,30 +481,30 @@
 
     <!-- TD Indicadores -->
     <div class="dash-card" data-dash-id="td_indicadores">
-      <div class="card-accent" style="background:var(--blue)"></div>
+      <div class="card-glow" style="--accent:#009EE3"></div>
       <div class="card-header">
-        <div class="card-icon" style="background:#E3F4FD;">💳</div>
+        <div class="card-icon" style="background:rgba(0,158,227,.1);">💳</div>
         <div class="card-info">
           <div class="card-title">TD Indicadores</div>
           <div class="card-sub">Cartão de Débito · TDMP</div>
         </div>
-        <div class="status st-live">● Live</div>
+        <div class="status st-live"><span class="status-dot"></span>Live</div>
       </div>
       <div class="card-body">
-        <div class="card-desc">KPIs completos de emissão, carteira ativa, ativação, recorrência e Challenger. Projeção TPV com Prophet (180 dias). Atualização diária automática via BigQuery + bot Severino.</div>
+        <div class="card-desc">KPIs completos de emissão, carteira ativa, ativação, recorrência e Challenger. Projeção TPV com Prophet (180 dias). Atualização diária + bot Severino.</div>
         <div class="tags">
           <span class="tag">KPIs</span><span class="tag">Emissão</span><span class="tag">Carteira</span>
-          <span class="tag">Ativação</span><span class="tag">Projeção</span><span class="tag">Challenger</span><span class="tag">Severino Bot</span>
+          <span class="tag">Ativação</span><span class="tag">Projeção</span><span class="tag">Challenger</span><span class="tag">Severino</span>
         </div>
       </div>
       <div class="card-footer">
         <a class="btn btn-yellow" href="https://jefnogueiralves.github.io/td-indicadores-dash/" target="_blank" rel="noopener">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
           GitHub Pages
         </a>
-        <a class="btn btn-blue" href="https://storage.googleapis.com/meli-sandbox/CARDSINDICATORSBR/dashboards_TDMP_MLB/td_indicadores.html" target="_blank" rel="noopener">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-          GCS
+        <a class="btn btn-primary" href="https://grid.adminml.com/d/01KPYFDX3NW80KGF0S0PWPDK1V/view" target="_blank" rel="noopener">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Grid
         </a>
         <span class="run-badge" id="rb-td_indicadores"></span>
       </div>
@@ -212,14 +512,14 @@
 
     <!-- Cartões Expirados -->
     <div class="dash-card" data-dash-id="cartoes_expirados">
-      <div class="card-accent" style="background:var(--orange)"></div>
+      <div class="card-glow" style="--accent:#FF8C42"></div>
       <div class="card-header">
-        <div class="card-icon" style="background:#FFF3E0;">⏰</div>
+        <div class="card-icon" style="background:rgba(255,140,66,.1);">⏰</div>
         <div class="card-info">
           <div class="card-title">Cartões Expirados</div>
           <div class="card-sub">Histórico de Renovações Físicas</div>
         </div>
-        <div class="status st-live">● Live</div>
+        <div class="status st-live"><span class="status-dot"></span>Live</div>
       </div>
       <div class="card-body">
         <div class="card-desc">Acompanhamento de cartões físicos com vencimento próximo e histórico de renovações. Pipeline BigQuery com atualização automática agendada.</div>
@@ -229,9 +529,9 @@
         </div>
       </div>
       <div class="card-footer">
-        <a class="btn btn-blue" href="https://storage.googleapis.com/meli-sandbox/CARDSINDICATORSBR/dashboards_TDMP_MLB/cartoes_expirados.html" target="_blank" rel="noopener">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-          Abrir no GCS
+        <a class="btn btn-primary" href="https://grid.adminml.com/d/01KPYH9GPN78Y3DZDV22XQY649/view" target="_blank" rel="noopener">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Abrir no Grid
         </a>
         <span class="run-badge" id="rb-cartoes_expirados"></span>
       </div>
@@ -239,26 +539,26 @@
 
     <!-- Controle de Plástico -->
     <div class="dash-card" data-dash-id="controle_plastico">
-      <div class="card-accent" style="background:var(--green)"></div>
+      <div class="card-glow" style="--accent:#00E676"></div>
       <div class="card-header">
-        <div class="card-icon" style="background:#E7F9F0;">🪪</div>
+        <div class="card-icon" style="background:rgba(0,230,118,.1);">🪪</div>
         <div class="card-info">
           <div class="card-title">Controle de Plástico</div>
           <div class="card-sub">Gestão de Cartões Físicos</div>
         </div>
-        <div class="status st-live">● Live</div>
+        <div class="status st-live"><span class="status-dot"></span>Live</div>
       </div>
       <div class="card-body">
-        <div class="card-desc">Dashboard de controle e gestão do estoque de plásticos físicos. Acompanhamento de pedidos, produção e distribuição de cartões. Atualização via BigQuery.</div>
+        <div class="card-desc">Controle e gestão do estoque de plásticos físicos. Acompanhamento de pedidos, produção e distribuição de cartões. Atualização via BigQuery.</div>
         <div class="tags">
           <span class="tag">Plástico</span><span class="tag">Físico</span>
           <span class="tag">Estoque</span><span class="tag">Produção</span><span class="tag">BigQuery</span>
         </div>
       </div>
       <div class="card-footer">
-        <a class="btn btn-blue" href="https://grid.adminml.com/d/01KRPZ2TK8FA0Q9MJK2SRZBW2C/view" target="_blank" rel="noopener">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-          Abrir no Grid MP
+        <a class="btn btn-primary" href="https://grid.adminml.com/d/01KRPZ2TK8FA0Q9MJK2SRZBW2C/view" target="_blank" rel="noopener">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Abrir no Grid
         </a>
         <span class="run-badge" id="rb-controle_plastico"></span>
       </div>
@@ -266,25 +566,25 @@
 
     <!-- Melhorias Fluxo Listado -->
     <div class="dash-card">
-      <div class="card-accent" style="background:var(--blue)"></div>
+      <div class="card-glow" style="--accent:#00D4FF"></div>
       <div class="card-header">
-        <div class="card-icon" style="background:#E3F4FD;">📊</div>
+        <div class="card-icon" style="background:rgba(0,212,255,.08);">📊</div>
         <div class="card-info">
           <div class="card-title">Melhorias Fluxo Listado</div>
           <div class="card-sub">Análise de Impacto · TDMP</div>
         </div>
-        <div class="status st-live">● Live</div>
+        <div class="status st-live"><span class="status-dot"></span>Live</div>
       </div>
       <div class="card-body">
-        <div class="card-desc">Análise completa do impacto da melhoria de UX no canal Listado — funil (+14pp), crescimento 10×, ativação por cohort, DVC e próximos passos.</div>
+        <div class="card-desc">Impacto da melhoria de UX no canal Listado — funil (+14pp), crescimento 10×, ativação por cohort, DVC e próximos passos.</div>
         <div class="tags">
           <span class="tag">Funil</span><span class="tag">Listado</span>
           <span class="tag">Propensão</span><span class="tag">Ativação</span><span class="tag">DVC</span>
         </div>
       </div>
       <div class="card-footer">
-        <a class="btn btn-blue" href="https://storage.googleapis.com/meli-sandbox/CARDSINDICATORSBR/dashboards_TDMP_MLB/melhorias-fluxo-listado.html" target="_blank" rel="noopener">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        <a class="btn btn-primary" href="https://storage.googleapis.com/meli-sandbox/CARDSINDICATORSBR/dashboards_TDMP_MLB/melhorias-fluxo-listado.html" target="_blank" rel="noopener">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
           Abrir Análise
         </a>
       </div>
@@ -292,23 +592,23 @@
 
   </div>
 
-  <!-- Ferramentas e análises internas -->
+  <!-- Internos -->
   <div class="section-label">Ferramentas e análises internas</div>
   <div class="dash-grid">
 
     <!-- Micro TC MLB -->
     <div class="dash-card">
-      <div class="card-accent" style="background:var(--green)"></div>
+      <div class="card-glow" style="--accent:#00E676"></div>
       <div class="card-header">
-        <div class="card-icon" style="background:#E7F9F0;">📊</div>
+        <div class="card-icon" style="background:rgba(0,230,118,.08);">📊</div>
         <div class="card-info">
           <div class="card-title">Micro TC · MLB</div>
           <div class="card-sub">Dashboard Micro Transações</div>
         </div>
-        <div class="status st-live">● Live</div>
+        <div class="status st-live"><span class="status-dot"></span>Live</div>
       </div>
       <div class="card-body">
-        <div class="card-desc">Dashboard de micro transações com crédito MLB. Análise de ativação, cross CC, engajamento e graduação. Dados ao vivo via BigQuery com cache local.</div>
+        <div class="card-desc">Micro transações com crédito MLB. Análise de ativação, cross CC, engajamento e graduação. Dados ao vivo via BigQuery com cache local.</div>
         <div class="tags">
           <span class="tag">Micro TC</span><span class="tag">MLB</span><span class="tag">Ativação</span>
           <span class="tag">Cross CC</span><span class="tag">Engajamento</span><span class="tag">Graduação</span>
@@ -316,7 +616,7 @@
       </div>
       <div class="card-footer">
         <a class="btn btn-green" href="https://storage.googleapis.com/meli-sandbox/CARDSINDICATORSBR/dashboards_TDMP_MLB/micro_tc_mlb.html" target="_blank" rel="noopener">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
           Abrir no GCS
         </a>
       </div>
@@ -324,14 +624,14 @@
 
     <!-- Projeção Business Débito -->
     <div class="dash-card">
-      <div class="card-accent" style="background:var(--purple)"></div>
+      <div class="card-glow" style="--accent:#B388FF"></div>
       <div class="card-header">
-        <div class="card-icon" style="background:#F3EEFF;">📈</div>
+        <div class="card-icon" style="background:rgba(179,136,255,.08);">📈</div>
         <div class="card-info">
           <div class="card-title">Projeção Cartão Business</div>
           <div class="card-sub">Débito · Forecast Anual</div>
         </div>
-        <div class="status st-internal">● Interno</div>
+        <div class="status st-internal"><span class="status-dot"></span>Interno</div>
       </div>
       <div class="card-body">
         <div class="card-desc">Projeção de indicadores do Cartão de Débito Business. Visualização interativa de forecast anual com filtros por safra e indicador.</div>
@@ -347,14 +647,14 @@
 
     <!-- Tombamento Legado -->
     <div class="dash-card">
-      <div class="card-accent" style="background:var(--red)"></div>
+      <div class="card-glow" style="--accent:#FF4D6A"></div>
       <div class="card-header">
-        <div class="card-icon" style="background:#FFF0F0;">🔄</div>
+        <div class="card-icon" style="background:rgba(255,77,106,.08);">🔄</div>
         <div class="card-info">
           <div class="card-title">Tombamento Legado</div>
           <div class="card-sub">Análise Abr/25</div>
         </div>
-        <div class="status st-internal">● Interno</div>
+        <div class="status st-internal"><span class="status-dot"></span>Interno</div>
       </div>
       <div class="card-body">
         <div class="card-desc">Análise do tombamento do sistema legado em abril/25. Mapeamento de transições e impacto nos indicadores de cartão.</div>
@@ -370,17 +670,17 @@
 
     <!-- Limite Médio Micro TC -->
     <div class="dash-card">
-      <div class="card-accent" style="background:var(--blue)"></div>
+      <div class="card-glow" style="--accent:#009EE3"></div>
       <div class="card-header">
-        <div class="card-icon" style="background:#E3F4FD;">📏</div>
+        <div class="card-icon" style="background:rgba(0,158,227,.08);">📏</div>
         <div class="card-info">
           <div class="card-title">Limite Médio Micro TC</div>
           <div class="card-sub">Análise de Limite de Crédito</div>
         </div>
-        <div class="status st-internal">● Interno</div>
+        <div class="status st-internal"><span class="status-dot"></span>Interno</div>
       </div>
       <div class="card-body">
-        <div class="card-desc">Dashboard de acompanhamento do limite médio concedido no produto Micro TC MLB. Evolução por safra, segmento e grupo de risco.</div>
+        <div class="card-desc">Limite médio concedido no produto Micro TC MLB. Evolução por safra, segmento e grupo de risco.</div>
         <div class="tags">
           <span class="tag">Limite</span><span class="tag">Micro TC</span>
           <span class="tag">MLB</span><span class="tag">Crédito</span><span class="tag">Safra</span>
@@ -393,14 +693,14 @@
 
     <!-- Lance pra Cartão -->
     <div class="dash-card">
-      <div class="card-accent" style="background:var(--yellow)"></div>
+      <div class="card-glow" style="--accent:#FFE600"></div>
       <div class="card-header">
-        <div class="card-icon" style="background:#FFFDE7;">🏆</div>
+        <div class="card-icon" style="background:rgba(255,230,0,.08);">🏆</div>
         <div class="card-info">
           <div class="card-title">Lance pra Cartão</div>
           <div class="card-sub">Briefing · Visa Copa</div>
         </div>
-        <div class="status st-internal">● Interno</div>
+        <div class="status st-internal"><span class="status-dot"></span>Interno</div>
       </div>
       <div class="card-body">
         <div class="card-desc">Briefing da ação Lance pra Cartão vinculada à campanha Visa Copa. Mecânica, elegibilidade, metas e cronograma da ativação.</div>
@@ -419,92 +719,85 @@
 
 <!-- ═══════ FOOTER ═══════ -->
 <footer>
-  <strong>Hub Cartões · Jefferson Nogueira</strong><br>
-  Mercado Pago Brasil · Cards Indicators · Criado com Claude Code · mai/2026
+  hub-cartoes · jefferson.nogueira@mercadopago.com.br · mai/2026<br>
+  <span style="opacity:.5">criado com claude code</span>
 </footer>
+
+</div><!-- .page -->
 
 <script>
 (function () {
   const STATUS_ICONS = { ok: '✅', warning: '⚠️', error: '❌', missed: '🔴' };
-  const STATUS_LABEL = { ok: 'Rodou', warning: 'Aviso', error: 'Erro', missed: 'Não rodou' };
+  const STATUS_LABEL = { ok: 'ok', warning: 'aviso', error: 'erro', missed: 'ausente' };
 
-  // ── Owner mode ────────────────────────────────────────────────
+  // ── Owner mode ─────────────────────────────────────────────
   const isOwner = new URLSearchParams(location.search).has('owner');
 
-  if (isOwner) {
-    document.getElementById('ownerBar').classList.add('on');
-  }
+  if (isOwner) document.getElementById('ownerBar').classList.add('on');
 
   document.querySelectorAll('.local-file').forEach(el => {
     if (!isOwner) {
-      // Outros: remove o footer inteiro se só tem o local-file
       el.closest('.card-footer').style.display = 'none';
       return;
     }
-    // Owner: botão que copia o caminho para clipboard
-    const path = el.dataset.path || '';
+    const path  = el.dataset.path  || '';
     const label = el.dataset.label || path.split('\\').pop();
-    const btn = document.createElement('button');
+    const btn   = document.createElement('button');
     btn.className = 'btn btn-owner';
-    btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> ${label}`;
+    btn.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> ${label}`;
     btn.title = path;
     btn.onclick = () => {
       navigator.clipboard.writeText(path).then(() => {
-        btn.innerHTML = '✅ Caminho copiado!';
-        setTimeout(() => {
-          btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> ${label}`;
-        }, 2000);
+        const orig = btn.innerHTML;
+        btn.innerHTML = '✓ copiado';
+        setTimeout(() => { btn.innerHTML = orig; }, 2000);
       });
     };
     el.replaceWith(btn);
   });
 
+  // ── Status do dia ───────────────────────────────────────────
   function fmtDate(iso) {
-    const d = new Date(iso + 'T00:00:00');
-    return d.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' });
+    return new Date(iso + 'T00:00:00').toLocaleDateString('pt-BR', {
+      weekday: 'short', day: '2-digit', month: 'short'
+    });
   }
 
   function renderPanel(data) {
     const panel = document.getElementById('statusPanel');
-    const dashes = data.dashboards;
-
-    // Date label
     document.getElementById('spDate').textContent = '· ' + fmtDate(data.date);
 
-    // Rows
     const rowsEl = document.getElementById('spRows');
     rowsEl.innerHTML = '';
-    Object.values(dashes).forEach(d => {
+    Object.values(data.dashboards).forEach(d => {
       const row = document.createElement('div');
       row.className = 'sp-row ' + d.status;
       row.innerHTML = `
-        <span class="sp-icon">${STATUS_ICONS[d.status] || '❓'}</span>
+        <span>${STATUS_ICONS[d.status] || '?'}</span>
         <span class="sp-name">${d.name}</span>
         ${d.last_run ? `<span class="sp-time">${d.last_run}</span>` : ''}
       `;
       rowsEl.appendChild(row);
     });
 
-    // Footer
     const gen = data.generated_at ? data.generated_at.substring(11, 16) : '';
-    document.getElementById('spGenerated').textContent = gen ? `Checagem: ${gen}` : '';
+    document.getElementById('spGenerated').textContent =
+      gen ? `checagem ${gen} · próxima ~11:30` : '';
 
-    // Run badges on cards
-    Object.entries(dashes).forEach(([id, d]) => {
+    Object.entries(data.dashboards).forEach(([id, d]) => {
       const badge = document.getElementById('rb-' + id);
       if (!badge) return;
       badge.className = 'run-badge visible ' + d.status;
-      badge.innerHTML = `${STATUS_ICONS[d.status]} ${d.last_run || STATUS_LABEL[d.status]}`;
+      badge.textContent = (d.last_run || STATUS_LABEL[d.status]);
     });
 
     panel.classList.add('loaded');
   }
 
-  // Fetch status.json (cache-busted)
   fetch('./status.json?t=' + Date.now())
-    .then(r => r.ok ? r.json() : Promise.reject(r.status))
+    .then(r => r.ok ? r.json() : Promise.reject())
     .then(renderPanel)
-    .catch(() => { /* status.json indisponível — painel não aparece */ });
+    .catch(() => {});
 })();
 </script>
 </body>
