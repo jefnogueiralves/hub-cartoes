@@ -527,11 +527,11 @@
   <div class="stats-row">
     <div class="chip">
       <div class="chip-dot" style="background:var(--green)"></div>
-      <strong style="color:var(--text)">4</strong>&nbsp;publicados
+      <strong style="color:var(--text)">5</strong>&nbsp;publicados
     </div>
     <div class="chip">
       <div class="chip-dot" style="background:var(--orange)"></div>
-      <strong style="color:var(--text)">5</strong>&nbsp;internos
+      <strong style="color:var(--text)">4</strong>&nbsp;internos
     </div>
     <div class="chip">
       <div class="chip-dot" style="background:var(--cyan); animation-delay:.8s"></div>
@@ -674,11 +674,6 @@
       </div>
     </div>
 
-  </div>
-
-  <!-- Internos -->
-  <div class="section-label">Ferramentas e análises internas</div>
-  <div class="dash-grid">
 
     <!-- Micro TC MLB -->
     <div class="dash-card">
@@ -705,6 +700,12 @@
         </a>
       </div>
     </div>
+
+  </div>
+
+  <!-- Internos (owner only) -->
+  <div class="section-label" id="sectionInternos">Análises internas</div>
+  <div class="dash-grid">
 
     <!-- Projeção Business Débito -->
     <div class="dash-card" data-owner-only>
@@ -888,13 +889,23 @@ function activateOwner() {
   lb.textContent = '🔓'; lb.classList.add('unlocked');
   lb.title = 'Owner ativo';
   // Chips
-  setChips(4, 5);
+  const secInternos2 = document.getElementById('sectionInternos');
+  if (secInternos2) secInternos2.style.display = '';
+  const chipsAll = document.querySelectorAll('.chip');
+  if (chipsAll[1]) chipsAll[1].style.display = '';
+  setChips(5, 4);
 }
 
 function deactivateOwner() {
   document.querySelectorAll('[data-owner-only]').forEach(el => el.style.display = 'none');
   document.querySelectorAll('.local-file').forEach(el => el.closest('.card-footer').style.display = 'none');
-  setChips(3, 1);
+  // Esconde label da seção internos (todos os cards dela são owner-only)
+  const secInternos = document.getElementById('sectionInternos');
+  if (secInternos) secInternos.style.display = 'none';
+  setChips(4, 0);
+  // Esconde chip de internos para não-owner
+  const chips2 = document.querySelectorAll('.chip');
+  if (chips2[1]) chips2[1].style.display = 'none';
 }
 
 // ── Modal ───────────────────────────────────────────────────
