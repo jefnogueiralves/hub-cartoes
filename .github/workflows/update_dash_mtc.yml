@@ -2,8 +2,11 @@ name: Update Dashboard Micro TC MLB
 
 on:
   schedule:
-    - cron: '0 12 * * *'   # 09:00 BRT (UTC-3) = 12:00 UTC, todos os dias
-  workflow_dispatch:         # permite rodar manualmente pelo GitHub UI
+    - cron: '0 12 * * 1-5'   # 09:00 BRT (UTC-3) = 12:00 UTC, seg-sex
+  workflow_dispatch:           # permite rodar manualmente pelo GitHub UI
+
+permissions:
+  contents: write              # necessário para git push via github.token
 
 jobs:
   update:
@@ -13,8 +16,7 @@ jobs:
     steps:
       - name: Checkout repositório
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GH_PAT }}
+        # usa github.token nativo — não precisa de GH_PAT
 
       - name: Setup Python 3.11
         uses: actions/setup-python@v5
@@ -43,16 +45,14 @@ jobs:
           echo "--- Últimas linhas ---"
           tail -5 /tmp/update.log
 
-      - name: Atualizar data no hub e fazer commit
+      - name: Commit se houve alteração
         run: |
-          HOJE=$(TZ='America/Sao_Paulo' date '+%b\/%Y' | tr '[:upper:]' '[:lower:]')
-          sed -i "s/Atualizado [a-z]*\/[0-9]*/Atualizado $HOJE/" index.html
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add index.html
-          git diff --staged --quiet && echo "Nenhuma alteração" || \
-            git commit -m "auto: dash Micro TC MLB $(TZ='America/Sao_Paulo' date '+%d/%m/%Y %H:%M')" && \
-            git push
+          git diff --quiet && echo "Sem alterações" || \
+            (git add -A && \
+             git commit -m "auto: Micro TC MLB $(TZ='America/Sao_Paulo' date '+%d/%m/%Y %H:%M')" && \
+             git push)
 
       - name: Limpar SA key
         if: always()
