@@ -3,10 +3,10 @@ name: Update Dashboard Micro TC MLB
 on:
   schedule:
     - cron: '0 12 * * 1-5'   # 09:00 BRT (UTC-3) = 12:00 UTC, seg-sex
-  workflow_dispatch:           # permite rodar manualmente pelo GitHub UI
+  workflow_dispatch:
 
 permissions:
-  contents: write              # necessário para git push via github.token
+  contents: write
 
 jobs:
   update:
@@ -14,9 +14,8 @@ jobs:
     timeout-minutes: 35
 
     steps:
-      - name: Checkout repositório
+      - name: Checkout
         uses: actions/checkout@v4
-        # usa github.token nativo — não precisa de GH_PAT
 
       - name: Setup Python 3.11
         uses: actions/setup-python@v5
@@ -24,36 +23,43 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
 
-      - name: Instalar dependências Python
+      - name: Instalar dependencias
         run: |
           pip install --quiet \
             google-cloud-bigquery \
             google-cloud-storage \
             google-auth \
+            google-auth-oauthlib \
             pyarrow \
-            db-dtypes
+            db-dtypes \
+            requests
 
-      - name: Criar SA key file
-        run: echo '${{ secrets.GCP_SA_KEY }}' > /tmp/sa_key.json
-
-      - name: Executar atualização do dashboard
+      - name: Configurar credenciais GCP (ADC)
         env:
-          GOOGLE_APPLICATION_CREDENTIALS: /tmp/sa_key.json
+          GCP_ADC_JSON: ${{ secrets.GCP_ADC_JSON }}
+        run: |
+          mkdir -p ~/.config/gcloud
+          echo "$GCP_ADC_JSON" > ~/.config/gcloud/application_default_credentials.json
+          python3 -c "import json,sys; json.load(open(sys.argv[1])); print('Credenciais OK')" \
+            ~/.config/gcloud/application_default_credentials.json
+
+      - name: Executar atualizacao do dashboard
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: /home/runner/.config/gcloud/application_default_credentials.json
           OUTPUT_DIR: /tmp/dash_output
         run: |
           python scripts/update_gcs.py 2>&1 | tee /tmp/update.log
-          echo "--- Últimas linhas ---"
           tail -5 /tmp/update.log
 
-      - name: Commit se houve alteração
+      - name: Commit se houve alteracao
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git diff --quiet && echo "Sem alterações" || \
+          git diff --quiet && echo "Sem alteracoes" || \
             (git add -A && \
              git commit -m "auto: Micro TC MLB $(TZ='America/Sao_Paulo' date '+%d/%m/%Y %H:%M')" && \
              git push)
 
-      - name: Limpar SA key
+      - name: Limpar credenciais
         if: always()
-        run: rm -f /tmp/sa_key.json
+        run: rm -f ~/.config/gcloud/application_default_credentials.json
