@@ -62,33 +62,44 @@ QUERIES = [
 
 
 def get_credentials():
-    sa_key = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
-    if sa_key and Path(sa_key).exists():
-        from google.oauth2 import service_account
-        log.info('Credenciais: service account')
-        return service_account.Credentials.from_service_account_file(
-            sa_key, scopes=['https://www.googleapis.com/auth/cloud-platform'])
-    import google.auth, google.auth.transport.requests
+    import google.auth.transport.requests as req
+
+    # Verifica se há um arquivo de credenciais explícito
+    cred_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
+    if cred_path and Path(cred_path).exists():
+        with open(cred_path) as f:
+            cd = json.load(f)
+        cred_type = cd.get('type', '')
+
+        if cred_type == 'service_account':
+            from google.oauth2 import service_account
+            log.info('Credenciais: service account')
+            return service_account.Credentials.from_service_account_file(
+                cred_path, scopes=['https://www.googleapis.com/auth/cloud-platform'])
+
+        if cred_type == 'authorized_user':
+            from google.oauth2.credentials import Credentials
+            log.info('Credenciais: authorized_user (OAuth2)')
+            creds = Credentials(
+                token=None,
+                refresh_token=cd['refresh_token'],
+                token_uri='https://oauth2.googleapis.com/token',
+                client_id=cd['client_id'],
+                client_secret=cd['client_secret'],
+                quota_project_id=cd.get('quota_project_id'),
+            )
+            creds.refresh(req.Request())
+            return creds
+
+    # Fallback: ADC padrão do gcloud
+    import google.auth
     try:
         creds, _ = google.auth.default(scopes=['https://www.googleapis.com/auth/cloud-platform'])
-        creds.refresh(google.auth.transport.requests.Request())
-        log.info('Credenciais: ADC')
+        creds.refresh(req.Request())
+        log.info('Credenciais: ADC padrão')
         return creds
-    except Exception:
-        pass
-    from google.oauth2.credentials import Credentials
-    adc = Path.home() / 'AppData/Roaming/gcloud/application_default_credentials.json'
-    with open(adc) as f:
-        cd = json.load(f)
-    creds = Credentials(
-        token=None, refresh_token=cd['refresh_token'],
-        token_uri='https://oauth2.googleapis.com/token',
-        client_id=cd['client_id'], client_secret=cd['client_secret'],
-    )
-    import google.auth.transport.requests
-    creds.refresh(google.auth.transport.requests.Request())
-    log.info('Credenciais: OAuth2 local')
-    return creds
+    except Exception as e:
+        raise RuntimeError(f'Nenhuma credencial disponível: {e}')
 
 
 def run_query(client, sql, label):
