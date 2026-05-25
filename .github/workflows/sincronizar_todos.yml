@@ -1,0 +1,56 @@
+name: Sincronizar todos os dashboards Grid → GCS
+
+on:
+  schedule:
+    - cron: '30 12 * * 1-5'  # 09:30 BRT (UTC-3) = 12:30 UTC, seg-sex
+    - cron: '30 14 * * 1-5'  # 11:30 BRT = 14:30 UTC, seg-sex
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: |
+          pip install --quiet \
+            google-cloud-storage \
+            google-auth \
+            google-auth-oauthlib \
+            playwright \
+            requests
+
+      - name: Instalar Chromium (Playwright)
+        run: python -m playwright install chromium --with-deps
+
+      - name: Configurar credenciais GCP
+        env:
+          GCP_ADC_JSON: ${{ secrets.GCP_ADC_JSON }}
+        run: |
+          mkdir -p ~/.config/gcloud
+          echo "$GCP_ADC_JSON" > ~/.config/gcloud/application_default_credentials.json
+
+      - name: Sincronizar Grid → GCS
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: /home/runner/.config/gcloud/application_default_credentials.json
+          GRID_SESSION_ID: ${{ secrets.GRID_SESSION_ID }}
+        run: |
+          python scripts/sincronizar_grid_gcs.py 2>&1 | tee /tmp/sync.log
+          echo "--- Resultado ---"
+          grep -E "OK|ERRO|interceptado|publicado|KB|concluida" /tmp/sync.log || tail -10 /tmp/sync.log
+
+      - name: Limpar credenciais
+        if: always()
+        run: rm -f ~/.config/gcloud/application_default_credentials.json
