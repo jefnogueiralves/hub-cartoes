@@ -1,6 +1,6 @@
 {
   "date": "2026-06-01",
-  "generated_at": "2026-06-01T11:03:03",
+  "generated_at": "2026-06-01T11:30:00",
   "dashboards": {
     "td_indicadores": {
       "name": "TD Indicadores",
@@ -10,9 +10,9 @@
     },
     "cartoes_expirados": {
       "name": "Cartões Expirados",
-      "status": "warning",
-      "last_run": "10:49",
-      "message": "Sessão Grid expirada · BQ/GCS ok"
+      "status": "ok",
+      "last_run": "11:05",
+      "message": "[2026-06-01 11:05:20] SUCESSO!"
     },
     "controle_plastico": {
       "name": "Controle de Plástico",
