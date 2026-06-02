@@ -998,6 +998,8 @@
   </div>
 </div>
 
+<script>window.USAGE_EMBEDDED={"ano":2026,"mes":6,"atualizado_em":"2026-06-02T20:39:46.785333+00:00","tokens":{"input":1978,"output":890644,"cache_creation":17582393,"cache_read":329492346},"total_tokens":347967361,"custo_usd":178.1473,"conversas":8,"por_dia":{"2026-06-02":{"input":1300,"output":602154,"cache_creation":6102048,"cache_read":112811751,"cost":65.7624152999999},"2026-06-01":{"input":678,"output":288490,"cache_creation":11480345,"cache_read":216680595,"cost":112.38485624999998}},"_source":"embutido 2026-06-02"}</script>
+
 <script>
 // ── Hash SHA-256 de "jeffito" ── não altere sem recalcular
 const OWNER_HASH = 'ca04fd80447a1ef05cca3068e48b2c88ee82f8531984046b2b233c4c55f244c1';
@@ -1103,20 +1105,33 @@ async function fetchUsage() {
     localStorage.setItem(USAGE_CACHE_KEY, JSON.stringify(data));
     renderUsage(data);
   } catch(e) {
-    // Tenta cache local
+    // Fallback 1: dados embutidos no HTML (sempre disponível no Grid/GCS)
+    if (window.USAGE_EMBEDDED) {
+      renderUsage(window.USAGE_EMBEDDED);
+      if (updEl) updEl.textContent = (window.USAGE_EMBEDDED._source || 'embutido');
+      return;
+    }
+    // Fallback 2: cache localStorage
     const cached = localStorage.getItem(USAGE_CACHE_KEY);
     if (cached) {
       renderUsage(JSON.parse(cached));
+      if (updEl) updEl.textContent = 'cache local';
+      return;
     }
-    if (updEl) updEl.textContent = 'sem conexão · cache local';
+    if (updEl) updEl.textContent = 'sem dados — rode atualizar_uso.bat';
   }
 }
 
 function initUsageWidget() {
-  // Carrega da cache primeiro (render imediato)
+  // Prioridade 1: dados embutidos no HTML (sempre presentes após atualizar_uso.bat)
+  if (window.USAGE_EMBEDDED) {
+    renderUsage(window.USAGE_EMBEDDED);
+    return;
+  }
+  // Prioridade 2: cache localStorage (visita anterior)
   const cached = localStorage.getItem(USAGE_CACHE_KEY);
   if (cached) renderUsage(JSON.parse(cached));
-  // Depois tenta atualizar do GitHub Pages
+  // Tenta buscar versão mais recente do GitHub Pages em background
   fetchUsage();
 }
 
