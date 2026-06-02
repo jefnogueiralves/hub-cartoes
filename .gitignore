@@ -2,6 +2,7 @@
 grid_credentials.txt
 *.json
 !status.json
+!usage_data.json
 service_account*.json
 gcp_key*.json
 .env

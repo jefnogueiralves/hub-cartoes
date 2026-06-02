@@ -484,6 +484,95 @@
     }
     .modal-cancel:hover { color: var(--text); }
 
+    /* ══════════════════════════════════════
+       CLAUDE USAGE WIDGET (owner-only)
+    ══════════════════════════════════════ */
+    .usage-section {
+      padding: 14px 56px 0;
+      display: none;
+    }
+    .usage-section.on { display: block; }
+
+    .usage-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid #7C3AED;
+      border-radius: 12px;
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-bottom: 4px;
+    }
+
+    /* ── Donut SVG ── */
+    .uw-donut-wrap {
+      position: relative; width: 76px; height: 76px; flex-shrink: 0;
+    }
+    .uw-donut-wrap svg { width: 100%; height: 100%; }
+    .uw-donut-pct {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); font-size: 14px; font-weight: 700;
+      color: var(--text);
+    }
+
+    /* ── Label block ── */
+    .uw-label { flex-shrink: 0; }
+    .uw-title {
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      color: #7C3AED; margin-bottom: 4px;
+    }
+    .uw-month { font-size: 19px; font-weight: 800; color: var(--text); line-height: 1; }
+    .uw-period { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+    /* ── KPIs strip ── */
+    .uw-kpis {
+      display: flex; gap: 20px; flex-wrap: wrap; flex: 1; min-width: 0;
+    }
+    .uw-kpi { text-align: left; }
+    .uw-kpi-val {
+      font-family: var(--mono); font-size: 16px; font-weight: 700; color: var(--text);
+      line-height: 1;
+    }
+    .uw-kpi-label {
+      font-size: 10px; color: var(--muted); margin-top: 3px;
+      white-space: nowrap;
+    }
+    .uw-kpi-val.over-budget { color: var(--red); }
+    .uw-kpi-val.warning-budget { color: var(--orange); }
+
+    /* ── Budget edit ── */
+    .uw-budget-edit {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-family: var(--mono); font-size: 11px; color: var(--muted);
+      background: none; border: none; cursor: pointer; padding: 0;
+      text-decoration: underline dashed;
+      transition: color .15s;
+    }
+    .uw-budget-edit:hover { color: #7C3AED; }
+
+    /* ── Actions ── */
+    .uw-actions { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; margin-left: auto; flex-shrink: 0; }
+    .uw-refresh {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-family: var(--mono); font-size: 10px; font-weight: 600;
+      background: rgba(124,58,237,.08); border: 1px solid rgba(124,58,237,.2);
+      color: #7C3AED; border-radius: 7px; padding: 5px 10px; cursor: pointer;
+      transition: background .15s; white-space: nowrap;
+    }
+    .uw-refresh:hover { background: rgba(124,58,237,.15); }
+    .uw-updated { font-size: 10px; color: #AAAAAA; font-family: var(--mono); text-align: right; }
+
+    /* ── Progress bar ── */
+    .uw-bar-track {
+      width: 100%; height: 4px; background: #EEEEEE; border-radius: 2px;
+      margin-top: 14px; overflow: hidden;
+    }
+    .uw-bar-fill { height: 100%; border-radius: 2px; transition: width .8s cubic-bezier(.4,0,.2,1); }
+
     /* ── Responsive ── */
     @media (max-width: 680px) {
       header { padding: 32px 20px 28px; }
@@ -536,6 +625,72 @@
   <div class="sp-footer">
     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
     <span id="spGenerated"></span>
+  </div>
+</div>
+
+<!-- ═══════ CLAUDE USAGE (owner-only) ═══════ -->
+<div class="usage-section" id="usageSection">
+  <div class="usage-card" id="usageCard">
+
+    <!-- Donut -->
+    <div class="uw-donut-wrap">
+      <svg viewBox="0 0 76 76" fill="none">
+        <circle cx="38" cy="38" r="28" stroke="#EEEEEE" stroke-width="9"/>
+        <circle id="uwDonutArc" cx="38" cy="38" r="28"
+                stroke="#00A650" stroke-width="9"
+                stroke-linecap="round"
+                stroke-dasharray="175.9" stroke-dashoffset="175.9"
+                transform="rotate(-90 38 38)"
+                style="transition: stroke-dashoffset .9s cubic-bezier(.4,0,.2,1), stroke .4s"/>
+      </svg>
+      <div class="uw-donut-pct" id="uwPct">0%</div>
+    </div>
+
+    <!-- Label -->
+    <div class="uw-label">
+      <div class="uw-title">Claude Code · Uso</div>
+      <div class="uw-month" id="uwCost">—</div>
+      <div class="uw-period">
+        <button class="uw-budget-edit" id="uwBudgetBtn" onclick="editBudget()">
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          meta: <span id="uwBudgetLabel">…</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="uw-kpis">
+      <div class="uw-kpi">
+        <div class="uw-kpi-val" id="uwTokens">—</div>
+        <div class="uw-kpi-label">tokens no mês</div>
+      </div>
+      <div class="uw-kpi">
+        <div class="uw-kpi-val" id="uwBurnRate">—</div>
+        <div class="uw-kpi-label">burn rate / dia</div>
+      </div>
+      <div class="uw-kpi">
+        <div class="uw-kpi-val" id="uwProj">—</div>
+        <div class="uw-kpi-label">projeção mês</div>
+      </div>
+      <div class="uw-kpi">
+        <div class="uw-kpi-val" id="uwCacheRatio">—</div>
+        <div class="uw-kpi-label">cache read %</div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="uw-actions">
+      <button class="uw-refresh" onclick="fetchUsage()">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+        atualizar
+      </button>
+      <div class="uw-updated" id="uwUpdated">—</div>
+    </div>
+
+  </div>
+  <!-- bar -->
+  <div class="uw-bar-track" style="margin: 6px 0 16px">
+    <div class="uw-bar-fill" id="uwBarFill" style="width:0%; background:#00A650"></div>
   </div>
 </div>
 
@@ -847,6 +1002,134 @@
 // ── Hash SHA-256 de "jeffito" ── não altere sem recalcular
 const OWNER_HASH = 'ca04fd80447a1ef05cca3068e48b2c88ee82f8531984046b2b233c4c55f244c1';
 const SK = 'hub_owner_v1';
+const USAGE_CACHE_KEY = 'hub_usage_v1';
+const USAGE_BUDGET_KEY = 'hub_usage_budget_v1';
+const USAGE_URL = 'https://jefnogueiralves.github.io/hub-cartoes/usage_data.json';
+const CIRC = 2 * Math.PI * 28; // 175.9
+
+// ── Claude Usage Widget ──────────────────────────────────────
+function fmtUSD(v) {
+  return 'USD ' + v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function fmtTokens(n) {
+  if (n >= 1e9) return (n/1e9).toFixed(1) + 'B';
+  if (n >= 1e6) return (n/1e6).toFixed(0) + 'M';
+  if (n >= 1e3) return (n/1e3).toFixed(0) + 'K';
+  return String(n);
+}
+function usagePctColor(pct) {
+  if (pct >= 0.8) return 'var(--red)';
+  if (pct >= 0.5) return 'var(--orange)';
+  return '#00A650';
+}
+
+function renderUsage(data) {
+  if (!data) return;
+  const budget = parseFloat(localStorage.getItem(USAGE_BUDGET_KEY)) || 300;
+
+  const cost    = data.custo_usd || 0;
+  const tokens  = data.total_tokens || 0;
+  const toks    = data.tokens || {};
+  const porDia  = data.por_dia || {};
+  const ano     = data.ano || new Date().getFullYear();
+  const mes     = data.mes || (new Date().getMonth()+1);
+
+  const diasDecorridos = Object.keys(porDia).length || 1;
+  const burnRate       = cost / diasDecorridos;
+  const diasNoMes      = new Date(ano, mes, 0).getDate();
+  const projecao       = burnRate * diasNoMes;
+  const pct            = Math.min(cost / budget, 1);
+  const cacheRatio     = tokens > 0 ? ((toks.cache_read||0) / tokens * 100) : 0;
+  const cor            = usagePctColor(pct);
+
+  // Donut
+  const arc  = document.getElementById('uwDonutArc');
+  const pctEl= document.getElementById('uwPct');
+  if (arc) {
+    const offset = CIRC * (1 - pct);
+    arc.style.strokeDashoffset = offset;
+    arc.style.stroke = cor;
+  }
+  if (pctEl) pctEl.textContent = Math.round(pct * 100) + '%';
+
+  // Custo principal
+  const costEl = document.getElementById('uwCost');
+  if (costEl) {
+    costEl.textContent = fmtUSD(cost);
+    costEl.className = 'uw-month';
+    if (pct >= 0.8)       costEl.style.color = 'var(--red)';
+    else if (pct >= 0.5)  costEl.style.color = 'var(--orange)';
+    else                  costEl.style.color = 'var(--text)';
+  }
+
+  // Budget label
+  const bl = document.getElementById('uwBudgetLabel');
+  if (bl) bl.textContent = fmtUSD(budget);
+
+  // KPIs
+  const setKpi = (id, val, cls) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = val;
+    el.className = 'uw-kpi-val' + (cls ? ' ' + cls : '');
+  };
+  setKpi('uwTokens',    fmtTokens(tokens));
+  setKpi('uwBurnRate',  fmtUSD(burnRate) + '/d',
+         pct >= 0.8 ? 'over-budget' : pct >= 0.5 ? 'warning-budget' : '');
+  setKpi('uwProj', fmtUSD(projecao),
+         projecao >= budget ? 'over-budget' : projecao >= budget * 0.8 ? 'warning-budget' : '');
+  setKpi('uwCacheRatio', Math.round(cacheRatio) + '%');
+
+  // Bar
+  const bar = document.getElementById('uwBarFill');
+  if (bar) { bar.style.width = (pct * 100) + '%'; bar.style.background = cor; }
+
+  // Updated
+  const upd = document.getElementById('uwUpdated');
+  if (upd && data.atualizado_em) {
+    const d = new Date(data.atualizado_em);
+    upd.textContent = d.toLocaleDateString('pt-BR', {day:'2-digit', month:'short'})
+                    + ' ' + d.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+  }
+}
+
+async function fetchUsage() {
+  const updEl = document.getElementById('uwUpdated');
+  if (updEl) updEl.textContent = 'buscando…';
+  try {
+    const r = await fetch(USAGE_URL + '?t=' + Date.now());
+    if (!r.ok) throw new Error('status ' + r.status);
+    const data = await r.json();
+    localStorage.setItem(USAGE_CACHE_KEY, JSON.stringify(data));
+    renderUsage(data);
+  } catch(e) {
+    // Tenta cache local
+    const cached = localStorage.getItem(USAGE_CACHE_KEY);
+    if (cached) {
+      renderUsage(JSON.parse(cached));
+    }
+    if (updEl) updEl.textContent = 'sem conexão · cache local';
+  }
+}
+
+function initUsageWidget() {
+  // Carrega da cache primeiro (render imediato)
+  const cached = localStorage.getItem(USAGE_CACHE_KEY);
+  if (cached) renderUsage(JSON.parse(cached));
+  // Depois tenta atualizar do GitHub Pages
+  fetchUsage();
+}
+
+function editBudget() {
+  const current = parseFloat(localStorage.getItem(USAGE_BUDGET_KEY)) || 300;
+  const novo = prompt('Meta mensal em USD (ex: 300):', current);
+  if (novo === null) return;
+  const val = parseFloat(novo);
+  if (isNaN(val) || val <= 0) return;
+  localStorage.setItem(USAGE_BUDGET_KEY, val);
+  const cached = localStorage.getItem(USAGE_CACHE_KEY);
+  if (cached) renderUsage(JSON.parse(cached));
+}
 
 const STATUS_ICONS = { ok: '✅', warning: '⚠️', error: '❌', missed: '🔴' };
 const STATUS_LABEL = { ok: 'ok', warning: 'aviso', error: 'erro', missed: 'ausente' };
@@ -864,6 +1147,9 @@ function setChips(pub, int) {
 }
 
 function activateOwner() {
+  // Mostra usage widget
+  const us = document.getElementById('usageSection');
+  if (us) { us.classList.add('on'); initUsageWidget(); }
   // Mostra todos os cards owner-only
   document.querySelectorAll('[data-owner-only]').forEach(el => el.style.display = '');
   // Converte local-file spans em botões de copiar
@@ -900,6 +1186,8 @@ function activateOwner() {
 }
 
 function deactivateOwner() {
+  const us = document.getElementById('usageSection');
+  if (us) us.classList.remove('on');
   document.querySelectorAll('[data-owner-only]').forEach(el => el.style.display = 'none');
   document.querySelectorAll('.local-file').forEach(el => el.closest('.card-footer').style.display = 'none');
   // Esconde label da seção internos (todos os cards dela são owner-only)

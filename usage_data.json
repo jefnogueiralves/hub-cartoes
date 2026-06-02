@@ -1,0 +1,30 @@
+{
+  "ano": 2026,
+  "mes": 6,
+  "atualizado_em": "2026-06-02T20:10:31.480333+00:00",
+  "tokens": {
+    "input": 1797,
+    "output": 810386,
+    "cache_creation": 17430423,
+    "cache_read": 318523912
+  },
+  "total_tokens": 336766518,
+  "custo_usd": 173.0824,
+  "conversas": 8,
+  "por_dia": {
+    "2026-06-02": {
+      "input": 1119,
+      "output": 521896,
+      "cache_creation": 5950078,
+      "cache_read": 101843317,
+      "cost": 60.697584599999864
+    },
+    "2026-06-01": {
+      "input": 678,
+      "output": 288490,
+      "cache_creation": 11480345,
+      "cache_read": 216680595,
+      "cost": 112.38485624999998
+    }
+  }
+}
