@@ -566,12 +566,47 @@
     .uw-refresh:hover { background: rgba(124,58,237,.15); }
     .uw-updated { font-size: 10px; color: #AAAAAA; font-family: var(--mono); text-align: right; }
 
-    /* ── Progress bar ── */
-    .uw-bar-track {
-      width: 100%; height: 4px; background: #EEEEEE; border-radius: 2px;
-      margin-top: 14px; overflow: hidden;
+    /* ── Comparação diária ── */
+    .uw-compare {
+      width: 100%; padding: 10px 22px 14px;
+      display: flex; flex-direction: column; gap: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid #7C3AED;
+      border-top: none;
+      border-radius: 0 0 12px 12px;
     }
-    .uw-bar-fill { height: 100%; border-radius: 2px; transition: width .8s cubic-bezier(.4,0,.2,1); }
+    .usage-card { border-radius: 12px 12px 0 0; margin-bottom: 0; }
+
+    .uw-cmp-row {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .uw-cmp-label {
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1px;
+      color: var(--muted); width: 58px; flex-shrink: 0; text-align: right;
+    }
+    .uw-cmp-track {
+      flex: 1; height: 7px; background: #EEEEEE; border-radius: 4px; overflow: visible;
+      position: relative;
+    }
+    .uw-cmp-fill {
+      height: 100%; border-radius: 4px;
+      transition: width .9s cubic-bezier(.4,0,.2,1);
+      position: relative;
+    }
+    .uw-cmp-val {
+      font-family: var(--mono); font-size: 11px; font-weight: 700;
+      width: 82px; flex-shrink: 0; color: var(--text);
+    }
+    .uw-cmp-badge {
+      font-family: var(--mono); font-size: 10px; font-weight: 700;
+      padding: 2px 8px; border-radius: 20px; flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .badge-ok     { background: #E8F5E9; color: #2E7D32; }
+    .badge-warn   { background: #FFF3E0; color: #E65100; }
+    .badge-danger { background: #FFEBEE; color: #C62828; }
 
     /* ── Responsive ── */
     @media (max-width: 680px) {
@@ -688,9 +723,24 @@
     </div>
 
   </div>
-  <!-- bar -->
-  <div class="uw-bar-track" style="margin: 6px 0 16px">
-    <div class="uw-bar-fill" id="uwBarFill" style="width:0%; background:#00A650"></div>
+  <!-- Comparação meta/dia vs real/dia -->
+  <div class="uw-compare">
+    <div class="uw-cmp-row">
+      <span class="uw-cmp-label">meta/dia</span>
+      <div class="uw-cmp-track">
+        <div class="uw-cmp-fill" id="uwBarBudget" style="width:100%; background:#00A650"></div>
+      </div>
+      <span class="uw-cmp-val" id="uwDailyBudget">—</span>
+      <span class="uw-cmp-badge badge-ok" id="uwDuLabel">—</span>
+    </div>
+    <div class="uw-cmp-row">
+      <span class="uw-cmp-label">real/dia</span>
+      <div class="uw-cmp-track">
+        <div class="uw-cmp-fill" id="uwBarActual" style="width:0%; background:#E53935"></div>
+      </div>
+      <span class="uw-cmp-val" id="uwDailyActual">—</span>
+      <span class="uw-cmp-badge" id="uwRatioBadge">—</span>
+    </div>
   </div>
 </div>
 
@@ -998,7 +1048,7 @@
   </div>
 </div>
 
-<script>window.USAGE_EMBEDDED={"ano":2026,"mes":6,"atualizado_em":"2026-06-02T20:39:46.785333+00:00","tokens":{"input":1978,"output":890644,"cache_creation":17582393,"cache_read":329492346},"total_tokens":347967361,"custo_usd":178.1473,"conversas":8,"por_dia":{"2026-06-02":{"input":1300,"output":602154,"cache_creation":6102048,"cache_read":112811751,"cost":65.7624152999999},"2026-06-01":{"input":678,"output":288490,"cache_creation":11480345,"cache_read":216680595,"cost":112.38485624999998}},"_source":"embutido 2026-06-02"}</script>
+<script>window.USAGE_EMBEDDED={"ano":2026,"mes":6,"atualizado_em":"2026-06-03T11:24:12.686443+00:00","tokens":{"input":2129,"output":1162020,"cache_creation":18783350,"cache_read":336463970},"total_tokens":356411469,"custo_usd":188.8134,"conversas":10,"por_dia":{"2026-06-02":{"input":1361,"output":819228,"cache_creation":6296051,"cache_read":115716763,"cost":70.61772314999997},"2026-06-01":{"input":678,"output":288490,"cache_creation":11480345,"cache_read":216680595,"cost":112.38485624999998},"2026-06-03":{"input":90,"output":54302,"cache_creation":1006954,"cache_read":4066612,"cost":5.8108610999999994}},"_source":"embutido 2026-06-03"}</script>
 
 <script>
 // ── Hash SHA-256 de "jeffito" ── não altere sem recalcular
@@ -1025,6 +1075,16 @@ function usagePctColor(pct) {
   return '#00A650';
 }
 
+function diasUteisNoMes(ano, mes) {
+  const total = new Date(ano, mes, 0).getDate();
+  let uteis = 0;
+  for (let d = 1; d <= total; d++) {
+    const dow = new Date(ano, mes - 1, d).getDay();
+    if (dow !== 0 && dow !== 6) uteis++;
+  }
+  return uteis;
+}
+
 function renderUsage(data) {
   if (!data) return;
   const budget = parseFloat(localStorage.getItem(USAGE_BUDGET_KEY)) || 300;
@@ -1039,6 +1099,8 @@ function renderUsage(data) {
   const diasDecorridos = Object.keys(porDia).length || 1;
   const burnRate       = cost / diasDecorridos;
   const diasNoMes      = new Date(ano, mes, 0).getDate();
+  const duMes          = diasUteisNoMes(ano, mes);
+  const dailyBudget    = budget / duMes;
   const projecao       = burnRate * diasNoMes;
   const pct            = Math.min(cost / budget, 1);
   const cacheRatio     = tokens > 0 ? ((toks.cache_read||0) / tokens * 100) : 0;
@@ -1048,8 +1110,7 @@ function renderUsage(data) {
   const arc  = document.getElementById('uwDonutArc');
   const pctEl= document.getElementById('uwPct');
   if (arc) {
-    const offset = CIRC * (1 - pct);
-    arc.style.strokeDashoffset = offset;
+    arc.style.strokeDashoffset = CIRC * (1 - pct);
     arc.style.stroke = cor;
   }
   if (pctEl) pctEl.textContent = Math.round(pct * 100) + '%';
@@ -1058,7 +1119,6 @@ function renderUsage(data) {
   const costEl = document.getElementById('uwCost');
   if (costEl) {
     costEl.textContent = fmtUSD(cost);
-    costEl.className = 'uw-month';
     if (pct >= 0.8)       costEl.style.color = 'var(--red)';
     else if (pct >= 0.5)  costEl.style.color = 'var(--orange)';
     else                  costEl.style.color = 'var(--text)';
@@ -1077,21 +1137,43 @@ function renderUsage(data) {
   };
   setKpi('uwTokens',    fmtTokens(tokens));
   setKpi('uwBurnRate',  fmtUSD(burnRate) + '/d',
-         pct >= 0.8 ? 'over-budget' : pct >= 0.5 ? 'warning-budget' : '');
+         burnRate > dailyBudget * 1.5 ? 'over-budget' : burnRate > dailyBudget ? 'warning-budget' : '');
   setKpi('uwProj', fmtUSD(projecao),
          projecao >= budget ? 'over-budget' : projecao >= budget * 0.8 ? 'warning-budget' : '');
   setKpi('uwCacheRatio', Math.round(cacheRatio) + '%');
 
-  // Bar
-  const bar = document.getElementById('uwBarFill');
-  if (bar) { bar.style.width = (pct * 100) + '%'; bar.style.background = cor; }
+  // ── Barras comparativas ──
+  // Escala: máx = maior dos dois × 1.15 (espaço visual)
+  const maxVal = Math.max(dailyBudget, burnRate) * 1.15;
+  const pctBudget = (dailyBudget / maxVal) * 100;
+  const pctActual = Math.min((burnRate   / maxVal) * 100, 100);
+
+  const ratio    = dailyBudget > 0 ? burnRate / dailyBudget : 1;
+  const barColor = ratio > 2   ? 'var(--red)'    :
+                   ratio > 1.2 ? 'var(--orange)' : '#00A650';
+  const badgeCls = ratio > 2   ? 'uw-cmp-badge badge-danger' :
+                   ratio > 1.2 ? 'uw-cmp-badge badge-warn'   : 'uw-cmp-badge badge-ok';
+  const ratioTxt = ratio > 1
+    ? `${ratio.toFixed(1)}× acima`
+    : `${Math.round((1 - ratio) * 100)}% abaixo`;
+
+  const setEl = (id, prop, val) => { const e = document.getElementById(id); if(e) e[prop] = val; };
+
+  setEl('uwBarBudget',  'style', `width:${pctBudget.toFixed(1)}%;background:#00A650`);
+  setEl('uwBarActual',  'style', `width:${pctActual.toFixed(1)}%;background:${barColor}`);
+  setEl('uwDailyBudget','textContent', fmtUSD(dailyBudget) + '/d');
+  setEl('uwDailyActual','textContent', fmtUSD(burnRate) + '/d');
+  setEl('uwDuLabel',    'textContent', `${duMes} d.úteis`);
+  const rb = document.getElementById('uwRatioBadge');
+  if (rb) { rb.textContent = ratioTxt; rb.className = badgeCls; }
 
   // Updated
   const upd = document.getElementById('uwUpdated');
   if (upd && data.atualizado_em) {
     const d = new Date(data.atualizado_em);
-    upd.textContent = d.toLocaleDateString('pt-BR', {day:'2-digit', month:'short'})
-                    + ' ' + d.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+    upd.textContent = (data._source || '')
+      || (d.toLocaleDateString('pt-BR', {day:'2-digit',month:'short'})
+        + ' ' + d.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'}));
   }
 }
 

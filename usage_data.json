@@ -1,23 +1,23 @@
 {
   "ano": 2026,
   "mes": 6,
-  "atualizado_em": "2026-06-02T20:39:46.785333+00:00",
+  "atualizado_em": "2026-06-03T11:24:12.686443+00:00",
   "tokens": {
-    "input": 1978,
-    "output": 890644,
-    "cache_creation": 17582393,
-    "cache_read": 329492346
+    "input": 2129,
+    "output": 1162020,
+    "cache_creation": 18783350,
+    "cache_read": 336463970
   },
-  "total_tokens": 347967361,
-  "custo_usd": 178.1473,
-  "conversas": 8,
+  "total_tokens": 356411469,
+  "custo_usd": 188.8134,
+  "conversas": 10,
   "por_dia": {
     "2026-06-02": {
-      "input": 1300,
-      "output": 602154,
-      "cache_creation": 6102048,
-      "cache_read": 112811751,
-      "cost": 65.7624152999999
+      "input": 1361,
+      "output": 819228,
+      "cache_creation": 6296051,
+      "cache_read": 115716763,
+      "cost": 70.61772314999997
     },
     "2026-06-01": {
       "input": 678,
@@ -25,6 +25,13 @@
       "cache_creation": 11480345,
       "cache_read": 216680595,
       "cost": 112.38485624999998
+    },
+    "2026-06-03": {
+      "input": 90,
+      "output": 54302,
+      "cache_creation": 1006954,
+      "cache_read": 4066612,
+      "cost": 5.8108610999999994
     }
   }
 }
