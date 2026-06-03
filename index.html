@@ -145,6 +145,69 @@
     }
     .owner-bar.on { display: flex; }
 
+    .ow-run-btn {
+      margin-left: auto;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 13px; border-radius: 7px;
+      background: #1A1A1A; color: var(--yellow);
+      border: 1.5px solid var(--yellow); cursor: pointer;
+      font-family: var(--mono); font-size: 10px; font-weight: 700;
+      transition: background .15s, transform .1s;
+      white-space: nowrap;
+    }
+    .ow-run-btn:hover { background: #2A2A2A; }
+    .ow-run-btn:active { transform: scale(.96); }
+    .ow-run-btn.running { opacity: .6; pointer-events: none; }
+
+    /* ── Painel de execução ── */
+    .run-panel {
+      display: none;
+      background: #FFFDF0;
+      border-bottom: 1px solid #F0E000;
+      padding: 12px 56px 14px;
+    }
+    .run-panel.open { display: block; }
+
+    .run-panel-header {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 10px;
+    }
+    .run-panel-title {
+      font-family: var(--mono); font-size: 10px; font-weight: 700;
+      letter-spacing: 1.5px; text-transform: uppercase; color: #7C3AED;
+    }
+    .run-pat-btn {
+      margin-left: auto;
+      font-family: var(--mono); font-size: 10px; color: var(--muted);
+      background: none; border: 1px solid var(--border2);
+      border-radius: 5px; padding: 3px 9px; cursor: pointer;
+      transition: border-color .15s, color .15s;
+    }
+    .run-pat-btn:hover { border-color: #7C3AED; color: #7C3AED; }
+
+    .run-wf-list {
+      display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px;
+    }
+    .run-wf-item {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #fff; border: 1px solid var(--border);
+      border-radius: 7px; padding: 5px 11px;
+      font-family: var(--mono); font-size: 10px; font-weight: 600; color: var(--text);
+      transition: border-color .2s;
+    }
+    .run-wf-item.ok      { border-color: #A5D6A7; background: #F1F8E9; color: #2E7D32; }
+    .run-wf-item.error   { border-color: #EF9A9A; background: #FFEBEE; color: #C62828; }
+    .run-wf-item.running { border-color: #90CAF9; background: #E3F2FD; color: #1565C0; }
+    .run-wf-dot {
+      width: 6px; height: 6px; border-radius: 50%; background: currentColor;
+      flex-shrink: 0;
+    }
+    .run-wf-item.running .run-wf-dot { animation: pulse 1s infinite; }
+
+    .run-footer-note {
+      font-family: var(--mono); font-size: 10px; color: #AAAAAA;
+    }
+
     /* ══════════════════════════════════════
        STATUS DO DIA
     ══════════════════════════════════════ */
@@ -647,6 +710,22 @@
 <div class="owner-bar" id="ownerBar">
   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/></svg>
   owner mode ativo — caminhos locais visíveis
+  <button class="ow-run-btn" id="runAllBtn" onclick="runAllClick()">
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+    <span id="runAllBtnLabel">Atualizar tudo</span>
+  </button>
+</div>
+
+<!-- ═══════ PAINEL DE ATUALIZAÇÃO ═══════ -->
+<div class="run-panel" id="runPanel">
+  <div class="run-panel-header">
+    <span class="run-panel-title">Disparar GitHub Actions</span>
+    <button class="run-pat-btn" onclick="configPAT()">🔑 token</button>
+  </div>
+  <div class="run-wf-list" id="runWfList">
+    <!-- preenchido por JS -->
+  </div>
+  <div class="run-footer-note" id="runNote">Clique nos itens para disparar individualmente, ou use o botão acima para disparar todos.</div>
 </div>
 
 <!-- ═══════ STATUS DO DIA ═══════ -->
@@ -1048,7 +1127,7 @@
   </div>
 </div>
 
-<script>window.USAGE_EMBEDDED={"ano":2026,"mes":6,"atualizado_em":"2026-06-03T11:43:41.010269+00:00","tokens":{"input":2260,"output":1204840,"cache_creation":18862410,"cache_read":349067747},"total_tokens":369137257,"custo_usd":193.5337,"conversas":11,"por_dia":{"2026-06-02":{"input":1361,"output":819228,"cache_creation":6296051,"cache_read":115716763,"cost":70.61772314999997},"2026-06-01":{"input":678,"output":288490,"cache_creation":11480345,"cache_read":216680595,"cost":112.38485624999998},"2026-06-03":{"input":221,"output":97122,"cache_creation":1086014,"cache_read":16670389,"cost":10.531162200000002}},"_source":"embutido 2026-06-03"}</script>
+<script>window.USAGE_EMBEDDED={"ano":2026,"mes":6,"atualizado_em":"2026-06-03T11:49:58.745343+00:00","tokens":{"input":2291,"output":1236556,"cache_creation":18891980,"cache_read":352164392},"total_tokens":372295219,"custo_usd":195.0495,"conversas":11,"por_dia":{"2026-06-02":{"input":1361,"output":819228,"cache_creation":6296051,"cache_read":115716763,"cost":70.61772314999997},"2026-06-01":{"input":678,"output":288490,"cache_creation":11480345,"cache_read":216680595,"cost":112.38485624999998},"2026-06-03":{"input":252,"output":128838,"cache_creation":1115584,"cache_read":19767034,"cost":12.046876199999998}},"_source":"embutido 2026-06-03"}</script>
 
 <script>
 // ── Hash SHA-256 de "jeffito" ── não altere sem recalcular
@@ -1350,6 +1429,117 @@ async function tryUnlock() {
     input.value = '';
     setTimeout(() => input.classList.remove('shake'), 400);
     input.focus();
+  }
+}
+
+// ── Atualizar Tudo (GitHub Actions) ─────────────────────────
+const GH_PAT_KEY = 'hub_ghpat_v1';
+
+const WORKFLOWS = [
+  { repo:'jefnogueiralves/td-indicadores-dash',    file:'update_dashboard.yml',  label:'TD Indicadores',       ref:'master' },
+  { repo:'jefnogueiralves/cartoes-expirados-dash', file:'update_dashboard.yml',  label:'Cartões Expirados',    ref:'main'   },
+  { repo:'jefnogueiralves/cartoes-expirados-dash', file:'controle-plastico.yml', label:'Controle Plástico',    ref:'main'   },
+  { repo:'jefnogueiralves/hub-cartoes',            file:'update_dash_mtc.yml',   label:'Micro TC MLB',         ref:'main'   },
+  { repo:'jefnogueiralves/hub-cartoes',            file:'sincronizar_todos.yml', label:'Sync Grid → GCS',      ref:'main'   },
+];
+
+let runPanelOpen = false;
+
+function toggleRunPanel() {
+  runPanelOpen = !runPanelOpen;
+  document.getElementById('runPanel').classList.toggle('open', runPanelOpen);
+  if (runPanelOpen) renderWfList();
+  const lbl = document.getElementById('runAllBtnLabel');
+  if (lbl) lbl.textContent = runPanelOpen ? 'Fechar' : 'Atualizar tudo';
+}
+
+function runAllClick() {
+  if (!runPanelOpen) {
+    toggleRunPanel();   // abre o painel na 1ª vez
+  } else {
+    dispararTodos();    // já aberto → dispara
+  }
+}
+
+function renderWfList(statuses) {
+  const list = document.getElementById('runWfList');
+  if (!list) return;
+  list.innerHTML = WORKFLOWS.map((w, i) => {
+    const s = statuses ? statuses[i] : 'idle';
+    const cls = s === 'ok' ? 'ok' : s === 'error' ? 'error' : s === 'running' ? 'running' : '';
+    const label = s === 'ok' ? '✓ ' + w.label : s === 'error' ? '✗ ' + w.label : w.label;
+    return `<div class="run-wf-item ${cls}" onclick="dispararUm(${i})" title="${w.repo} / ${w.file}">
+      <div class="run-wf-dot"></div>${label}
+    </div>`;
+  }).join('');
+}
+
+async function dispararWorkflow(w, token) {
+  const url = `https://api.github.com/repos/${w.repo}/actions/workflows/${w.file}/dispatches`;
+  try {
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `token ${token}`,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ ref: w.ref })
+    });
+    return r.status === 204;
+  } catch(e) { return false; }
+}
+
+async function dispararUm(idx) {
+  const token = localStorage.getItem(GH_PAT_KEY);
+  if (!token) { configPAT(); return; }
+
+  const statuses = WORKFLOWS.map(() => 'idle');
+  statuses[idx] = 'running';
+  renderWfList(statuses);
+
+  const ok = await dispararWorkflow(WORKFLOWS[idx], token);
+  statuses[idx] = ok ? 'ok' : 'error';
+  renderWfList(statuses);
+  document.getElementById('runNote').textContent =
+    ok ? `✓ ${WORKFLOWS[idx].label} disparado — aguarde ~5-10 min.`
+       : `✗ Erro ao disparar ${WORKFLOWS[idx].label}. Verifique o token.`;
+}
+
+async function dispararTodos() {
+  const token = localStorage.getItem(GH_PAT_KEY);
+  if (!token) { configPAT(); return; }
+
+  const btn = document.getElementById('runAllBtn');
+  if (btn) btn.classList.add('running');
+
+  const statuses = WORKFLOWS.map(() => 'running');
+  renderWfList(statuses);
+
+  const note = document.getElementById('runNote');
+  note.textContent = 'Disparando workflows…';
+
+  let ok = 0;
+  for (let i = 0; i < WORKFLOWS.length; i++) {
+    const success = await dispararWorkflow(WORKFLOWS[i], token);
+    statuses[i] = success ? 'ok' : 'error';
+    if (success) ok++;
+    renderWfList([...statuses]);
+  }
+
+  if (btn) btn.classList.remove('running');
+  note.textContent = `${ok}/${WORKFLOWS.length} workflows disparados — dashboards atualizarão em ~5-10 min.`;
+}
+
+function configPAT() {
+  const atual = localStorage.getItem(GH_PAT_KEY) || '';
+  const novo = prompt(
+    'GitHub Personal Access Token (escopo: workflow)\n\nObtido em: github.com → Settings → Developer Settings → PATs',
+    atual ? '(token já salvo — cole novo para trocar)' : ''
+  );
+  if (novo && novo !== '(token já salvo — cole novo para trocar)') {
+    localStorage.setItem(GH_PAT_KEY, novo.trim());
+    alert('Token salvo!');
   }
 }
 
