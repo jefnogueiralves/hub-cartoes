@@ -1127,7 +1127,7 @@
   </div>
 </div>
 
-<script>window.USAGE_EMBEDDED={"ano":2026,"mes":6,"atualizado_em":"2026-06-03T11:49:58.745343+00:00","tokens":{"input":2291,"output":1236556,"cache_creation":18891980,"cache_read":352164392},"total_tokens":372295219,"custo_usd":195.0495,"conversas":11,"por_dia":{"2026-06-02":{"input":1361,"output":819228,"cache_creation":6296051,"cache_read":115716763,"cost":70.61772314999997},"2026-06-01":{"input":678,"output":288490,"cache_creation":11480345,"cache_read":216680595,"cost":112.38485624999998},"2026-06-03":{"input":252,"output":128838,"cache_creation":1115584,"cache_read":19767034,"cost":12.046876199999998}},"_source":"embutido 2026-06-03"}</script>
+<script>window.USAGE_EMBEDDED={"ano":2026,"mes":6,"atualizado_em":"2026-06-03T11:53:33.352826+00:00","tokens":{"input":2324,"output":1249723,"cache_creation":18921114,"cache_read":356462504},"total_tokens":376635665,"custo_usd":196.6457,"conversas":11,"por_dia":{"2026-06-02":{"input":1361,"output":819228,"cache_creation":6296051,"cache_read":115716763,"cost":70.61772314999997},"2026-06-01":{"input":678,"output":288490,"cache_creation":11480345,"cache_read":216680595,"cost":112.38485624999998},"2026-06-03":{"input":285,"output":142005,"cache_creation":1144718,"cache_read":24065146,"cost":13.643166300000003}},"_source":"embutido 2026-06-03"}</script>
 
 <script>
 // ── Hash SHA-256 de "jeffito" ── não altere sem recalcular
@@ -1436,11 +1436,9 @@ async function tryUnlock() {
 const GH_PAT_KEY = 'hub_ghpat_v1';
 
 const WORKFLOWS = [
-  { repo:'jefnogueiralves/td-indicadores-dash',    file:'update_dashboard.yml',  label:'TD Indicadores',       ref:'master' },
-  { repo:'jefnogueiralves/cartoes-expirados-dash', file:'update_dashboard.yml',  label:'Cartões Expirados',    ref:'main'   },
-  { repo:'jefnogueiralves/cartoes-expirados-dash', file:'controle-plastico.yml', label:'Controle Plástico',    ref:'main'   },
-  { repo:'jefnogueiralves/hub-cartoes',            file:'update_dash_mtc.yml',   label:'Micro TC MLB',         ref:'main'   },
-  { repo:'jefnogueiralves/hub-cartoes',            file:'sincronizar_todos.yml', label:'Sync Grid → GCS',      ref:'main'   },
+  { repo:'jefnogueiralves/td-indicadores-dash', file:'update_dashboard.yml',  label:'TD Indicadores',  ref:'master' },
+  { repo:'jefnogueiralves/hub-cartoes',         file:'update_dash_mtc.yml',   label:'Micro TC MLB',    ref:'main'   },
+  { repo:'jefnogueiralves/hub-cartoes',         file:'sincronizar_todos.yml', label:'Sync Grid → GCS', ref:'main'   },
 ];
 
 let runPanelOpen = false;
