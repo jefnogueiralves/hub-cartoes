@@ -1,7 +1,8 @@
 """
 Versão CI/CD do script de atualização.
-Roda no GitHub Actions: BQ → HTML → GCS.
-Não precisa de computador ligado nem de session_id do Grid.
+Roda no GitHub Actions: BQ → HTML → GCS → Grid.
+Variáveis de ambiente: GCP_CREDENTIALS (obrigatório), GRID_SESSION_ID (opcional).
+Grid: session expira ~7 dias — atualizar secret GRID_SESSION_ID quando expirar.
 """
 import sys, io, os, json, logging
 from pathlib import Path
@@ -9,9 +10,10 @@ from datetime import datetime
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
-PROJECT   = 'meli-bi-data'
-GCS_BUCKET= 'meli-sandbox'
-GCS_PATH  = 'CARDSINDICATORSBR/dashboards_TDMP_MLB/controle_plastico.html'
+PROJECT    = 'meli-bi-data'
+GCS_BUCKET = 'meli-sandbox'
+GCS_PATH   = 'CARDSINDICATORSBR/dashboards_TDMP_MLB/controle_plastico.html'
+GRID_DOC_ID = '01KRPZ2TK8FA0Q9MJK2SRZBW2C'
 TABLES = {
     'deb':       'meli-bi-data.SBOX_CREDITSTC.BD_CNTR_PLASTICO_DEB',
     'cred':      'meli-bi-data.SBOX_CREDITSTC.BD_CNTR_PLASTICO_CRED',
@@ -156,6 +158,51 @@ def upload_gcs(creds, html_content):
     return f"https://storage.googleapis.com/{GCS_BUCKET}/{GCS_PATH}"
 
 
+def publish_grid(html_content: str, session_id: str) -> bool:
+    """Publica HTML no Grid. Retorna False sem lançar exceção se falhar."""
+    import requests, re
+    base = "https://grid.adminml.com"
+    try:
+        # Passo 1: pega _csrf cookie + CSRF token da página
+        r1 = requests.get(
+            f"{base}/d/{GRID_DOC_ID}/view",
+            cookies={'session_id': session_id},
+            timeout=15,
+        )
+        if r1.status_code == 401:
+            log.warning("Grid: sessão expirada — atualize o secret GRID_SESSION_ID no GitHub")
+            return False
+        if r1.status_code != 200:
+            log.warning(f"Grid: erro ao obter página ({r1.status_code})")
+            return False
+
+        csrf_cookie = r1.cookies.get('_csrf')
+        m = re.search(r'csrf-token"\s+content="([^"]+)"', r1.text)
+        if not csrf_cookie or not m:
+            log.warning("Grid: não encontrou CSRF token na página")
+            return False
+        csrf_token = m.group(1)
+
+        # Passo 2: faz upload do HTML
+        r2 = requests.post(
+            f"{base}/api/v1/documents/{GRID_DOC_ID}/versions",
+            cookies={'session_id': session_id, '_csrf': csrf_cookie},
+            headers={'X-CSRF-Token': csrf_token},
+            files={'file': ('index.html', html_content.encode('utf-8'), 'text/html')},
+            timeout=30,
+        )
+        if r2.status_code == 201:
+            v = r2.json().get('version', '?')
+            log.info(f"Grid atualizado: versão {v} — {base}/d/{GRID_DOC_ID}/view")
+            return True
+        else:
+            log.warning(f"Grid: upload falhou ({r2.status_code}): {r2.text[:200]}")
+            return False
+    except Exception as exc:
+        log.warning(f"Grid: erro inesperado — {exc}")
+        return False
+
+
 if __name__ == "__main__":
     log.info("=" * 55)
     log.info(f"Atualização CI — {datetime.now().strftime('%d/%m/%Y %H:%M')}")
@@ -171,6 +218,13 @@ if __name__ == "__main__":
     log.info(f"HTML local atualizado: {local_html}")
 
     url = upload_gcs(creds, html)
-    log.info(f"Dashboard disponível em: {url}")
+    log.info(f"GCS disponível em: {url}")
+
+    grid_session = os.environ.get('GRID_SESSION_ID')
+    if grid_session:
+        publish_grid(html, grid_session)
+    else:
+        log.info("GRID_SESSION_ID não configurado — pulando Grid")
+
     log.info("Atualização concluída!")
     log.info("=" * 55)

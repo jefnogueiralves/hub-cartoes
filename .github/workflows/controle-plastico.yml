@@ -27,11 +27,13 @@ jobs:
             db-dtypes \
             pandas \
             google-auth \
-            google-auth-httplib2
+            google-auth-httplib2 \
+            requests
 
-      - name: Atualizar dados e publicar no GCS
+      - name: Atualizar dados e publicar (GCS + Grid)
         env:
           GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
+          GRID_SESSION_ID: ${{ secrets.GRID_SESSION_ID }}
           DASH_DIR: controle-plastico
         run: |
           python controle-plastico/scripts/atualizar_dados_ci.py
