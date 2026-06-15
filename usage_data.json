@@ -1,23 +1,30 @@
 {
   "ano": 2026,
   "mes": 6,
-  "atualizado_em": "2026-06-03T11:53:33.352826+00:00",
+  "atualizado_em": "2026-06-15T14:35:16.121484+00:00",
   "tokens": {
-    "input": 2324,
-    "output": 1249723,
-    "cache_creation": 18921114,
-    "cache_read": 356462504
+    "input": 38088,
+    "output": 5267789,
+    "cache_creation": 47428308,
+    "cache_read": 1272537562
   },
-  "total_tokens": 376635665,
-  "custo_usd": 196.6457,
-  "conversas": 11,
+  "total_tokens": 1325271747,
+  "custo_usd": 638.7485,
+  "conversas": 19,
   "por_dia": {
+    "2026-06-15": {
+      "input": 33,
+      "output": 10503,
+      "cache_creation": 36017,
+      "cache_read": 415928,
+      "cost": 0.41748615
+    },
     "2026-06-02": {
-      "input": 1361,
-      "output": 819228,
-      "cache_creation": 6296051,
-      "cache_read": 115716763,
-      "cost": 70.61772314999997
+      "input": 1979,
+      "output": 1150338,
+      "cache_creation": 7071337,
+      "cache_read": 158257077,
+      "cost": 91.2556438500001
     },
     "2026-06-01": {
       "input": 678,
@@ -26,12 +33,47 @@
       "cache_read": 216680595,
       "cost": 112.38485624999998
     },
+    "2026-06-10": {
+      "input": 1141,
+      "output": 658257,
+      "cache_creation": 4262436,
+      "cache_read": 184496353,
+      "cost": 81.21031889999983
+    },
+    "2026-06-11": {
+      "input": 2530,
+      "output": 521849,
+      "cache_creation": 5451590,
+      "cache_read": 177559067,
+      "cost": 81.54650760000003
+    },
+    "2026-06-08": {
+      "input": 977,
+      "output": 503470,
+      "cache_creation": 1969542,
+      "cache_read": 78113139,
+      "cost": 38.374705200000015
+    },
     "2026-06-03": {
-      "input": 285,
-      "output": 142005,
-      "cache_creation": 1144718,
-      "cache_read": 24065146,
-      "cost": 13.643166300000003
+      "input": 22162,
+      "output": 1425849,
+      "cache_creation": 7172131,
+      "cache_read": 265727695,
+      "cost": 128.06802074999987
+    },
+    "2026-06-09": {
+      "input": 7757,
+      "output": 462034,
+      "cache_creation": 2388557,
+      "cache_read": 70170754,
+      "cost": 36.96209595000005
+    },
+    "2026-06-12": {
+      "input": 831,
+      "output": 246999,
+      "cache_creation": 7596353,
+      "cache_read": 121116954,
+      "cost": 68.52888795000007
     }
   }
 }
