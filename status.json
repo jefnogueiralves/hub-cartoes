@@ -1,11 +1,11 @@
 {
-  "date": "2026-06-15",
-  "generated_at": "2026-06-15T11:35:16",
+  "date": "2026-06-16",
+  "generated_at": "2026-06-16T15:49:25",
   "dashboards": {
     "td_indicadores": {
       "name": "TD Indicadores",
       "status": "ok",
-      "last_run": "10:30",
+      "last_run": "14:18",
       "message": "eapis.com/meli-sandbox/CARDSINDICATORSBR/dashboards_TDMP_MLB/td_indicadores.html"
     },
     "cartoes_expirados": {
