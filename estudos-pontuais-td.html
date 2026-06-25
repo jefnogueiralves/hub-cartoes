@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Estudos Pontuais · TD</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --teal:    #00BCD4;
+      --teal-dk: #0097A7;
+      --teal-lt: rgba(0,188,212,.10);
+      --blue:    #009EE3;
+      --green:   #00A650;
+      --red:     #E53935;
+      --orange:  #F57C00;
+      --bg:      #F0F0F0;
+      --surface: #FFFFFF;
+      --surface2: #F8F8F8;
+      --border:  #DEDEDE;
+      --text:    #1A1A1A;
+      --muted:   #666666;
+      --mono:    'JetBrains Mono', monospace;
+      --gpay:    #4285F4;
+      --samsung: #1869FF;
+      --wmp:     #009EE3;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ── HEADER ── */
+    header {
+      padding: 36px 52px 28px;
+      background: #1A1A1A;
+      border-bottom: 4px solid var(--teal);
+      position: relative; overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute; top: 0; right: 0;
+      width: 380px; height: 100%;
+      background: linear-gradient(135deg, transparent 0%, rgba(0,188,212,.07) 100%);
+      pointer-events: none;
+    }
+    .hd-back {
+      display: inline-flex; align-items: center; gap: 5px;
+      color: rgba(255,255,255,.3); font-family: var(--mono);
+      font-size: 11px; text-decoration: none; letter-spacing: 1px;
+      margin-bottom: 14px; transition: color .2s;
+    }
+    .hd-back:hover { color: var(--teal); }
+    .hd-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--mono); font-size: 10px; font-weight: 600;
+      letter-spacing: 2.5px; text-transform: uppercase;
+      color: var(--teal); margin-bottom: 10px;
+    }
+    .hd-eyebrow::before { content: ''; width: 20px; height: 2px; background: var(--teal); border-radius: 2px; }
+    header h1 {
+      font-size: clamp(22px, 3.5vw, 36px); font-weight: 900;
+      letter-spacing: -1.5px; color: #FFF; margin-bottom: 10px; line-height: 1.05;
+    }
+    header h1 .hl { color: var(--teal); }
+    .hd-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+    .badge {
+      display: inline-flex; align-items: center;
+      padding: 3px 10px; border-radius: 4px;
+      font-family: var(--mono); font-size: 11px;
+      background: rgba(255,255,255,.07); color: rgba(255,255,255,.5);
+      border: 1px solid rgba(255,255,255,.1);
+    }
+    .badge.teal { background: rgba(0,188,212,.14); color: var(--teal); border-color: rgba(0,188,212,.3); }
+    .hd-source { margin-top: 12px; font-size: 11px; color: rgba(255,255,255,.28); }
+    .hd-source a { color: rgba(0,188,212,.6); text-decoration: none; }
+    .hd-source a:hover { color: var(--teal); text-decoration: underline; }
+
+    /* ── TABS ── */
+    .tabs-bar {
+      background: #1E1E1E; padding: 0 52px;
+      display: flex; border-bottom: 1px solid #2D2D2D; overflow-x: auto;
+    }
+    .tab-btn {
+      padding: 13px 18px; font-size: 13px; font-weight: 600;
+      color: rgba(255,255,255,.38); border: none;
+      border-bottom: 2px solid transparent;
+      background: none; cursor: pointer; white-space: nowrap; transition: all .15s;
+    }
+    .tab-btn.active { color: var(--teal); border-bottom-color: var(--teal); }
+    .tab-btn:hover:not(.active) { color: rgba(255,255,255,.65); }
+
+    /* ── MAIN ── */
+    main { max-width: 1080px; margin: 0 auto; padding: 32px 52px 64px; }
+
+    /* ── HERO METRICS ── */
+    .hero-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 36px; }
+    .hero-card {
+      background: var(--surface); border-radius: 12px;
+      padding: 18px 20px 16px; border: 1px solid var(--border);
+      position: relative; overflow: hidden;
+    }
+    .hero-card::after {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: var(--hc, var(--teal));
+    }
+    .hero-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 8px; }
+    .hero-val { font-family: var(--mono); font-size: 24px; font-weight: 700; color: var(--hc, var(--teal)); line-height: 1; }
+    .hero-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+    /* ── BLOCK ── */
+    .block { background: var(--surface); border-radius: 14px; padding: 26px 28px; border: 1px solid var(--border); margin-bottom: 20px; }
+    .block-hdr {
+      display: flex; align-items: flex-start; gap: 12px;
+      margin-bottom: 22px; padding-bottom: 16px; border-bottom: 1px solid var(--border);
+    }
+    .blk-num {
+      width: 26px; height: 26px; border-radius: 6px;
+      background: var(--teal); color: #fff; font-weight: 800; font-size: 13px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .blk-title { font-size: 15px; font-weight: 700; letter-spacing: -0.3px; }
+    .blk-q { font-size: 11px; color: var(--muted); margin-top: 2px; font-style: italic; }
+
+    /* ── STAT ROW ── */
+    .stat-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+    .stat-box { flex: 1; min-width: 110px; background: var(--surface2); border-radius: 10px; padding: 14px 16px; border: 1px solid var(--border); }
+    .stat-box.center { display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--muted); }
+    .sb-lbl { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+    .sb-val { font-family: var(--mono); font-size: 20px; font-weight: 700; }
+    .sb-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+    /* ── BAR LIST ── */
+    .bar-list { display: flex; flex-direction: column; gap: 8px; }
+    .bar-row { display: flex; align-items: center; gap: 10px; }
+    .bar-lbl { font-size: 12px; font-weight: 500; min-width: 120px; flex-shrink: 0; }
+    .bar-track { flex: 1; height: 18px; background: #EEEEEE; border-radius: 4px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 4px; background: var(--bf-color, var(--teal)); }
+    .bar-pct { font-family: var(--mono); font-size: 12px; font-weight: 600; min-width: 45px; text-align: right; }
+
+    /* ── FUNNEL ── */
+    .funnel { display: flex; flex-direction: column; }
+    .funnel-step {
+      display: flex; align-items: center; gap: 14px;
+      padding: 12px 16px; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--surface2); margin-bottom: 2px;
+    }
+    .funnel-step.hi { background: rgba(0,188,212,.06); border-color: rgba(0,188,212,.28); }
+    .funnel-icon { font-size: 16px; width: 22px; text-align: center; }
+    .funnel-lbl { flex: 1; font-size: 13px; font-weight: 500; }
+    .funnel-val { font-family: var(--mono); font-size: 17px; font-weight: 700; }
+    .funnel-tag { font-size: 10px; color: var(--muted); background: #EEE; padding: 2px 8px; border-radius: 4px; font-family: var(--mono); }
+    .funnel-arrow { text-align: center; font-size: 10px; color: var(--muted); padding: 2px 16px; font-family: var(--mono); }
+
+    /* ── COMPARISON TABLE ── */
+    .comp-wrap { overflow-x: auto; }
+    .comp-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .comp-table th { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); padding: 7px 10px; border-bottom: 2px solid var(--border); text-align: left; white-space: nowrap; }
+    .comp-table th.r { text-align: right; }
+    .comp-table td { padding: 9px 10px; border-bottom: 1px solid #F0F0F0; }
+    .comp-table td.r { text-align: right; font-family: var(--mono); }
+    .comp-table tr.total td { background: var(--surface2); font-weight: 700; border-bottom: none; }
+    .comp-table tr.total td:first-child { border-radius: 6px 0 0 6px; }
+    .comp-table tr.total td:last-child { border-radius: 0 6px 6px 0; }
+    .d-pos { color: var(--green); font-weight: 700; font-family: var(--mono); }
+    .d-neg { color: var(--red); font-weight: 700; font-family: var(--mono); }
+    .w-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 7px; vertical-align: middle; }
+
+    /* ── DIVIDER ── */
+    hr { border: none; border-top: 1px solid var(--border); margin: 22px 0; }
+    .section-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--teal); margin-bottom: 12px; display: block; }
+
+    /* ── COHORT BADGE ── */
+    .cohort-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--teal-lt); border: 1px solid rgba(0,188,212,.25);
+      border-radius: 6px; padding: 7px 14px;
+      font-size: 12px; color: var(--teal-dk); font-family: var(--mono);
+      margin-bottom: 20px;
+    }
+
+    /* ── TWO-COL GRID ── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .sub-block { background: var(--surface2); border-radius: 10px; padding: 18px 20px; border: 1px solid var(--border); }
+    .sub-block-title {
+      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+      color: var(--muted); margin-bottom: 14px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .sub-block-title::before { content: ''; width: 12px; height: 2px; background: var(--teal); border-radius: 2px; }
+
+    /* ── PROFILE OF USE ── */
+    .use-list { display: flex; flex-direction: column; gap: 10px; }
+    .use-row { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 6px; }
+    .use-row.hi { background: rgba(0,166,80,.06); }
+    .use-lbl { font-size: 12px; font-weight: 500; min-width: 120px; flex-shrink: 0; }
+    .use-lbl.bold { font-weight: 700; }
+    .use-before { font-family: var(--mono); font-size: 12px; color: var(--muted); min-width: 42px; text-align: right; }
+    .use-arrow { color: var(--muted); font-size: 11px; }
+    .use-after { font-family: var(--mono); font-size: 12px; font-weight: 600; min-width: 42px; text-align: right; }
+    .use-delta { font-family: var(--mono); font-size: 11px; font-weight: 700; min-width: 54px; text-align: right; }
+    .use-bar-wrap { flex: 1; height: 6px; background: #EEE; border-radius: 3px; overflow: hidden; }
+    .use-bar-fill { height: 100%; border-radius: 3px; }
+
+    /* ── FOOTER ── */
+    footer { text-align: center; padding: 20px; font-size: 11px; color: var(--muted); border-top: 1px solid var(--border); }
+    footer a { color: var(--teal); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) { .hero-grid { grid-template-columns: repeat(2, 1fr); } .two-col { grid-template-columns: 1fr; } }
+    @media (max-width: 560px) {
+      header, main { padding-left: 20px; padding-right: 20px; }
+      .tabs-bar { padding: 0 20px; }
+      .hero-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .block { padding: 18px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════ HEADER ══════════ -->
+<header>
+  <a class="hd-back" href="https://jefnogueiralves.github.io/hub-cartoes/">← Hub Cartões</a>
+  <div class="hd-eyebrow">estudos pontuais · cartão de débito</div>
+  <h1>Estudos <span class="hl">Pontuais</span> · TD</h1>
+  <div class="hd-badges">
+    <span class="badge teal">NFC / Wallet</span>
+    <span class="badge">Abr/2026</span>
+    <span class="badge">112K cohort</span>
+    <span class="badge">Jan/26 · contas &gt; 4 meses</span>
+  </div>
+  <div class="hd-source">
+    Fonte:
+    <a href="https://grid.adminml.com/d/01KPYFDX3NW80KGF0S0PWPDK1V/view" target="_blank" rel="noopener">TD Indicadores → Analises → NFC</a>
+    &nbsp;·&nbsp;
+    <a href="https://grid.adminml.com/d/01KTSF1YRXCHMRWAM9NNRZMPYZ/view" target="_blank" rel="noopener">Dashboard NFC/Wallet</a>
+  </div>
+</header>
+
+<!-- ══════════ TABS ══════════ -->
+<div class="tabs-bar">
+  <button class="tab-btn active">📶 Exploração NFC</button>
+</div>
+
+<!-- ══════════ CONTENT ══════════ -->
+<main>
+
+  <!-- HERO KPIs -->
+  <div class="hero-grid">
+    <div class="hero-card" style="--hc:#00A650">
+      <div class="hero-label">Uplift Spend Geral</div>
+      <div class="hero-val">+22,3%</div>
+      <div class="hero-sub">R$785 → R$960 · cohort D-90/D+90</div>
+    </div>
+    <div class="hero-card" style="--hc:#009EE3">
+      <div class="hero-label">Uplift Spend OFF</div>
+      <div class="hero-val">+37,7%</div>
+      <div class="hero-sub">R$342 → R$471 · presencial</div>
+    </div>
+    <div class="hero-card" style="--hc:#7B1FA2">
+      <div class="hero-label">Principalidade</div>
+      <div class="hero-val">+4,4pp</div>
+      <div class="hero-sub">24,4% → 28,8% · Out/25→Abr/26</div>
+    </div>
+    <div class="hero-card" style="--hc:#00BCD4">
+      <div class="hero-label">Share of Wallet</div>
+      <div class="hero-val">+4,8pp</div>
+      <div class="hero-sub">29,2% → 34,0% · Out/25→Abr/26</div>
+    </div>
+  </div>
+
+  <!-- ══ BLOCO 1 — Supply ══ -->
+  <div class="block">
+    <div class="block-hdr">
+      <div class="blk-num">1</div>
+      <div>
+        <div class="blk-title">Quem provisionou?</div>
+        <div class="blk-q">Supply-side — penetração NFC e distribuição por wallet</div>
+      </div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-box">
+        <div class="sb-lbl">Elegíveis NFC</div>
+        <div class="sb-val">5,8M</div>
+        <div class="sb-sub">clientes com perfil NFC</div>
+      </div>
+      <div class="stat-box">
+        <div class="sb-lbl">Provisionados</div>
+        <div class="sb-val" style="color:var(--teal)">3,5M</div>
+        <div class="sb-sub">cadastraram wallet</div>
+      </div>
+      <div class="stat-box">
+        <div class="sb-lbl">Penetração</div>
+        <div class="sb-val" style="color:var(--green)">60,1%</div>
+        <div class="sb-sub">dos elegíveis provisionados</div>
+      </div>
+    </div>
+
+    <hr>
+
+    <span class="section-tag">Distribuição por Wallet — provisionados</span>
+    <div class="bar-list">
+      <div class="bar-row">
+        <span class="bar-lbl"><span class="w-dot" style="background:var(--wmp)"></span>Wallet MP</span>
+        <div class="bar-track"><div class="bar-fill" style="--bf-color:var(--wmp); width:81.3%"></div></div>
+        <span class="bar-pct" style="color:var(--wmp)">81,3%</span>
+      </div>
+      <div class="bar-row">
+        <span class="bar-lbl"><span class="w-dot" style="background:var(--gpay)"></span>Google Pay</span>
+        <div class="bar-track"><div class="bar-fill" style="--bf-color:var(--gpay); width:2.4%"></div></div>
+        <span class="bar-pct" style="color:var(--gpay)">2,4%</span>
+      </div>
+      <div class="bar-row">
+        <span class="bar-lbl"><span class="w-dot" style="background:var(--samsung)"></span>Samsung Pay</span>
+        <div class="bar-track"><div class="bar-fill" style="--bf-color:var(--samsung); width:0.6%"></div></div>
+        <span class="bar-pct" style="color:var(--samsung)">0,6%</span>
+      </div>
+      <div class="bar-row">
+        <span class="bar-lbl" style="color:var(--muted)"><span class="w-dot" style="background:#9E9E9E"></span>Combinações</span>
+        <div class="bar-track"><div class="bar-fill" style="--bf-color:#9E9E9E; width:15.7%"></div></div>
+        <span class="bar-pct" style="color:var(--muted)">15,7%</span>
+      </div>
+    </div>
+
+    <hr>
+
+    <span class="section-tag">Diagnóstico — Não Elegíveis (2,3M)</span>
+    <div class="bar-list">
+      <div class="bar-row">
+        <span class="bar-lbl">iOS</span>
+        <div class="bar-track"><div class="bar-fill" style="--bf-color:#555; width:52%"></div></div>
+        <span class="bar-pct">52%</span>
+      </div>
+      <div class="bar-row">
+        <span class="bar-lbl">Android s/ NFC</span>
+        <div class="bar-track"><div class="bar-fill" style="--bf-color:#3d8a0e; width:45%"></div></div>
+        <span class="bar-pct">45%</span>
+      </div>
+      <div class="bar-row">
+        <span class="bar-lbl">Sem device</span>
+        <div class="bar-track"><div class="bar-fill" style="--bf-color:var(--orange); width:3%"></div></div>
+        <span class="bar-pct">3%</span>
+      </div>
+    </div>
+
+    <hr>
+
+    <span class="section-tag">Evolução — Provisionados (Dez/25 → Abr/26)</span>
+    <div class="stat-row">
+      <div class="stat-box">
+        <div class="sb-lbl">Dez/2025</div>
+        <div class="sb-val">2,85M</div>
+      </div>
+      <div class="stat-box center">→</div>
+      <div class="stat-box">
+        <div class="sb-lbl">Abr/2026</div>
+        <div class="sb-val" style="color:var(--teal)">3,39M</div>
+        <div class="sb-sub" style="color:var(--green); font-weight:600">+540K em 5 meses</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ BLOCO 2 — Demand ══ -->
+  <div class="block">
+    <div class="block-hdr">
+      <div class="blk-num">2</div>
+      <div>
+        <div class="blk-title">Quanto transacionam?</div>
+        <div class="blk-q">Demand / Usage — funil de transações presenciais</div>
+      </div>
+    </div>
+
+    <div class="funnel">
+      <div class="funnel-step">
+        <span class="funnel-icon">🏪</span>
+        <span class="funnel-lbl">Total Txs Presenciais</span>
+        <span class="funnel-val">34,9M</span>
+        <span class="funnel-tag">100%</span>
+      </div>
+      <div class="funnel-arrow">└─ filtra elegíveis NFC ─</div>
+      <div class="funnel-step">
+        <span class="funnel-icon">📱</span>
+        <span class="funnel-lbl">Elegíveis NFC</span>
+        <span class="funnel-val">19,5M</span>
+        <span class="funnel-tag">55,9% do total</span>
+      </div>
+      <div class="funnel-arrow">└─ filtra provisionados ─</div>
+      <div class="funnel-step hi">
+        <span class="funnel-icon">📶</span>
+        <span class="funnel-lbl">Provisionados — usam NFC</span>
+        <span class="funnel-val" style="color:var(--teal)">15,6M</span>
+        <span class="funnel-tag">80,0% dos elegíveis</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ BLOCO 3 — Impact ══ -->
+  <div class="block">
+    <div class="block-hdr">
+      <div class="blk-num">3</div>
+      <div>
+        <div class="blk-title">Qual o impacto?</div>
+        <div class="blk-q">Outcome / ROI — Cohort D-90 / D+90</div>
+      </div>
+    </div>
+
+    <div class="cohort-badge">
+      📊 &nbsp;Cohort Jan/2026 &nbsp;·&nbsp; contas &gt; 4 meses &nbsp;·&nbsp; 112K clientes &nbsp;·&nbsp; D-90 / D+90
+    </div>
+
+    <!-- 3.1 + 3.2 side-by-side -->
+    <div class="two-col">
+      <div class="sub-block">
+        <div class="sub-block-title">3.1 &nbsp;Spending Geral</div>
+        <div class="comp-wrap">
+          <table class="comp-table">
+            <thead>
+              <tr><th>Wallet</th><th class="r">D-90</th><th class="r">D+90</th><th class="r">Delta</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="w-dot" style="background:var(--gpay)"></span>Google Pay</td>
+                <td class="r">R$1.117</td><td class="r">R$1.357</td>
+                <td class="r d-pos">+21,5%</td>
+              </tr>
+              <tr>
+                <td><span class="w-dot" style="background:var(--samsung)"></span>Samsung</td>
+                <td class="r">R$1.227</td><td class="r">R$1.552</td>
+                <td class="r d-pos">+26,5%</td>
+              </tr>
+              <tr>
+                <td><span class="w-dot" style="background:var(--wmp)"></span>Wallet MP</td>
+                <td class="r">R$721</td><td class="r">R$886</td>
+                <td class="r d-pos">+22,9%</td>
+              </tr>
+              <tr class="total">
+                <td>TOTAL</td>
+                <td class="r">R$785</td><td class="r">R$960</td>
+                <td class="r d-pos">+22,3%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="sub-block">
+        <div class="sub-block-title">3.2 &nbsp;Spending OFF (Presencial)</div>
+        <div class="comp-wrap">
+          <table class="comp-table">
+            <thead>
+              <tr><th>Wallet</th><th class="r">D-90</th><th class="r">D+90</th><th class="r">Delta</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="w-dot" style="background:var(--gpay)"></span>Google Pay</td>
+                <td class="r">R$538</td><td class="r">R$730</td>
+                <td class="r d-pos">+35,7%</td>
+              </tr>
+              <tr>
+                <td><span class="w-dot" style="background:var(--samsung)"></span>Samsung</td>
+                <td class="r">R$533</td><td class="r">R$828</td>
+                <td class="r d-pos">+55,3%</td>
+              </tr>
+              <tr>
+                <td><span class="w-dot" style="background:var(--wmp)"></span>Wallet MP</td>
+                <td class="r">R$306</td><td class="r">R$425</td>
+                <td class="r d-pos">+38,9%</td>
+              </tr>
+              <tr class="total">
+                <td>TOTAL</td>
+                <td class="r">R$342</td><td class="r">R$471</td>
+                <td class="r d-pos">+37,7%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- 3.3 + 3.4 side-by-side -->
+    <div class="two-col">
+      <div class="sub-block">
+        <div class="sub-block-title">3.3 &nbsp;Principalidade (Out/25 → Abr/26)</div>
+        <div class="comp-wrap">
+          <table class="comp-table">
+            <thead>
+              <tr><th>Wallet</th><th class="r">Antes</th><th class="r">Depois</th><th class="r">Delta</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="w-dot" style="background:var(--gpay)"></span>Google Pay</td>
+                <td class="r">34,1%</td><td class="r">39,4%</td>
+                <td class="r d-pos">+5,3pp</td>
+              </tr>
+              <tr>
+                <td><span class="w-dot" style="background:var(--samsung)"></span>Samsung</td>
+                <td class="r">31,1%</td><td class="r">38,2%</td>
+                <td class="r d-pos">+7,1pp</td>
+              </tr>
+              <tr>
+                <td><span class="w-dot" style="background:var(--wmp)"></span>Wallet MP</td>
+                <td class="r">22,5%</td><td class="r">26,7%</td>
+                <td class="r d-pos">+4,2pp</td>
+              </tr>
+              <tr class="total">
+                <td>TOTAL</td>
+                <td class="r">24,4%</td><td class="r">28,8%</td>
+                <td class="r d-pos">+4,4pp</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="sub-block">
+        <div class="sub-block-title">3.4 &nbsp;Share of Wallet (Out/25 → Abr/26)</div>
+        <div class="comp-wrap">
+          <table class="comp-table">
+            <thead>
+              <tr><th>Wallet</th><th class="r">Antes</th><th class="r">Depois</th><th class="r">Delta</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="w-dot" style="background:var(--gpay)"></span>Google Pay</td>
+                <td class="r">36,2%</td><td class="r">40,4%</td>
+                <td class="r d-pos">+4,2pp</td>
+              </tr>
+              <tr>
+                <td><span class="w-dot" style="background:var(--samsung)"></span>Samsung</td>
+                <td class="r">34,2%</td><td class="r">39,3%</td>
+                <td class="r d-pos">+5,1pp</td>
+              </tr>
+              <tr>
+                <td><span class="w-dot" style="background:var(--wmp)"></span>Wallet MP</td>
+                <td class="r">27,9%</td><td class="r">32,8%</td>
+                <td class="r d-pos">+4,9pp</td>
+              </tr>
+              <tr class="total">
+                <td>TOTAL</td>
+                <td class="r">29,2%</td><td class="r">34,0%</td>
+                <td class="r d-pos">+4,8pp</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- 3.5 Perfil de Uso -->
+    <span class="section-tag">3.5 Perfil de Uso — Google Pay Cohort (Out/25 → Abr/26)</span>
+    <div class="use-list">
+      <div class="use-row">
+        <span class="use-lbl">Somente ON</span>
+        <span class="use-before">8,0%</span>
+        <span class="use-arrow">→</span>
+        <span class="use-after">3,2%</span>
+        <div class="use-bar-wrap"><div class="use-bar-fill" style="width:3.2%; background:var(--red)"></div></div>
+        <span class="use-delta d-neg">-4,8pp</span>
+      </div>
+      <div class="use-row">
+        <span class="use-lbl">Somente OFF</span>
+        <span class="use-before">31,7%</span>
+        <span class="use-arrow">→</span>
+        <span class="use-after">32,6%</span>
+        <div class="use-bar-wrap"><div class="use-bar-fill" style="width:32.6%; background:#9E9E9E"></div></div>
+        <span class="use-delta d-pos">+0,9pp</span>
+      </div>
+      <div class="use-row hi">
+        <span class="use-lbl bold">Omnichannel</span>
+        <span class="use-before">60,3%</span>
+        <span class="use-arrow">→</span>
+        <span class="use-after" style="font-weight:700; color:var(--green)">64,2%</span>
+        <div class="use-bar-wrap"><div class="use-bar-fill" style="width:64.2%; background:var(--green)"></div></div>
+        <span class="use-delta d-pos" style="font-size:12px">+3,9pp</span>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+<!-- ══════════ FOOTER ══════════ -->
+<footer>
+  Estudos Pontuais · Cartão de Débito ·
+  <a href="https://grid.adminml.com/d/01KPYFDX3NW80KGF0S0PWPDK1V/view" target="_blank" rel="noopener">TD Indicadores no Grid</a>
+  · Dados: Abr/2026
+</footer>
+
+</body>
+</html>
