@@ -1,7 +1,7 @@
 """
 Versão CI/CD do script de atualização.
-Roda no GitHub Actions: BQ → HTML → GCS → Grid.
-Variáveis de ambiente: GCP_CREDENTIALS (obrigatório), GRID_SESSION_ID (opcional).
+Roda no GitHub Actions: BQ → HTML → Grid.
+Variáveis de ambiente: GCP_CREDENTIALS (obrigatório), GRID_SESSION_ID (obrigatório).
 Grid: session expira ~7 dias — atualizar secret GRID_SESSION_ID quando expirar.
 """
 import sys, io, os, json, logging
@@ -10,9 +10,7 @@ from datetime import datetime
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
-PROJECT    = 'meli-bi-data'
-GCS_BUCKET = 'meli-sandbox'
-GCS_PATH   = 'CARDSINDICATORSBR/dashboards_TDMP_MLB/controle_plastico.html'
+PROJECT     = 'meli-bi-data'
 GRID_DOC_ID = '01KRPZ2TK8FA0Q9MJK2SRZBW2C'
 TABLES = {
     'deb':       'meli-bi-data.SBOX_CREDITSTC.BD_CNTR_PLASTICO_DEB',
@@ -109,7 +107,6 @@ def fetch_bq(creds):
 def build_html(rows, update_date):
     """Lê o template HTML e injeta os dados."""
     script_dir = Path(__file__).parent
-    # scripts/ → controle-plastico/ → root do repo (quando roda no GitHub Actions)
     for candidate in [
         script_dir.parent / "index.html",
         Path(os.environ.get('DASH_DIR', 'controle-plastico')) / "index.html",
@@ -122,7 +119,6 @@ def build_html(rows, update_date):
         raise FileNotFoundError("index.html não encontrado")
     html = html_template.read_text(encoding='utf-8')
 
-    # Monta bloco de dados
     lines = [f'// Auto-gerado em {update_date}', 'const PLASTICO_DATA = {',
              f'  updateDate: "{update_date}",', '  rows: [']
     for r in rows:
@@ -146,24 +142,11 @@ def build_html(rows, update_date):
     return html[:i_start] + f"{START}\n<script>\n{js_block}\n</script>\n{END}" + html[i_end + len(END):]
 
 
-def upload_gcs(creds, html_content):
-    from google.cloud import storage
-    client = storage.Client(project=PROJECT, credentials=creds)
-    blob = client.bucket(GCS_BUCKET).blob(GCS_PATH)
-    blob.upload_from_string(
-        html_content.encode('utf-8'),
-        content_type='text/html; charset=utf-8'
-    )
-    log.info(f"GCS atualizado: gs://{GCS_BUCKET}/{GCS_PATH}")
-    return f"https://storage.googleapis.com/{GCS_BUCKET}/{GCS_PATH}"
-
-
 def publish_grid(html_content: str, session_id: str) -> bool:
     """Publica HTML no Grid. Retorna False sem lançar exceção se falhar."""
     import requests, re
     base = "https://grid.adminml.com"
     try:
-        # Passo 1: pega _csrf cookie + CSRF token da página
         r1 = requests.get(
             f"{base}/d/{GRID_DOC_ID}/view",
             cookies={'session_id': session_id},
@@ -183,7 +166,6 @@ def publish_grid(html_content: str, session_id: str) -> bool:
             return False
         csrf_token = m.group(1)
 
-        # Passo 2: faz upload do HTML
         r2 = requests.post(
             f"{base}/api/v1/documents/{GRID_DOC_ID}/versions",
             cookies={'session_id': session_id, '_csrf': csrf_cookie},
@@ -212,19 +194,16 @@ if __name__ == "__main__":
     update_date = datetime.now().strftime("%d/%m/%Y")
     html        = build_html(rows, update_date)
 
-    # Salva HTML local também (para uso no computador)
+    # Salva HTML local
     local_html = Path(__file__).parent.parent / "index.html"
     local_html.write_text(html, encoding='utf-8')
     log.info(f"HTML local atualizado: {local_html}")
-
-    url = upload_gcs(creds, html)
-    log.info(f"GCS disponível em: {url}")
 
     grid_session = os.environ.get('GRID_SESSION_ID')
     if grid_session:
         publish_grid(html, grid_session)
     else:
-        log.info("GRID_SESSION_ID não configurado — pulando Grid")
+        log.warning("GRID_SESSION_ID não configurado — Grid não atualizado")
 
     log.info("Atualização concluída!")
     log.info("=" * 55)

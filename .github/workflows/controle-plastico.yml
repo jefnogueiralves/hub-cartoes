@@ -23,14 +23,13 @@ jobs:
         run: |
           pip install --quiet \
             google-cloud-bigquery \
-            google-cloud-storage \
             db-dtypes \
             pandas \
             google-auth \
             google-auth-httplib2 \
             requests
 
-      - name: Atualizar dados e publicar (GCS + Grid)
+      - name: Atualizar dados e publicar no Grid
         env:
           GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
           GRID_SESSION_ID: ${{ secrets.GRID_SESSION_ID }}
