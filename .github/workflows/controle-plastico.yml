@@ -1,15 +1,12 @@
 name: Controle de Plastico — Atualizar Dashboard
-
 on:
   schedule:
     - cron: '0 12 * * 1-5'   # 9h Brasília = 12h UTC, seg a sex
   workflow_dispatch:           # permite rodar manualmente
-
 jobs:
   atualizar:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,12 +24,30 @@ jobs:
             pandas \
             google-auth \
             google-auth-httplib2 \
-            requests
+            requests \
+            playwright
+          playwright install chromium --with-deps
 
-      - name: Atualizar dados e publicar no Grid
+      - name: Atualizar dados e gerar HTML
         env:
           GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
           GRID_SESSION_ID: ${{ secrets.GRID_SESSION_ID }}
           DASH_DIR: controle-plastico
         run: |
           python controle-plastico/scripts/atualizar_dados_ci.py
+
+      - name: Publicar no Grid
+        run: python publicar_grid_hub.py
+        continue-on-error: true
+        env:
+          GRID_SESSION_ID: ${{ secrets.GRID_SESSION_ID }}
+          GRID_DOC_ID: ${{ secrets.GRID_DOC_ID_PLASTICO }}
+          GRID_HTML_FILE: controle-plastico/index.html
+
+      - name: Resumo
+        run: |
+          echo "## Controle Plástico atualizado" >> $GITHUB_STEP_SUMMARY
+          echo "| Campo | Valor |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| GRID | https://grid.adminml.com/d/01KRPZ2TK8FA0Q9MJK2SRZBW2C/view |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Data** | $(date -u +'%d/%m/%Y %H:%M UTC') |" >> $GITHUB_STEP_SUMMARY
