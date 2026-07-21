@@ -41,6 +41,7 @@ jobs:
           GRID_SESSION_ID: ${{ secrets.GRID_SESSION_ID }}
           GRID_DOC_ID: ${{ secrets.GRID_DOC_ID_PLASTICO }}
           GRID_HTML_FILE: controle-plastico/index.html
+          GCP_ADC_JSON: ${{ secrets.GCP_ADC_JSON }}
 
       - name: Resumo
         run: |
