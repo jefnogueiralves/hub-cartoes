@@ -41,6 +41,7 @@ jobs:
           GRID_SESSION_ID: ${{ secrets.GRID_SESSION_ID }}
           GRID_DOC_ID: ${{ secrets.GRID_DOC_ID_EXPIRADOS }}
           GRID_HTML_FILE: cartoes_expirados.html
+          GCP_ADC_JSON: ${{ secrets.GCP_ADC_JSON }}
 
       # ── Micro TC ───────────────────────────────────────────────────────────
       - name: Micro TC — Gerar estático
@@ -53,6 +54,7 @@ jobs:
           GRID_SESSION_ID: ${{ secrets.GRID_SESSION_ID }}
           GRID_DOC_ID: ${{ secrets.GRID_DOC_ID_MTC }}
           GRID_HTML_FILE: micro_tc_mlb.html
+          GCP_ADC_JSON: ${{ secrets.GCP_ADC_JSON }}
 
       # ── Hub ────────────────────────────────────────────────────────────────
       - name: Hub — Publicar Grid
@@ -62,6 +64,7 @@ jobs:
           GRID_SESSION_ID: ${{ secrets.GRID_SESSION_ID }}
           GRID_DOC_ID: ${{ secrets.GRID_DOC_ID_HUB }}
           GRID_HTML_FILE: hub_cartoes.html
+          GCP_ADC_JSON: ${{ secrets.GCP_ADC_JSON }}
 
       # ── Resumo ─────────────────────────────────────────────────────────────
       - name: Resumo
