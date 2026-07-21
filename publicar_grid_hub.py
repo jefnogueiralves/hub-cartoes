@@ -9,7 +9,7 @@ Env vars obrigatórias:
   GRID_DOC_ID      — ID do documento no GRID  (GitHub Secret por dashboard)
   GRID_HTML_FILE   — caminho do arquivo HTML a publicar (ex: cartoes_expirados.html)
 """
-import os, sys, logging
+import os, sys, logging, time
 from pathlib import Path
 from datetime import datetime
 
@@ -45,16 +45,21 @@ def publicar(session_id: str, doc_id: str, html_file: Path) -> bool:
         try:
             page.goto(
                 f'https://grid.adminml.com/d/{doc_id}/view',
-                wait_until='domcontentloaded',
-                timeout=30000
+                wait_until='networkidle',
+                timeout=45000
             )
         except Exception:
             pass  # timeout é ok, só precisamos dos cookies
+
+        log.info(f'URL após navegação: {page.url}')
 
         if 'login' in page.url.lower() or 'okta' in page.url.lower():
             log.error('SESSAO_GRID_EXPIRADA — atualize o secret GRID_SESSION_ID no GitHub.')
             browser.close()
             return False
+
+        # Aguarda a página carregar completamente (JS + tokens CSRF)
+        time.sleep(3)
 
         # Upload via JS fetch (same-origin, CSRF automático)
         html_str = html_bytes.decode('utf-8', errors='replace')
