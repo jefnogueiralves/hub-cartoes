@@ -21,8 +21,7 @@ jobs:
       - name: Instalar dependências
         run: |
           pip install --quiet -r requirements.txt
-          pip install --quiet playwright
-          playwright install chromium --with-deps
+          pip install --quiet requests
 
       - name: Configurar credenciais GCP
         env:
