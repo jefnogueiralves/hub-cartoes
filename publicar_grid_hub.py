@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-publicar_grid_hub.py — Publica um HTML no GRID (adminml.com) via API direta.
-Usa requests + _mldataSessionId (sem Playwright/browser).
+publicar_grid_hub.py — Publica um HTML no GRID (adminml.com) via Playwright.
+Mesma abordagem do publicar_grid.py do TD Indicadores.
 
 Env vars obrigatórias:
-  GRID_SESSION_ID  — cookie _mldataSessionId (GitHub Secret)
-  GRID_DOC_ID      — ID do documento no GRID  (GitHub Secret por dashboard)
-  GRID_HTML_FILE   — caminho do arquivo HTML a publicar (ex: cartoes_expirados.html)
+  GRID_SESSION_ID  — session ID do GRID (mesmo usado pelo TD)
+  GRID_DOC_ID      — ID do documento no GRID
+  GRID_HTML_FILE   — caminho do arquivo HTML a publicar
 """
-import os, sys, logging
+import os, sys, logging, time
 from pathlib import Path
 
 logging.basicConfig(
@@ -21,49 +21,72 @@ log = logging.getLogger(__name__)
 GRID_API = 'https://grid.adminml.com/api/v1'
 
 
-def sessao_valida(session_id: str) -> bool:
-    import requests
-    try:
-        r = requests.get(
-            f'{GRID_API}/me',
-            cookies={'_mldataSessionId': session_id},
-            timeout=10
-        )
-        log.info(f'Verificação de sessão: status {r.status_code}')
-        return r.status_code == 200
-    except Exception as e:
-        log.warning(f'Erro ao verificar sessão: {e}')
-        return False
-
-
 def publicar(session_id: str, doc_id: str, html_file: Path) -> bool:
-    import requests
+    from playwright.sync_api import sync_playwright
 
     html_bytes = html_file.read_bytes()
     log.info(f'Publicando {html_file.name} ({len(html_bytes)//1024} KB) → GRID doc {doc_id}')
 
-    url = f'{GRID_API}/documents/{doc_id}/versions'
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        ctx = browser.new_context()
+        ctx.add_cookies([{
+            'name': '_mldataSessionId',
+            'value': session_id,
+            'domain': 'grid.adminml.com',
+            'path': '/',
+            'httpOnly': False,
+            'secure': True,
+        }])
+        page = ctx.new_page()
 
-    try:
-        response = requests.post(
-            url,
-            cookies={'_mldataSessionId': session_id},
-            files={'file': ('index.html', html_bytes, 'text/html')},
-            timeout=120
-        )
-        log.info(f'Resposta GRID: status={response.status_code}')
-        log.info(f'Body: {response.text[:400]}')
+        try:
+            page.goto(
+                f'https://grid.adminml.com/d/{doc_id}/view',
+                wait_until='domcontentloaded',
+                timeout=30000
+            )
+        except Exception:
+            pass
 
-        if response.status_code in (200, 201):
-            log.info(f'GRID atualizado: https://grid.adminml.com/d/{doc_id}/view')
-            return True
+        log.info(f'URL após navegação: {page.url}')
 
-        log.error(f'Upload falhou: {response.status_code} — {response.text[:200]}')
-        return False
+        if ('login' in page.url.lower() or 'okta' in page.url.lower()
+                or 'accounts.google.com' in page.url):
+            log.error('SESSAO_GRID_EXPIRADA')
+            browser.close()
+            return False
 
-    except Exception as e:
-        log.error(f'Erro no upload: {e}')
-        return False
+        time.sleep(3)
+
+        html_str = html_bytes.decode('utf-8', errors='replace')
+        try:
+            result = page.evaluate(
+                f"""async (html) => {{
+                    const blob = new Blob([html], {{type: 'text/html'}});
+                    const fd = new FormData();
+                    fd.append('file', blob, 'index.html');
+                    const r = await fetch('/api/v1/documents/{doc_id}/versions', {{
+                        method: 'POST', body: fd, credentials: 'include'
+                    }});
+                    return {{status: r.status, body: (await r.text()).substring(0, 400)}};
+                }}""",
+                html_str
+            )
+            log.info(f'Resposta GRID: {result}')
+            browser.close()
+
+            if isinstance(result, dict) and result.get('status') in (200, 201):
+                log.info(f'GRID atualizado: https://grid.adminml.com/d/{doc_id}/view')
+                return True
+
+            log.error(f'Upload falhou: {result}')
+            return False
+        except Exception as e:
+            try: browser.close()
+            except Exception: pass
+            log.error(f'Erro no upload: {e}')
+            return False
 
 
 if __name__ == '__main__':
@@ -78,12 +101,6 @@ if __name__ == '__main__':
     html_file = Path(html_path)
     if not html_file.exists():
         print(f'ERRO: arquivo HTML não encontrado: {html_file}')
-        sys.exit(1)
-
-    # Verifica sessão antes de tentar
-    if not sessao_valida(session_id):
-        print('ERRO: GRID_SESSION_ID inválido ou expirado.')
-        print('Abra grid.adminml.com → F12 → Application → Cookies → copie _mldataSessionId.')
         sys.exit(1)
 
     ok = publicar(session_id, doc_id, html_file)
