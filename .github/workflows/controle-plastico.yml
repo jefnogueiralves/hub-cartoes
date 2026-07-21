@@ -24,9 +24,7 @@ jobs:
             pandas \
             google-auth \
             google-auth-httplib2 \
-            requests \
-            playwright
-          playwright install chromium --with-deps
+            requests
 
       - name: Atualizar dados e gerar HTML
         env:
