@@ -1,7 +1,7 @@
 name: Atualizar Cartões Expirados + MTC + Hub
 on:
   schedule:
-    - cron: '30 12 * * 1-5'   # 09:30 BRT (seg–sex) — após o TD ter rodado
+    - cron: '30 12 * * 1-5'   # 09:30 BRT (seg–sex)
   workflow_dispatch:
 env:
   GOOGLE_APPLICATION_CREDENTIALS: /home/runner/.config/gcloud/application_default_credentials.json
@@ -10,11 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
@@ -34,45 +32,113 @@ jobs:
       - name: Cartões Expirados — Extrair BQ
         run: python cartoes-expirados/update_data.py
 
-      - name: Cartões Expirados — Publicar Grid
-        run: python publicar_grid_hub.py
+      - name: Cartões Expirados — Gerar bundle HTML
+        run: |
+          python - <<'EOF'
+          import re
+          from pathlib import Path
+
+          # dashboard_data.js pode estar na raiz ou em cartoes-expirados/
+          js_path = Path('dashboard_data.js') if Path('dashboard_data.js').exists() else Path('cartoes-expirados/dashboard_data.js')
+          html_path = Path('cartoes-expirados/index.html')
+
+          html = html_path.read_text(encoding='utf-8')
+          js_content = js_path.read_text(encoding='utf-8')
+
+          pat = re.compile(r'<script\s[^>]*src=["\']dashboard_data\.js["\'][^>]*>\s*</script>', re.IGNORECASE)
+          if pat.search(html):
+              html = pat.sub(f'<script>\n{js_content}\n</script>', html, count=1)
+          else:
+              html = html.replace('</body>', f'<script>\n{js_content}\n</script>\n</body>', 1)
+
+          Path('cartoes_expirados.html').write_bytes(html.encode('utf-8'))
+          print(f'Bundle gerado: {len(html.encode())//1024} KB')
+          EOF
+
+      - name: Cartões Expirados — Publicar no Grid via VerdiFlows
         continue-on-error: true
         env:
-          GRID_SESSION_ID: ${{ secrets.GRID_SESSION_ID }}
+          VERDIFLOWS_WEBHOOK_URL: ${{ secrets.VERDIFLOWS_WEBHOOK_URL }}
           GRID_DOC_ID: ${{ secrets.GRID_DOC_ID_EXPIRADOS }}
-          GRID_HTML_FILE: cartoes_expirados.html
-          GCP_ADC_JSON: ${{ secrets.GCP_ADC_JSON }}
+        run: |
+          python - <<'EOF'
+          import base64, json, os, urllib.request
+          html = open('cartoes_expirados.html', 'rb').read()
+          payload = json.dumps({
+              'doc_id': os.environ['GRID_DOC_ID'],
+              'html_b64': base64.b64encode(html).decode(),
+              'nome': 'Cartoes Expirados'
+          }).encode()
+          req = urllib.request.Request(
+              os.environ['VERDIFLOWS_WEBHOOK_URL'],
+              data=payload,
+              headers={'Content-Type': 'application/json'},
+              method='POST'
+          )
+          resp = urllib.request.urlopen(req, timeout=60)
+          print(f'Webhook status: {resp.status}')
+          EOF
 
       # ── Micro TC ───────────────────────────────────────────────────────────
       - name: Micro TC — Gerar estático
         run: python micro-tc/gerar_estatico.py
 
-      - name: Micro TC — Publicar Grid
-        run: python publicar_grid_hub.py
+      - name: Micro TC — Publicar no Grid via VerdiFlows
         continue-on-error: true
         env:
-          GRID_SESSION_ID: ${{ secrets.GRID_SESSION_ID }}
+          VERDIFLOWS_WEBHOOK_URL: ${{ secrets.VERDIFLOWS_WEBHOOK_URL }}
           GRID_DOC_ID: ${{ secrets.GRID_DOC_ID_MTC }}
-          GRID_HTML_FILE: micro_tc_mlb.html
-          GCP_ADC_JSON: ${{ secrets.GCP_ADC_JSON }}
+        run: |
+          python - <<'EOF'
+          import base64, json, os, urllib.request
+          html = open('micro_tc_mlb.html', 'rb').read()
+          payload = json.dumps({
+              'doc_id': os.environ['GRID_DOC_ID'],
+              'html_b64': base64.b64encode(html).decode(),
+              'nome': 'MTC Diario'
+          }).encode()
+          req = urllib.request.Request(
+              os.environ['VERDIFLOWS_WEBHOOK_URL'],
+              data=payload,
+              headers={'Content-Type': 'application/json'},
+              method='POST'
+          )
+          resp = urllib.request.urlopen(req, timeout=60)
+          print(f'Webhook status: {resp.status}')
+          EOF
 
       # ── Hub ────────────────────────────────────────────────────────────────
-      - name: Hub — Publicar Grid
-        run: python publicar_grid_hub.py
+      - name: Hub — Publicar no Grid via VerdiFlows
         continue-on-error: true
         env:
-          GRID_SESSION_ID: ${{ secrets.GRID_SESSION_ID }}
+          VERDIFLOWS_WEBHOOK_URL: ${{ secrets.VERDIFLOWS_WEBHOOK_URL }}
           GRID_DOC_ID: ${{ secrets.GRID_DOC_ID_HUB }}
-          GRID_HTML_FILE: hub_cartoes.html
-          GCP_ADC_JSON: ${{ secrets.GCP_ADC_JSON }}
+        run: |
+          python - <<'EOF'
+          import base64, json, os, urllib.request
+          html = open('hub_cartoes.html', 'rb').read()
+          payload = json.dumps({
+              'doc_id': os.environ['GRID_DOC_ID'],
+              'html_b64': base64.b64encode(html).decode(),
+              'nome': 'Hub Cartoes'
+          }).encode()
+          req = urllib.request.Request(
+              os.environ['VERDIFLOWS_WEBHOOK_URL'],
+              data=payload,
+              headers={'Content-Type': 'application/json'},
+              method='POST'
+          )
+          resp = urllib.request.urlopen(req, timeout=60)
+          print(f'Webhook status: {resp.status}')
+          EOF
 
       # ── Resumo ─────────────────────────────────────────────────────────────
       - name: Resumo
         run: |
           echo "## Dashboards atualizados" >> $GITHUB_STEP_SUMMARY
-          echo "| Dashboard | URL |" >> $GITHUB_STEP_SUMMARY
+          echo "| Dashboard | GRID |" >> $GITHUB_STEP_SUMMARY
           echo "|---|---|" >> $GITHUB_STEP_SUMMARY
-          echo "| Cartões Expirados | https://grid.adminml.com/d/01KPZTMZJT17437KWRNKDGE0AQ/view |" >> $GITHUB_STEP_SUMMARY
+          echo "| Cartoes Expirados | https://grid.adminml.com/d/01KPZTMZJT17437KWRNKDGE0AQ/view |" >> $GITHUB_STEP_SUMMARY
           echo "| Micro TC | https://grid.adminml.com/d/01KNKWTT76QHEZ9EJ88G3KDNME/view |" >> $GITHUB_STEP_SUMMARY
-          echo "| Hub Cartões | https://grid.adminml.com/d/01KS7VFYAZF80APGT36Q5NPJWR/view |" >> $GITHUB_STEP_SUMMARY
+          echo "| Hub Cartoes | https://grid.adminml.com/d/01KS7VFYAZF80APGT36Q5NPJWR/view |" >> $GITHUB_STEP_SUMMARY
           echo "| **Data** | $(date -u +'%d/%m/%Y %H:%M UTC') |" >> $GITHUB_STEP_SUMMARY
