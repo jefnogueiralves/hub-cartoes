@@ -48,7 +48,7 @@ jobs:
           html = html_path.read_text(encoding='utf-8')
           js_content = js_path.read_text(encoding='utf-8')
 
-          pat = re.compile(r'<script\s[^>]*src=["\'\']dashboard_data\.js["\'\'][^>]*>\s*</script>', re.IGNORECASE)
+          pat = re.compile(r'<script\s[^>]*src=["\']dashboard_data\.js["\'][^>]*>\s*</script>', re.IGNORECASE)
           if pat.search(html):
               html = pat.sub(f'<script>\n{js_content}\n</script>', html, count=1)
           else:
@@ -74,10 +74,19 @@ jobs:
           VERDIFLOWS_WEBHOOK_URL: ${{ secrets.VERDIFLOWS_WEBHOOK_URL }}
         run: |
           FILE_URL="https://raw.githubusercontent.com/jefnogueiralves/hub-cartoes/main/cartoes_expirados_bundle.html"
-          RESPONSE=$(curl -sf --max-time 180 -X POST "$VERDIFLOWS_WEBHOOK_URL" \
+          echo "Chamando VerdiFlows webhook..."
+          HTTP_CODE=$(curl -s -o /tmp/vf_response.txt -w "%{http_code}" --max-time 180 \
+            -X POST "$VERDIFLOWS_WEBHOOK_URL" \
             -H "Content-Type: application/json" \
             -d "{\"doc_id\":\"01KPZTMZJT17437KWRNKDGE0AQ\",\"file_url\":\"$FILE_URL\",\"nome\":\"Cartoes Expirados\"}")
-          echo "VerdiFlows: $RESPONSE"
+          echo "HTTP status: $HTTP_CODE"
+          cat /tmp/vf_response.txt
+          echo ""
+          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+            echo "ERRO: VerdiFlows retornou HTTP $HTTP_CODE"
+            exit 1
+          fi
+          echo "VerdiFlows OK"
 
       - name: Resumo
         run: |
