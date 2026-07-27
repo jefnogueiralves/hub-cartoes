@@ -1,8 +1,8 @@
 name: Controle de Plastico — Atualizar Dashboard
 on:
   schedule:
-    - cron: '0 12 * * 1-5'   # 9h Brasília = 12h UTC, seg a sex
-  workflow_dispatch:           # permite rodar manualmente
+    - cron: '0 12 * * 1-5'   # 9h Brasilia = 12h UTC, seg a sex
+  workflow_dispatch:
 jobs:
   atualizar:
     runs-on: ubuntu-latest
@@ -24,30 +24,28 @@ jobs:
             pandas \
             google-auth \
             google-auth-httplib2 \
-            requests \
-            playwright
-          playwright install chromium --with-deps
+            requests
 
       - name: Atualizar dados e gerar HTML
         env:
           GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
-          GRID_SESSION_ID: ${{ secrets.GRID_SESSION_ID }}
           DASH_DIR: controle-plastico
-        run: |
-          python controle-plastico/scripts/atualizar_dados_ci.py
+        run: python controle-plastico/scripts/atualizar_dados_ci.py
 
       - name: Publicar no Grid
-        run: python publicar_grid_hub.py
-        continue-on-error: true
         env:
-          GRID_SESSION_ID: ${{ secrets.GRID_SESSION_ID }}
+          GRID_TOKEN: ${{ secrets.GRID_TOKEN }}
           GRID_DOC_ID: ${{ secrets.GRID_DOC_ID_PLASTICO }}
-          GRID_HTML_FILE: controle-plastico/index.html
-          GCP_ADC_JSON: ${{ secrets.GCP_ADC_JSON }}
+        run: |
+          curl -sf -X POST "https://grid.melioffice.com/api/v1/engine/run" \
+            -H "Authorization: Bearer $GRID_TOKEN" \
+            -F "config={\"skill_version\":\"3.6.4\",\"doc_id\":\"$GRID_DOC_ID\"}" \
+            -F "file=@controle-plastico/index.html;filename=index.html" | \
+            python3 -c "import sys,json; r=json.load(sys.stdin); print('Grid:', r.get('ok'), r.get('steps',[-1])[-1].get('detail',''))"
 
       - name: Resumo
         run: |
-          echo "## Controle Plástico atualizado" >> $GITHUB_STEP_SUMMARY
+          echo "## Controle Plastico atualizado" >> $GITHUB_STEP_SUMMARY
           echo "| Campo | Valor |" >> $GITHUB_STEP_SUMMARY
           echo "|---|---|" >> $GITHUB_STEP_SUMMARY
           echo "| GRID | https://grid.adminml.com/d/01KRPZ2TK8FA0Q9MJK2SRZBW2C/view |" >> $GITHUB_STEP_SUMMARY
