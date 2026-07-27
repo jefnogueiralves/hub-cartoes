@@ -38,7 +38,6 @@ jobs:
           import re
           from pathlib import Path
 
-          # dashboard_data.js pode estar na raiz ou em cartoes-expirados/
           js_path = Path('dashboard_data.js') if Path('dashboard_data.js').exists() else Path('cartoes-expirados/dashboard_data.js')
           html_path = Path('cartoes-expirados/index.html')
 
@@ -52,7 +51,8 @@ jobs:
               html = html.replace('</body>', f'<script>\n{js_content}\n</script>\n</body>', 1)
 
           Path('cartoes_expirados.html').write_bytes(html.encode('utf-8'))
-          print(f'Bundle gerado: {len(html.encode())//1024} KB')
+          sz = len(html.encode())
+          print(f'Bundle gerado: {sz//1024} KB ({sz} bytes)')
           EOF
 
       - name: Cartões Expirados — Publicar no Grid
@@ -60,11 +60,21 @@ jobs:
           GRID_TOKEN: ${{ secrets.GRID_TOKEN }}
           GRID_DOC_ID: ${{ secrets.GRID_DOC_ID_EXPIRADOS }}
         run: |
-          curl -sf -X POST "https://grid.melioffice.com/api/v1/engine/run" \
+          echo "Doc ID: $GRID_DOC_ID"
+          echo "File size: $(wc -c < cartoes_expirados.html) bytes"
+          RESPONSE=$(curl -s --max-time 120 -X POST "https://grid.melioffice.com/api/v1/engine/run" \
             -H "Authorization: Bearer $GRID_TOKEN" \
             -F "config={\"skill_version\":\"3.6.4\",\"doc_id\":\"$GRID_DOC_ID\"}" \
-            -F "file=@cartoes_expirados.html;filename=index.html" | \
-            python3 -c "import sys,json; r=json.load(sys.stdin); print('Grid:', r.get('ok'), r.get('steps',[-1])[-1].get('detail',''))"
+            -F "file=@cartoes_expirados.html;filename=index.html" \
+            -w "\nHTTP_STATUS:%{http_code}")
+          echo "Resposta completa:"
+          echo "$RESPONSE"
+          HTTP_CODE=$(echo "$RESPONSE" | grep -o 'HTTP_STATUS:[0-9]*' | cut -d: -f2)
+          echo "HTTP Status: $HTTP_CODE"
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "ERRO: status $HTTP_CODE"
+            exit 1
+          fi
 
       # ── Resumo ─────────────────────────────────────────────────────────────
       - name: Resumo
