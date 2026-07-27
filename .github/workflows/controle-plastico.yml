@@ -37,11 +37,21 @@ jobs:
           GRID_TOKEN: ${{ secrets.GRID_TOKEN }}
           GRID_DOC_ID: ${{ secrets.GRID_DOC_ID_PLASTICO }}
         run: |
-          curl -sf -X POST "https://grid.melioffice.com/api/v1/engine/run" \
+          echo "Doc ID: $GRID_DOC_ID"
+          echo "File size: $(wc -c < controle-plastico/index.html) bytes"
+          RESPONSE=$(curl -s --max-time 120 -X POST "https://grid.melioffice.com/api/v1/engine/run" \
             -H "Authorization: Bearer $GRID_TOKEN" \
             -F "config={\"skill_version\":\"3.6.4\",\"doc_id\":\"$GRID_DOC_ID\"}" \
-            -F "file=@controle-plastico/index.html;filename=index.html" | \
-            python3 -c "import sys,json; r=json.load(sys.stdin); print('Grid:', r.get('ok'), r.get('steps',[-1])[-1].get('detail',''))"
+            -F "file=@controle-plastico/index.html;filename=index.html" \
+            -w "\nHTTP_STATUS:%{http_code}")
+          echo "Resposta completa:"
+          echo "$RESPONSE"
+          HTTP_CODE=$(echo "$RESPONSE" | grep -o 'HTTP_STATUS:[0-9]*' | cut -d: -f2)
+          echo "HTTP Status: $HTTP_CODE"
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "ERRO: status $HTTP_CODE"
+            exit 1
+          fi
 
       - name: Resumo
         run: |
