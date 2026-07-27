@@ -75,19 +75,35 @@ jobs:
           VERDIFLOWS_WEBHOOK_URL: ${{ secrets.VERDIFLOWS_WEBHOOK_URL }}
         run: |
           FILE_URL="https://raw.githubusercontent.com/jefnogueiralves/hub-cartoes/main/cartoes_expirados_bundle.html"
-          echo "Chamando VerdiFlows webhook..."
-          HTTP_CODE=$(curl -s -o /tmp/vf_response.txt -w "%{http_code}" --max-time 180 \
+          echo "=== VerdiFlows Debug ==="
+          echo "URL: $VERDIFLOWS_WEBHOOK_URL"
+          echo "FILE_URL: $FILE_URL"
+          HTTP_CODE=$(curl -sv -o /tmp/vf_response.txt -w "%{http_code}" --max-time 180 \
             -X POST "$VERDIFLOWS_WEBHOOK_URL" \
             -H "Content-Type: application/json" \
-            -d "{\"doc_id\":\"01KPZTMZJT17437KWRNKDGE0AQ\",\"file_url\":\"$FILE_URL\",\"nome\":\"Cartoes Expirados\"}")
-          echo "HTTP status: $HTTP_CODE"
+            -d "{\"doc_id\":\"01KPZTMZJT17437KWRNKDGE0AQ\",\"file_url\":\"$FILE_URL\",\"nome\":\"Cartoes Expirados\"}" \
+            2>/tmp/vf_curl_verbose.txt)
+          echo "=== HTTP Status: $HTTP_CODE ==="
+          echo "=== Response Body ==="
           cat /tmp/vf_response.txt
           echo ""
+          echo "=== Curl Verbose (last 30 lines) ==="
+          tail -30 /tmp/vf_curl_verbose.txt
+          cat /tmp/vf_curl_verbose.txt /tmp/vf_response.txt > /tmp/vf_debug.txt
+          echo "HTTP_CODE=$HTTP_CODE" >> /tmp/vf_debug.txt
           if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
             echo "ERRO: VerdiFlows retornou HTTP $HTTP_CODE"
             exit 1
           fi
           echo "VerdiFlows OK"
+
+      - name: Upload VerdiFlows debug (sempre)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verdiflows-debug
+          path: /tmp/vf_debug.txt
+          retention-days: 3
 
       - name: Resumo
         run: |
