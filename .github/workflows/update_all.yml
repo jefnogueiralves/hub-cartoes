@@ -1,4 +1,4 @@
-name: Atualizar Cartões Expirados + MTC + Hub
+name: Atualizar Cartões Expirados
 on:
   schedule:
     - cron: '30 12 * * 1-5'   # 09:30 BRT (seg–sex)
@@ -55,82 +55,16 @@ jobs:
           print(f'Bundle gerado: {len(html.encode())//1024} KB')
           EOF
 
-      - name: Cartões Expirados — Publicar no Grid via VerdiFlows
-        continue-on-error: true
+      - name: Cartões Expirados — Publicar no Grid
         env:
-          VERDIFLOWS_WEBHOOK_URL: ${{ secrets.VERDIFLOWS_WEBHOOK_URL }}
+          GRID_TOKEN: ${{ secrets.GRID_TOKEN }}
           GRID_DOC_ID: ${{ secrets.GRID_DOC_ID_EXPIRADOS }}
         run: |
-          python - <<'EOF'
-          import base64, json, os, urllib.request
-          html = open('cartoes_expirados.html', 'rb').read()
-          payload = json.dumps({
-              'doc_id': os.environ['GRID_DOC_ID'],
-              'html_b64': base64.b64encode(html).decode(),
-              'nome': 'Cartoes Expirados'
-          }).encode()
-          req = urllib.request.Request(
-              os.environ['VERDIFLOWS_WEBHOOK_URL'],
-              data=payload,
-              headers={'Content-Type': 'application/json'},
-              method='POST'
-          )
-          resp = urllib.request.urlopen(req, timeout=60)
-          print(f'Webhook status: {resp.status}')
-          EOF
-
-      # ── Micro TC ───────────────────────────────────────────────────────────
-      - name: Micro TC — Gerar estático
-        run: python micro-tc/gerar_estatico.py
-
-      - name: Micro TC — Publicar no Grid via VerdiFlows
-        continue-on-error: true
-        env:
-          VERDIFLOWS_WEBHOOK_URL: ${{ secrets.VERDIFLOWS_WEBHOOK_URL }}
-          GRID_DOC_ID: ${{ secrets.GRID_DOC_ID_MTC }}
-        run: |
-          python - <<'EOF'
-          import base64, json, os, urllib.request
-          html = open('micro_tc_mlb.html', 'rb').read()
-          payload = json.dumps({
-              'doc_id': os.environ['GRID_DOC_ID'],
-              'html_b64': base64.b64encode(html).decode(),
-              'nome': 'MTC Diario'
-          }).encode()
-          req = urllib.request.Request(
-              os.environ['VERDIFLOWS_WEBHOOK_URL'],
-              data=payload,
-              headers={'Content-Type': 'application/json'},
-              method='POST'
-          )
-          resp = urllib.request.urlopen(req, timeout=60)
-          print(f'Webhook status: {resp.status}')
-          EOF
-
-      # ── Hub ────────────────────────────────────────────────────────────────
-      - name: Hub — Publicar no Grid via VerdiFlows
-        continue-on-error: true
-        env:
-          VERDIFLOWS_WEBHOOK_URL: ${{ secrets.VERDIFLOWS_WEBHOOK_URL }}
-          GRID_DOC_ID: ${{ secrets.GRID_DOC_ID_HUB }}
-        run: |
-          python - <<'EOF'
-          import base64, json, os, urllib.request
-          html = open('hub_cartoes.html', 'rb').read()
-          payload = json.dumps({
-              'doc_id': os.environ['GRID_DOC_ID'],
-              'html_b64': base64.b64encode(html).decode(),
-              'nome': 'Hub Cartoes'
-          }).encode()
-          req = urllib.request.Request(
-              os.environ['VERDIFLOWS_WEBHOOK_URL'],
-              data=payload,
-              headers={'Content-Type': 'application/json'},
-              method='POST'
-          )
-          resp = urllib.request.urlopen(req, timeout=60)
-          print(f'Webhook status: {resp.status}')
-          EOF
+          curl -sf -X POST "https://grid.melioffice.com/api/v1/engine/run" \
+            -H "Authorization: Bearer $GRID_TOKEN" \
+            -F "config={\"skill_version\":\"3.6.4\",\"doc_id\":\"$GRID_DOC_ID\"}" \
+            -F "file=@cartoes_expirados.html;filename=index.html" | \
+            python3 -c "import sys,json; r=json.load(sys.stdin); print('Grid:', r.get('ok'), r.get('steps',[-1])[-1].get('detail',''))"
 
       # ── Resumo ─────────────────────────────────────────────────────────────
       - name: Resumo
@@ -139,6 +73,4 @@ jobs:
           echo "| Dashboard | GRID |" >> $GITHUB_STEP_SUMMARY
           echo "|---|---|" >> $GITHUB_STEP_SUMMARY
           echo "| Cartoes Expirados | https://grid.adminml.com/d/01KPZTMZJT17437KWRNKDGE0AQ/view |" >> $GITHUB_STEP_SUMMARY
-          echo "| Micro TC | https://grid.adminml.com/d/01KNKWTT76QHEZ9EJ88G3KDNME/view |" >> $GITHUB_STEP_SUMMARY
-          echo "| Hub Cartoes | https://grid.adminml.com/d/01KS7VFYAZF80APGT36Q5NPJWR/view |" >> $GITHUB_STEP_SUMMARY
           echo "| **Data** | $(date -u +'%d/%m/%Y %H:%M UTC') |" >> $GITHUB_STEP_SUMMARY
