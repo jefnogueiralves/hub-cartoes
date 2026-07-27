@@ -75,35 +75,38 @@ jobs:
           VERDIFLOWS_WEBHOOK_URL: ${{ secrets.VERDIFLOWS_WEBHOOK_URL }}
         run: |
           FILE_URL="https://raw.githubusercontent.com/jefnogueiralves/hub-cartoes/main/cartoes_expirados_bundle.html"
-          echo "=== VerdiFlows Debug ==="
-          echo "URL: $VERDIFLOWS_WEBHOOK_URL"
-          echo "FILE_URL: $FILE_URL"
           HTTP_CODE=$(curl -sv -o /tmp/vf_response.txt -w "%{http_code}" --max-time 180 \
             -X POST "$VERDIFLOWS_WEBHOOK_URL" \
             -H "Content-Type: application/json" \
             -d "{\"doc_id\":\"01KPZTMZJT17437KWRNKDGE0AQ\",\"file_url\":\"$FILE_URL\",\"nome\":\"Cartoes Expirados\"}" \
-            2>/tmp/vf_curl_verbose.txt)
-          echo "=== HTTP Status: $HTTP_CODE ==="
-          echo "=== Response Body ==="
-          cat /tmp/vf_response.txt
-          echo ""
-          echo "=== Curl Verbose (last 30 lines) ==="
-          tail -30 /tmp/vf_curl_verbose.txt
-          cat /tmp/vf_curl_verbose.txt /tmp/vf_response.txt > /tmp/vf_debug.txt
-          echo "HTTP_CODE=$HTTP_CODE" >> /tmp/vf_debug.txt
+            2>/tmp/vf_verbose.txt)
+          {
+            echo "=== HTTP_CODE: $HTTP_CODE ==="
+            echo "=== Response body ==="
+            cat /tmp/vf_response.txt
+            echo ""
+            echo "=== Curl verbose ==="
+            cat /tmp/vf_verbose.txt
+          } > /tmp/vf_debug.txt
+          cat /tmp/vf_debug.txt
+          echo "vf_exit_code=$?" >> /tmp/vf_debug.txt
           if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
-            echo "ERRO: VerdiFlows retornou HTTP $HTTP_CODE"
             exit 1
           fi
-          echo "VerdiFlows OK"
 
-      - name: Upload VerdiFlows debug (sempre)
+      - name: Salvar debug VF no repo
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: verdiflows-debug
-          path: /tmp/vf_debug.txt
-          retention-days: 3
+        run: |
+          mkdir -p .debug
+          cp /tmp/vf_debug.txt .debug/vf_debug.txt 2>/dev/null || echo "sem arquivo de debug" > .debug/vf_debug.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .debug/vf_debug.txt
+          if ! git diff --staged --quiet; then
+            git pull --rebase origin main
+            git commit -m "debug: verdiflows response $(date -u +'%H:%M UTC')"
+            git push
+          fi
 
       - name: Resumo
         run: |
