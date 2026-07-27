@@ -1,7 +1,7 @@
 name: Controle de Plastico — Atualizar Dashboard
 on:
   schedule:
-    - cron: '0 12 * * 1-5'   # 9h Brasilia = 12h UTC, seg a sex
+    - cron: '0 12 * * 1-5'   # 9h BRT = 12h UTC, seg a sex
   workflow_dispatch:
 jobs:
   atualizar:
@@ -10,6 +10,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Python 3.13
         uses: actions/setup-python@v5
@@ -32,30 +34,27 @@ jobs:
           DASH_DIR: controle-plastico
         run: python controle-plastico/scripts/atualizar_dados_ci.py
 
-      - name: Publicar no Grid
-        env:
-          GRID_TOKEN: ${{ secrets.GRID_TOKEN }}
-          GRID_DOC_ID: ${{ secrets.GRID_DOC_ID_PLASTICO }}
+      - name: Commit HTML no repo
         run: |
-          echo "Doc ID: $GRID_DOC_ID"
-          echo "File size: $(wc -c < controle-plastico/index.html) bytes"
-          RESPONSE=$(curl -s --max-time 120 -X POST "https://grid.melioffice.com/api/v1/engine/run" \
-            -H "Authorization: Bearer $GRID_TOKEN" \
-            -F "config={\"skill_version\":\"3.6.4\",\"doc_id\":\"$GRID_DOC_ID\"}" \
-            -F "file=@controle-plastico/index.html;filename=index.html" \
-            -w "\nHTTP_STATUS:%{http_code}")
-          echo "Resposta completa:"
-          echo "$RESPONSE"
-          HTTP_CODE=$(echo "$RESPONSE" | grep -o 'HTTP_STATUS:[0-9]*' | cut -d: -f2)
-          echo "HTTP Status: $HTTP_CODE"
-          if [ "$HTTP_CODE" != "200" ]; then
-            echo "ERRO: status $HTTP_CODE"
-            exit 1
-          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add controle-plastico/index.html
+          git diff --staged --quiet || git commit -m "chore: controle plastico $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push
+
+      - name: Publicar no Grid via VerdiFlows
+        env:
+          VERDIFLOWS_WEBHOOK_URL: ${{ secrets.VERDIFLOWS_WEBHOOK_URL }}
+        run: |
+          FILE_URL="https://raw.githubusercontent.com/jefnogueiralves/hub-cartoes/main/controle-plastico/index.html"
+          RESPONSE=$(curl -sf --max-time 180 -X POST "$VERDIFLOWS_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d "{\"doc_id\":\"01KRPZ2TK8FA0Q9MJK2SRZBW2C\",\"file_url\":\"$FILE_URL\",\"nome\":\"Controle Plastico\"}")
+          echo "VerdiFlows: $RESPONSE"
 
       - name: Resumo
         run: |
-          echo "## Controle Plastico atualizado" >> $GITHUB_STEP_SUMMARY
+          echo "## Controle Plástico atualizado" >> $GITHUB_STEP_SUMMARY
           echo "| Campo | Valor |" >> $GITHUB_STEP_SUMMARY
           echo "|---|---|" >> $GITHUB_STEP_SUMMARY
           echo "| GRID | https://grid.adminml.com/d/01KRPZ2TK8FA0Q9MJK2SRZBW2C/view |" >> $GITHUB_STEP_SUMMARY
