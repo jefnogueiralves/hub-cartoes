@@ -11,6 +11,8 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/setup-python@v5
         with:
@@ -28,7 +30,6 @@ jobs:
           mkdir -p ~/.config/gcloud
           echo "$GCP_ADC_JSON" > ~/.config/gcloud/application_default_credentials.json
 
-      # ── Cartões Expirados ──────────────────────────────────────────────────
       - name: Cartões Expirados — Extrair BQ
         run: python cartoes-expirados/update_data.py
 
@@ -37,6 +38,7 @@ jobs:
           python - <<'EOF'
           import re
           from pathlib import Path
+          from datetime import datetime
 
           js_path = Path('dashboard_data.js') if Path('dashboard_data.js').exists() else Path('cartoes-expirados/dashboard_data.js')
           html_path = Path('cartoes-expirados/index.html')
@@ -50,37 +52,35 @@ jobs:
           else:
               html = html.replace('</body>', f'<script>\n{js_content}\n</script>\n</body>', 1)
 
-          Path('cartoes_expirados.html').write_bytes(html.encode('utf-8'))
-          sz = len(html.encode())
-          print(f'Bundle gerado: {sz//1024} KB ({sz} bytes)')
+          ts = datetime.now().strftime('%Y%m%d%H%M%S')
+          html = html.replace('</head>', f'<meta name="cache-ts" content="{ts}">\n</head>', 1)
+
+          Path('cartoes_expirados_bundle.html').write_bytes(html.encode('utf-8'))
+          print(f'Bundle: {len(html.encode())//1024} KB')
           EOF
 
-      - name: Cartões Expirados — Publicar no Grid
-        env:
-          GRID_TOKEN: ${{ secrets.GRID_TOKEN }}
-          GRID_DOC_ID: ${{ secrets.GRID_DOC_ID_EXPIRADOS }}
+      - name: Commit bundle no repo
         run: |
-          echo "Doc ID: $GRID_DOC_ID"
-          echo "File size: $(wc -c < cartoes_expirados.html) bytes"
-          RESPONSE=$(curl -s --max-time 120 -X POST "https://grid.melioffice.com/api/v1/engine/run" \
-            -H "Authorization: Bearer $GRID_TOKEN" \
-            -F "config={\"skill_version\":\"3.6.4\",\"doc_id\":\"$GRID_DOC_ID\"}" \
-            -F "file=@cartoes_expirados.html;filename=index.html" \
-            -w "\nHTTP_STATUS:%{http_code}")
-          echo "Resposta completa:"
-          echo "$RESPONSE"
-          HTTP_CODE=$(echo "$RESPONSE" | grep -o 'HTTP_STATUS:[0-9]*' | cut -d: -f2)
-          echo "HTTP Status: $HTTP_CODE"
-          if [ "$HTTP_CODE" != "200" ]; then
-            echo "ERRO: status $HTTP_CODE"
-            exit 1
-          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add cartoes_expirados_bundle.html
+          git diff --staged --quiet || git commit -m "chore: bundle cartoes expirados $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push
 
-      # ── Resumo ─────────────────────────────────────────────────────────────
+      - name: Publicar no Grid via VerdiFlows
+        env:
+          VERDIFLOWS_WEBHOOK_URL: ${{ secrets.VERDIFLOWS_WEBHOOK_URL }}
+        run: |
+          FILE_URL="https://raw.githubusercontent.com/jefnogueiralves/hub-cartoes/main/cartoes_expirados_bundle.html"
+          RESPONSE=$(curl -sf --max-time 180 -X POST "$VERDIFLOWS_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d "{\"doc_id\":\"01KPZTMZJT17437KWRNKDGE0AQ\",\"file_url\":\"$FILE_URL\",\"nome\":\"Cartoes Expirados\"}")
+          echo "VerdiFlows: $RESPONSE"
+
       - name: Resumo
         run: |
-          echo "## Dashboards atualizados" >> $GITHUB_STEP_SUMMARY
-          echo "| Dashboard | GRID |" >> $GITHUB_STEP_SUMMARY
+          echo "## Cartões Expirados atualizado" >> $GITHUB_STEP_SUMMARY
+          echo "| Campo | Valor |" >> $GITHUB_STEP_SUMMARY
           echo "|---|---|" >> $GITHUB_STEP_SUMMARY
-          echo "| Cartoes Expirados | https://grid.adminml.com/d/01KPZTMZJT17437KWRNKDGE0AQ/view |" >> $GITHUB_STEP_SUMMARY
+          echo "| GRID | https://grid.adminml.com/d/01KPZTMZJT17437KWRNKDGE0AQ/view |" >> $GITHUB_STEP_SUMMARY
           echo "| **Data** | $(date -u +'%d/%m/%Y %H:%M UTC') |" >> $GITHUB_STEP_SUMMARY
