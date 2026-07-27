@@ -3,6 +3,8 @@ on:
   schedule:
     - cron: '30 12 * * 1-5'   # 09:30 BRT (seg–sex)
   workflow_dispatch:
+permissions:
+  contents: write
 env:
   GOOGLE_APPLICATION_CREDENTIALS: /home/runner/.config/gcloud/application_default_credentials.json
 jobs:
@@ -46,7 +48,7 @@ jobs:
           html = html_path.read_text(encoding='utf-8')
           js_content = js_path.read_text(encoding='utf-8')
 
-          pat = re.compile(r'<script\s[^>]*src=["\']dashboard_data\.js["\'][^>]*>\s*</script>', re.IGNORECASE)
+          pat = re.compile(r'<script\s[^>]*src=["\'\']dashboard_data\.js["\'\'][^>]*>\s*</script>', re.IGNORECASE)
           if pat.search(html):
               html = pat.sub(f'<script>\n{js_content}\n</script>', html, count=1)
           else:
