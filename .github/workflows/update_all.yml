@@ -73,6 +73,7 @@ jobs:
       - name: Publicar no Grid via VerdiFlows
         env:
           VERDIFLOWS_WEBHOOK_URL: ${{ secrets.VERDIFLOWS_WEBHOOK_URL }}
+          VERDIFLOWS_WEBHOOK_AUTH: ${{ secrets.VERDIFLOWS_WEBHOOK_AUTH }}
         run: |
           FILE_URL="https://raw.githubusercontent.com/jefnogueiralves/hub-cartoes/main/cartoes_expirados_bundle.html"
           HTTP_CODE=$(curl -sv -o /tmp/vf_response.txt -w "%{http_code}" --max-time 180 \
