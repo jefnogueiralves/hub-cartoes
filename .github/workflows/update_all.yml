@@ -1,65 +1,51 @@
 name: Atualizar Cartões Expirados
+
 on:
   schedule:
     - cron: '30 12 * * 1-5'   # 09:30 BRT (seg–sex)
   workflow_dispatch:
+
 permissions:
   contents: write
+
 env:
   GOOGLE_APPLICATION_CREDENTIALS: /home/runner/.config/gcloud/application_default_credentials.json
+
 jobs:
   update:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions/setup-python@v5
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+          cache: pip
 
-      - name: Instalar dependências
+      - name: Install dependencies
         run: |
-          pip install --quiet -r requirements.txt
-          pip install --quiet requests
+          pip install --quiet \
+            google-cloud-bigquery \
+            google-cloud-storage \
+            google-auth \
+            requests \
+            pandas \
+            db-dtypes \
+            jinja2
 
-      - name: Configurar credenciais GCP
-        env:
-          GCP_ADC_JSON: ${{ secrets.GCP_ADC_JSON }}
+      - name: Configure GCP credentials
         run: |
           mkdir -p ~/.config/gcloud
-          echo "$GCP_ADC_JSON" > ~/.config/gcloud/application_default_credentials.json
+          echo '${{ secrets.GCP_ADC_JSON }}' > $GOOGLE_APPLICATION_CREDENTIALS
 
-      - name: Cartões Expirados — Extrair BQ
-        run: python cartoes-expirados/update_data.py
-
-      - name: Cartões Expirados — Gerar bundle HTML
-        run: |
-          python - <<'EOF'
-          import re
-          from pathlib import Path
-          from datetime import datetime
-
-          js_path = Path('dashboard_data.js') if Path('dashboard_data.js').exists() else Path('cartoes-expirados/dashboard_data.js')
-          html_path = Path('cartoes-expirados/index.html')
-
-          html = html_path.read_text(encoding='utf-8')
-          js_content = js_path.read_text(encoding='utf-8')
-
-          pat = re.compile(r'<script\s[^>]*src=["\']dashboard_data\.js["\'][^>]*>\s*</script>', re.IGNORECASE)
-          if pat.search(html):
-              html = pat.sub(f'<script>\n{js_content}\n</script>', html, count=1)
-          else:
-              html = html.replace('</body>', f'<script>\n{js_content}\n</script>\n</body>', 1)
-
-          ts = datetime.now().strftime('%Y%m%d%H%M%S')
-          html = html.replace('</head>', f'<meta name="cache-ts" content="{ts}">\n</head>', 1)
-
-          Path('cartoes_expirados_bundle.html').write_bytes(html.encode('utf-8'))
-          print(f'Bundle: {len(html.encode())//1024} KB')
-          EOF
+      - name: Update data and generate HTML bundle
+        run: python scripts/update_data.py
 
       - name: Commit bundle no repo
         run: |
@@ -69,55 +55,3 @@ jobs:
           git diff --staged --quiet || git commit -m "chore: bundle cartoes expirados $(date -u +'%Y-%m-%d %H:%M UTC')"
           git pull --rebase origin main
           git push
-
-      - name: Publicar no Grid via VerdiFlows
-        env:
-          VERDIFLOWS_WEBHOOK_URL: ${{ secrets.VERDIFLOWS_WEBHOOK_URL }}
-          VERDIFLOWS_WEBHOOK_AUTH: ${{ secrets.VERDIFLOWS_WEBHOOK_AUTH }}
-        run: |
-          FILE_URL="https://raw.githubusercontent.com/jefnogueiralves/hub-cartoes/main/cartoes_expirados_bundle.html"
-          HTTP_CODE=$(curl -sv -o /tmp/vf_response.txt -w "%{http_code}" --max-time 180 \
-            -X POST "$VERDIFLOWS_WEBHOOK_URL" \
-            -H "Content-Type: application/json" \
-            -H "X-API-Key: $VERDIFLOWS_WEBHOOK_AUTH" \
-            -d "{\"doc_id\":\"01KPZTMZJT17437KWRNKDGE0AQ\",\"file_url\":\"$FILE_URL\",\"nome\":\"Cartoes Expirados\"}" \
-            2>/tmp/vf_verbose.txt)
-          {
-            echo "=== HTTP_CODE: $HTTP_CODE ==="
-            echo "=== Response body ==="
-            cat /tmp/vf_response.txt
-            echo ""
-            echo "=== Curl verbose ==="
-            cat /tmp/vf_verbose.txt
-          } > /tmp/vf_debug.txt
-          cat /tmp/vf_debug.txt
-          echo "vf_exit_code=$?" >> /tmp/vf_debug.txt
-          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
-            exit 1
-          fi
-
-      - name: Salvar debug VF no repo
-        if: always()
-        env:
-          GH_TOKEN_DEBUG: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          DEBUG_FILE="/tmp/vf_debug.txt"
-          [ -f "$DEBUG_FILE" ] || echo "NO DEBUG FILE - VF step may have crashed" > "$DEBUG_FILE"
-          CONTENT=$(base64 -w 0 "$DEBUG_FILE")
-          # Get current SHA if file exists
-          SHA=$(curl -sf -H "Authorization: Bearer $GH_TOKEN_DEBUG"             "https://api.github.com/repos/jefnogueiralves/hub-cartoes/contents/.debug/vf_debug.txt"             | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('sha',''))" 2>/dev/null || echo "")
-          # Build payload
-          if [ -n "$SHA" ]; then
-            PAYLOAD="{"message":"debug: vf response $(date -u +'%H:%M UTC')","content":"$CONTENT","sha":"$SHA"}"
-          else
-            PAYLOAD="{"message":"debug: vf response $(date -u +'%H:%M UTC')","content":"$CONTENT"}"
-          fi
-          curl -sf -X PUT -H "Authorization: Bearer $GH_TOKEN_DEBUG"             -H "Content-Type: application/json"             "https://api.github.com/repos/jefnogueiralves/hub-cartoes/contents/.debug/vf_debug.txt"             -d "$PAYLOAD" && echo "Debug file saved to repo" || echo "Failed to save debug file"  
-
-      - name: Resumo
-        run: |
-          echo "## Cartões Expirados atualizado" >> $GITHUB_STEP_SUMMARY
-          echo "| Campo | Valor |" >> $GITHUB_STEP_SUMMARY
-          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
-          echo "| GRID | https://grid.adminml.com/d/01KPZTMZJT17437KWRNKDGE0AQ/view |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Data** | $(date -u +'%d/%m/%Y %H:%M UTC') |" >> $GITHUB_STEP_SUMMARY
