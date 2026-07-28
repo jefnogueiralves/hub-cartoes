@@ -48,10 +48,12 @@ jobs:
       - name: Publicar no Grid via VerdiFlows
         env:
           VERDIFLOWS_WEBHOOK_URL: ${{ secrets.VERDIFLOWS_WEBHOOK_URL }}
+          VERDIFLOWS_WEBHOOK_AUTH: ${{ secrets.VERDIFLOWS_WEBHOOK_AUTH }}
         run: |
           FILE_URL="https://raw.githubusercontent.com/jefnogueiralves/hub-cartoes/main/controle-plastico/index.html"
           RESPONSE=$(curl -sf --max-time 180 -X POST "$VERDIFLOWS_WEBHOOK_URL" \
             -H "Content-Type: application/json" \
+            -H "Authorization: $VERDIFLOWS_WEBHOOK_AUTH" \
             -d "{\"doc_id\":\"01KRPZ2TK8FA0Q9MJK2SRZBW2C\",\"file_url\":\"$FILE_URL\",\"nome\":\"Controle Plastico\"}")
           echo "VerdiFlows: $RESPONSE"
 
