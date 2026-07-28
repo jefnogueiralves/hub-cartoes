@@ -98,17 +98,21 @@ jobs:
 
       - name: Salvar debug VF no repo
         if: always()
+        env:
+          GH_TOKEN_DEBUG: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          mkdir -p .debug
-          cp /tmp/vf_debug.txt .debug/vf_debug.txt 2>/dev/null || echo "sem arquivo de debug" > .debug/vf_debug.txt
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .debug/vf_debug.txt
-          if ! git diff --staged --quiet; then
-            git pull --rebase origin main
-            git commit -m "debug: verdiflows response $(date -u +'%H:%M UTC')"
-            git push
+          DEBUG_FILE="/tmp/vf_debug.txt"
+          [ -f "$DEBUG_FILE" ] || echo "NO DEBUG FILE - VF step may have crashed" > "$DEBUG_FILE"
+          CONTENT=$(base64 -w 0 "$DEBUG_FILE")
+          # Get current SHA if file exists
+          SHA=$(curl -sf -H "Authorization: Bearer $GH_TOKEN_DEBUG"             "https://api.github.com/repos/jefnogueiralves/hub-cartoes/contents/.debug/vf_debug.txt"             | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('sha',''))" 2>/dev/null || echo "")
+          # Build payload
+          if [ -n "$SHA" ]; then
+            PAYLOAD="{"message":"debug: vf response $(date -u +'%H:%M UTC')","content":"$CONTENT","sha":"$SHA"}"
+          else
+            PAYLOAD="{"message":"debug: vf response $(date -u +'%H:%M UTC')","content":"$CONTENT"}"
           fi
+          curl -sf -X PUT -H "Authorization: Bearer $GH_TOKEN_DEBUG"             -H "Content-Type: application/json"             "https://api.github.com/repos/jefnogueiralves/hub-cartoes/contents/.debug/vf_debug.txt"             -d "$PAYLOAD" && echo "Debug file saved to repo" || echo "Failed to save debug file"  
 
       - name: Resumo
         run: |
