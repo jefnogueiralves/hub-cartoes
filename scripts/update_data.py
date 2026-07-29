@@ -11,7 +11,7 @@ from pathlib import Path
 # ── CONFIGURACAO ─────────────────────────────────────────────────────────────
 BASE_DIR    = Path(__file__).parent.parent
 OUTPUT_JS   = BASE_DIR / "dashboard_data.js"
-LOG_FILE    = Path("C:/Users/jefnogueira/logs/cartoes_expirados.log")
+LOG_FILE    = Path(__file__).parent.parent / "logs" / "cartoes_expirados.log"
 
 # Tabelas BigQuery
 ANL_TABLE  = "meli-bi-data.SBOX_CREDITSTC.CARTAO_EXPIRADO_ANL_IA"
