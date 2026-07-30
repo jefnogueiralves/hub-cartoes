@@ -11,12 +11,12 @@ from pathlib import Path
 # ── CONFIGURACAO ─────────────────────────────────────────────────────────────
 BASE_DIR    = Path(__file__).parent.parent
 OUTPUT_JS   = BASE_DIR / "dashboard_data.js"
-LOG_FILE    = Path(__file__).parent.parent / "logs" / "cartoes_expirados.log"
+LOG_FILE    = Path("C:/Users/jefnogueira/logs/cartoes_expirados.log")
 
 # Tabelas BigQuery
 ANL_TABLE  = "meli-bi-data.SBOX_CREDITSTC.CARTAO_EXPIRADO_ANL_IA"
 CUBO_TABLE = "meli-bi-data.SBOX_CREDITSTC.CARTAO_EXPIRADO_CUBO_IA"
-PROJECT    = "meli-bi-data"
+PROJECT    = "cardsindic-91aq3c8avyp-furyid"
 
 # Credenciais ADC — carregadas via arquivo JSON
 ADC_PATH = os.environ.get(
@@ -42,8 +42,25 @@ def get_bq_client():
     return bigquery.Client(project=PROJECT, credentials=creds)
 
 
-def query(client, sql):
-    return list(client.query(sql).result())
+def query(client, sql, retries=6):
+    import time
+    waits = [30, 60, 120, 180, 300, 300]
+    for attempt in range(retries):
+        try:
+            return list(client.query(sql).result(timeout=900))
+        except Exception as e:
+            err = str(e)
+            retryable = any(x in err for x in (
+                'Quota exceeded', 'quotaExceeded', 'ConnectionResetError',
+                'Connection aborted', 'RetryError', 'ServiceUnavailable',
+                'Timeout', 'timed out',
+            ))
+            if retryable and attempt < retries - 1:
+                wait = waits[attempt]
+                log(f'  BQ erro transitório — aguardando {wait}s... (tentativa {attempt+1}/{retries}): {err[:80]}')
+                time.sleep(wait)
+            else:
+                raise
 
 
 # ── QUERIES ────────────────────────────────────────────────────────────────────
