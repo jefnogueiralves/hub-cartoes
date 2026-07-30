@@ -78,25 +78,3 @@ jobs:
           git checkout -- .
           git pull --rebase origin main
           git push
-
-      - name: Publicar no Grid
-        env:
-          GRID_API_TOKEN: ${{ secrets.GRID_API_TOKEN }}
-          GRID_DOC_ID: "01KPZTMZJT17437KWRNKDGE0AQ"
-        run: |
-          echo "Publicando no Grid..."
-          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "https://grid.melioffice.com/api/v1/engine/run" \
-            -H "Authorization: Bearer ${GRID_API_TOKEN}" \
-            -F "config={\"skill_version\":\"3.6.5\",\"doc_id\":\"${GRID_DOC_ID}\"}" \
-            -F "file=@cartoes_expirados_bundle.html")
-          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
-          BODY=$(echo "$RESPONSE" | head -1)
-          echo "HTTP: $HTTP_CODE"
-          echo "Response: $BODY"
-          if [ "$HTTP_CODE" != "200" ] && [ "$HTTP_CODE" != "201" ]; then
-            echo "ERRO: Grid retornou HTTP $HTTP_CODE"
-            exit 1
-          fi
-          VERSION=$(echo "$BODY" | python3 -c "import json,sys; print(json.load(sys.stdin).get('version','?'))" 2>/dev/null || echo "?")
-          echo "Grid atualizado! Versao: $VERSION"
-          echo "URL: https://grid.adminml.com/d/${GRID_DOC_ID}/view"
