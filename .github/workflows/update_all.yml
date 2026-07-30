@@ -2,7 +2,8 @@ name: Atualizar Cartões Expirados
 
 on:
   schedule:
-    - cron: '30 12 * * 1-5'   # 09:30 BRT (seg–sex)
+    - cron: '0 12 * * 1-5'    # 09:00 BRT = 12:00 UTC, seg-sex
+    - cron: '15 13 * * 1-5'   # 10:15 BRT = 13:15 UTC, seg-sex (segurança)
   workflow_dispatch:
 
 permissions:
@@ -55,12 +56,10 @@ jobs:
           data_js = (BASE / 'dashboard_data.js').read_text(encoding='utf-8')
           html    = (BASE / 'cartoes-expirados' / 'index.html').read_text(encoding='utf-8')
 
-          # Replace <script src="dashboard_data.js"></script> with inline
           pat = r'<script\s+src=["\']dashboard_data\.js["\'][^>]*>\s*</script>'
           inline = f'<script>\n{data_js}\n</script>'
           html = re.sub(pat, inline, html, flags=re.IGNORECASE)
 
-          # Cache-busting timestamp
           ts = datetime.now().strftime('%Y%m%d%H%M%S')
           html = html.replace('</head>', f'<meta name="cache-ts" content="{ts}">\n</head>', 1)
 
@@ -79,3 +78,25 @@ jobs:
           git checkout -- .
           git pull --rebase origin main
           git push
+
+      - name: Publicar no Grid
+        env:
+          GRID_API_TOKEN: ${{ secrets.GRID_API_TOKEN }}
+          GRID_DOC_ID: "01KPZTMZJT17437KWRNKDGE0AQ"
+        run: |
+          echo "Publicando no Grid..."
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "https://grid.melioffice.com/api/v1/engine/run" \
+            -H "Authorization: Bearer ${GRID_API_TOKEN}" \
+            -F "config={\"skill_version\":\"3.6.5\",\"doc_id\":\"${GRID_DOC_ID}\"}" \
+            -F "file=@cartoes_expirados_bundle.html")
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | head -1)
+          echo "HTTP: $HTTP_CODE"
+          echo "Response: $BODY"
+          if [ "$HTTP_CODE" != "200" ] && [ "$HTTP_CODE" != "201" ]; then
+            echo "ERRO: Grid retornou HTTP $HTTP_CODE"
+            exit 1
+          fi
+          VERSION=$(echo "$BODY" | python3 -c "import json,sys; print(json.load(sys.stdin).get('version','?'))" 2>/dev/null || echo "?")
+          echo "Grid atualizado! Versao: $VERSION"
+          echo "URL: https://grid.adminml.com/d/${GRID_DOC_ID}/view"
