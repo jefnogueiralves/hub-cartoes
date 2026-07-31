@@ -5,43 +5,44 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Controle de Plástico | Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <!--DATA_BEGIN-->
 <script>
-// Auto-gerado em 31/07/2026
+// Auto-gerado em 16/07/2026
 const PLASTICO_DATA = {
-  updateDate: "31/07/2026",
+  updateDate: "16/07/2026",
   rows: [
-    {safra:"202401",label:"Jan/24",emissaoTD:324957,emissaoTC:0,reemissaoTotal:128061,reemissaoTD:76995,reemissaoTC:51067,tdCreditFirst:46292,tcDebitFirst:199607},
-    {safra:"202402",label:"Fev/24",emissaoTD:318664,emissaoTC:0,reemissaoTotal:118624,reemissaoTD:71424,reemissaoTC:47200,tdCreditFirst:50733,tcDebitFirst:211640},
-    {safra:"202403",label:"Mar/24",emissaoTD:320543,emissaoTC:0,reemissaoTotal:130943,reemissaoTD:77541,reemissaoTC:53403,tdCreditFirst:61186,tcDebitFirst:184080},
-    {safra:"202404",label:"Abr/24",emissaoTD:387320,emissaoTC:0,reemissaoTotal:146119,reemissaoTD:89633,reemissaoTC:56487,tdCreditFirst:55705,tcDebitFirst:222089},
-    {safra:"202405",label:"Mai/24",emissaoTD:471687,emissaoTC:0,reemissaoTotal:155546,reemissaoTD:99013,reemissaoTC:56533,tdCreditFirst:57011,tcDebitFirst:184167},
-    {safra:"202406",label:"Jun/24",emissaoTD:397133,emissaoTC:0,reemissaoTotal:154374,reemissaoTD:95888,reemissaoTC:58487,tdCreditFirst:58058,tcDebitFirst:191609},
-    {safra:"202407",label:"Jul/24",emissaoTD:444768,emissaoTC:0,reemissaoTotal:174040,reemissaoTD:109201,reemissaoTC:64839,tdCreditFirst:58047,tcDebitFirst:163248},
-    {safra:"202408",label:"Ago/24",emissaoTD:409396,emissaoTC:0,reemissaoTotal:160613,reemissaoTD:104308,reemissaoTC:56305,tdCreditFirst:52198,tcDebitFirst:144896},
-    {safra:"202409",label:"Set/24",emissaoTD:431340,emissaoTC:0,reemissaoTotal:159850,reemissaoTD:103030,reemissaoTC:56820,tdCreditFirst:58273,tcDebitFirst:150230},
-    {safra:"202410",label:"Out/24",emissaoTD:458213,emissaoTC:0,reemissaoTotal:178437,reemissaoTD:115566,reemissaoTC:62871,tdCreditFirst:60532,tcDebitFirst:92973},
-    {safra:"202411",label:"Nov/24",emissaoTD:451181,emissaoTC:0,reemissaoTotal:172143,reemissaoTD:107543,reemissaoTC:64601,tdCreditFirst:62607,tcDebitFirst:105970},
-    {safra:"202412",label:"Dez/24",emissaoTD:449693,emissaoTC:0,reemissaoTotal:180148,reemissaoTD:116249,reemissaoTC:63900,tdCreditFirst:62807,tcDebitFirst:72304},
-    {safra:"202501",label:"Jan/25",emissaoTD:443637,emissaoTC:0,reemissaoTotal:189935,reemissaoTD:125934,reemissaoTC:64002,tdCreditFirst:51559,tcDebitFirst:45749},
-    {safra:"202502",label:"Fev/25",emissaoTD:382650,emissaoTC:0,reemissaoTotal:169558,reemissaoTD:112998,reemissaoTC:56561,tdCreditFirst:44872,tcDebitFirst:71375},
-    {safra:"202503",label:"Mar/25",emissaoTD:426647,emissaoTC:0,reemissaoTotal:177818,reemissaoTD:118544,reemissaoTC:59275,tdCreditFirst:47406,tcDebitFirst:105978},
-    {safra:"202504",label:"Abr/25",emissaoTD:414588,emissaoTC:0,reemissaoTotal:157543,reemissaoTD:100690,reemissaoTC:56854,tdCreditFirst:46934,tcDebitFirst:93497},
-    {safra:"202505",label:"Mai/25",emissaoTD:428459,emissaoTC:0,reemissaoTotal:171304,reemissaoTD:107533,reemissaoTC:63772,tdCreditFirst:49040,tcDebitFirst:139744},
-    {safra:"202506",label:"Jun/25",emissaoTD:458363,emissaoTC:0,reemissaoTotal:256779,reemissaoTD:155498,reemissaoTC:101282,tdCreditFirst:51150,tcDebitFirst:184181},
-    {safra:"202507",label:"Jul/25",emissaoTD:474648,emissaoTC:0,reemissaoTotal:306657,reemissaoTD:184063,reemissaoTC:122595,tdCreditFirst:58350,tcDebitFirst:199899},
-    {safra:"202508",label:"Ago/25",emissaoTD:457904,emissaoTC:0,reemissaoTotal:302654,reemissaoTD:182982,reemissaoTC:119673,tdCreditFirst:63483,tcDebitFirst:170716},
-    {safra:"202509",label:"Set/25",emissaoTD:503368,emissaoTC:0,reemissaoTotal:333714,reemissaoTD:196709,reemissaoTC:137006,tdCreditFirst:62821,tcDebitFirst:175852},
-    {safra:"202510",label:"Out/25",emissaoTD:541512,emissaoTC:0,reemissaoTotal:357618,reemissaoTD:212402,reemissaoTC:145216,tdCreditFirst:72008,tcDebitFirst:198239},
-    {safra:"202511",label:"Nov/25",emissaoTD:483826,emissaoTC:0,reemissaoTotal:326385,reemissaoTD:187873,reemissaoTC:138512,tdCreditFirst:74507,tcDebitFirst:193632},
-    {safra:"202512",label:"Dez/25",emissaoTD:439648,emissaoTC:0,reemissaoTotal:293931,reemissaoTD:172514,reemissaoTC:121418,tdCreditFirst:80303,tcDebitFirst:121998},
-    {safra:"202601",label:"Jan/26",emissaoTD:630719,emissaoTC:0,reemissaoTotal:271467,reemissaoTD:166802,reemissaoTC:104666,tdCreditFirst:71297,tcDebitFirst:166882},
-    {safra:"202602",label:"Fev/26",emissaoTD:682339,emissaoTC:0,reemissaoTotal:248934,reemissaoTD:153468,reemissaoTC:95466,tdCreditFirst:67660,tcDebitFirst:169536},
-    {safra:"202603",label:"Mar/26",emissaoTD:551807,emissaoTC:0,reemissaoTotal:305364,reemissaoTD:176421,reemissaoTC:128944,tdCreditFirst:73834,tcDebitFirst:245552},
-    {safra:"202604",label:"Abr/26",emissaoTD:498872,emissaoTC:0,reemissaoTotal:294508,reemissaoTD:173734,reemissaoTC:120774,tdCreditFirst:69877,tcDebitFirst:205346},
-    {safra:"202605",label:"Mai/26",emissaoTD:503381,emissaoTC:0,reemissaoTotal:335914,reemissaoTD:193846,reemissaoTC:142069,tdCreditFirst:72985,tcDebitFirst:206714},
-    {safra:"202606",label:"Jun/26",emissaoTD:439407,emissaoTC:0,reemissaoTotal:341810,reemissaoTD:192961,reemissaoTC:148850,tdCreditFirst:66811,tcDebitFirst:170905},
-    {safra:"202607",label:"Jul/26",emissaoTD:452698,emissaoTC:0,reemissaoTotal:379337,reemissaoTD:206851,reemissaoTC:172487,tdCreditFirst:68687,tcDebitFirst:259954,partial:true},
+    {safra:"202401",label:"Jan/24",emissaoTD:324958,emissaoTC:188914,reemissaoTotal:128061,reemissaoTD:76995,reemissaoTC:51067,tdCreditFirst:46291,tcDebitFirst:199876},
+    {safra:"202402",label:"Fev/24",emissaoTD:318664,emissaoTC:183683,reemissaoTotal:118624,reemissaoTD:71424,reemissaoTC:47200,tdCreditFirst:50733,tcDebitFirst:211857},
+    {safra:"202403",label:"Mar/24",emissaoTD:320543,emissaoTC:134797,reemissaoTotal:130943,reemissaoTD:77541,reemissaoTC:53403,tdCreditFirst:61186,tcDebitFirst:184252},
+    {safra:"202404",label:"Abr/24",emissaoTD:387320,emissaoTC:156412,reemissaoTotal:146119,reemissaoTD:89633,reemissaoTC:56487,tdCreditFirst:55705,tcDebitFirst:222208},
+    {safra:"202405",label:"Mai/24",emissaoTD:471688,emissaoTC:144517,reemissaoTotal:155546,reemissaoTD:99013,reemissaoTC:56533,tdCreditFirst:57010,tcDebitFirst:184232},
+    {safra:"202406",label:"Jun/24",emissaoTD:397134,emissaoTC:189316,reemissaoTotal:154374,reemissaoTD:95888,reemissaoTC:58487,tdCreditFirst:58057,tcDebitFirst:191674},
+    {safra:"202407",label:"Jul/24",emissaoTD:444770,emissaoTC:172960,reemissaoTotal:174040,reemissaoTD:109201,reemissaoTC:64839,tdCreditFirst:58045,tcDebitFirst:163307},
+    {safra:"202408",label:"Ago/24",emissaoTD:409395,emissaoTC:134206,reemissaoTotal:160613,reemissaoTD:104308,reemissaoTC:56305,tdCreditFirst:52199,tcDebitFirst:144957},
+    {safra:"202409",label:"Set/24",emissaoTD:431343,emissaoTC:180186,reemissaoTotal:159850,reemissaoTD:103030,reemissaoTC:56820,tdCreditFirst:58270,tcDebitFirst:150275},
+    {safra:"202410",label:"Out/24",emissaoTD:458214,emissaoTC:175260,reemissaoTotal:178437,reemissaoTD:115566,reemissaoTC:62871,tdCreditFirst:60531,tcDebitFirst:93028},
+    {safra:"202411",label:"Nov/24",emissaoTD:451182,emissaoTC:182560,reemissaoTotal:172143,reemissaoTD:107543,reemissaoTC:64601,tdCreditFirst:62606,tcDebitFirst:106061},
+    {safra:"202412",label:"Dez/24",emissaoTD:449694,emissaoTC:132506,reemissaoTotal:180148,reemissaoTD:116249,reemissaoTC:63900,tdCreditFirst:62806,tcDebitFirst:72355},
+    {safra:"202501",label:"Jan/25",emissaoTD:443641,emissaoTC:113506,reemissaoTotal:189935,reemissaoTD:125934,reemissaoTC:64002,tdCreditFirst:51555,tcDebitFirst:45781},
+    {safra:"202502",label:"Fev/25",emissaoTD:382651,emissaoTC:126915,reemissaoTotal:169558,reemissaoTD:112998,reemissaoTC:56561,tdCreditFirst:44871,tcDebitFirst:71392},
+    {safra:"202503",label:"Mar/25",emissaoTD:426650,emissaoTC:175731,reemissaoTotal:177818,reemissaoTD:118544,reemissaoTC:59275,tdCreditFirst:47403,tcDebitFirst:106016},
+    {safra:"202504",label:"Abr/25",emissaoTD:414587,emissaoTC:238961,reemissaoTotal:157543,reemissaoTD:100690,reemissaoTC:56854,tdCreditFirst:46935,tcDebitFirst:93528},
+    {safra:"202505",label:"Mai/25",emissaoTD:428458,emissaoTC:227233,reemissaoTotal:171304,reemissaoTD:107533,reemissaoTC:63772,tdCreditFirst:49041,tcDebitFirst:139784},
+    {safra:"202506",label:"Jun/25",emissaoTD:458363,emissaoTC:303449,reemissaoTotal:256779,reemissaoTD:155498,reemissaoTC:101282,tdCreditFirst:51150,tcDebitFirst:184249},
+    {safra:"202507",label:"Jul/25",emissaoTD:474647,emissaoTC:347758,reemissaoTotal:306657,reemissaoTD:184063,reemissaoTC:122595,tdCreditFirst:58351,tcDebitFirst:199973},
+    {safra:"202508",label:"Ago/25",emissaoTD:457905,emissaoTC:318737,reemissaoTotal:302654,reemissaoTD:182982,reemissaoTC:119673,tdCreditFirst:63482,tcDebitFirst:170767},
+    {safra:"202509",label:"Set/25",emissaoTD:503368,emissaoTC:293229,reemissaoTotal:333714,reemissaoTD:196709,reemissaoTC:137006,tdCreditFirst:62821,tcDebitFirst:175918},
+    {safra:"202510",label:"Out/25",emissaoTD:541511,emissaoTC:339234,reemissaoTotal:357618,reemissaoTD:212402,reemissaoTC:145216,tdCreditFirst:72008,tcDebitFirst:198305},
+    {safra:"202511",label:"Nov/25",emissaoTD:483828,emissaoTC:360512,reemissaoTotal:326385,reemissaoTD:187873,reemissaoTC:138512,tdCreditFirst:74505,tcDebitFirst:193683},
+    {safra:"202512",label:"Dez/25",emissaoTD:439648,emissaoTC:229622,reemissaoTotal:293931,reemissaoTD:172514,reemissaoTC:121418,tdCreditFirst:80303,tcDebitFirst:122036},
+    {safra:"202601",label:"Jan/26",emissaoTD:630718,emissaoTC:284362,reemissaoTotal:271467,reemissaoTD:166802,reemissaoTC:104666,tdCreditFirst:71298,tcDebitFirst:166886},
+    {safra:"202602",label:"Fev/26",emissaoTD:682337,emissaoTC:281991,reemissaoTotal:248934,reemissaoTD:153468,reemissaoTC:95466,tdCreditFirst:67662,tcDebitFirst:169537},
+    {safra:"202603",label:"Mar/26",emissaoTD:551804,emissaoTC:309163,reemissaoTotal:305364,reemissaoTD:176421,reemissaoTC:128944,tdCreditFirst:73835,tcDebitFirst:245553},
+    {safra:"202604",label:"Abr/26",emissaoTD:498873,emissaoTC:285335,reemissaoTotal:294508,reemissaoTD:173734,reemissaoTC:120774,tdCreditFirst:69876,tcDebitFirst:205348},
+    {safra:"202605",label:"Mai/26",emissaoTD:503384,emissaoTC:275750,reemissaoTotal:335915,reemissaoTD:193846,reemissaoTC:142070,tdCreditFirst:72982,tcDebitFirst:206715},
+    {safra:"202606",label:"Jun/26",emissaoTD:439407,emissaoTC:260067,reemissaoTotal:341810,reemissaoTD:192961,reemissaoTC:148850,tdCreditFirst:66811,tcDebitFirst:170906},
+    {safra:"202607",label:"Jul/26",emissaoTD:230657,emissaoTC:97096,reemissaoTotal:186390,reemissaoTD:105752,reemissaoTC:80638,tdCreditFirst:33984,tcDebitFirst:53070,partial:true},
   ]
 };
 </script>
@@ -145,6 +146,12 @@ tfoot td:first-child{text-align:left;color:#64748b}
 
 @media(max-width:1100px){.kpi-grid,.row2{grid-template-columns:1fr 1fr}.insights,.row3{grid-template-columns:1fr 1fr}}
 @media(max-width:640px){.kpi-grid,.insights,.row2,.row3{grid-template-columns:1fr}}
+/* Chart insight boxes */
+.chart-insight{margin-top:12px;padding:10px 14px;background:rgba(15,23,42,.7);border-left:3px solid #334155;border-radius:0 6px 6px 0;font-size:11px;color:#64748b;line-height:1.6}
+.chart-insight .hi{color:#34d399;font-weight:700}
+.chart-insight .lo{color:#f87171;font-weight:700}
+.chart-insight .warn{color:#f59e0b;font-weight:700}
+.chart-insight strong{color:#94a3b8}
 </style>
 </head>
 <body>
@@ -159,14 +166,14 @@ tfoot td:first-child{text-align:left;color:#64748b}
 </header>
 
 <div class="tabs">
-  <button class="tab active" data-tab="geral">Visão Geral</button>
+  <button class="tab active" data-tab="tabela">Tabela</button>
+  <button class="tab" data-tab="geral">Visão Geral</button>
   <button class="tab" data-tab="emissao">Emissão</button>
   <button class="tab" data-tab="reemissao">Reemissão</button>
-  <button class="tab" data-tab="tabela">Tabela</button>
 </div>
 
 <!-- ==================== TAB GERAL ==================== -->
-<div id="tab-geral" class="tab-content active">
+<div id="tab-geral" class="tab-content">
   <div class="kpi-grid">
     <div class="kpi c1">
       <div class="kpi-lbl">Emissão TD</div>
@@ -369,7 +376,7 @@ tfoot td:first-child{text-align:left;color:#64748b}
 </div>
 
 <!-- ==================== TAB TABELA ==================== -->
-<div id="tab-tabela" class="tab-content">
+<div id="tab-tabela" class="tab-content active">
   <div class="year-btns">
     <button class="ybtn active" data-year="all">Todos</button>
     <button class="ybtn" data-year="2024">2024</button>
@@ -412,14 +419,18 @@ tfoot td:first-child{text-align:left;color:#64748b}
 </div><!-- /wrap -->
 
 <script>
+Chart.register(ChartDataLabels);
+Chart.defaults.set('plugins.datalabels', {display:false});
 Chart.defaults.color = '#475569';
 Chart.defaults.font.family = "'Segoe UI',system-ui,sans-serif";
 
 const R = PLASTICO_DATA.rows;
+const R26 = R.filter(r=>r.safra.startsWith('2026'));
 
 /* ---- Utilities ---- */
 function fmt(n){ return n==null?'—':Math.round(n).toLocaleString('pt-BR'); }
 function fmtK(n){
+  if(n==null) return '—';
   if(n>=1e6) return (n/1e6).toFixed(1).replace('.',',')+' M';
   if(n>=1e3) return (n/1e3).toFixed(0).replace('.',',')+' k';
   return Math.round(n).toLocaleString('pt-BR');
@@ -428,6 +439,9 @@ function pct(a,b){ return b===0?0:((a-b)/b*100); }
 function fmtPct(p){ return (p>=0?'+':'')+p.toFixed(1)+'%'; }
 function chgClass(p){ return p>0?'up':p<0?'dn':'neu'; }
 function arrow(p){ return p>1?'↑':p<-1?'↓':'→'; }
+function hi(s){ return `<span class="hi">${s}</span>`; }
+function lo(s){ return `<span class="lo">${s}</span>`; }
+function warn(s){ return `<span class="warn">${s}</span>`; }
 
 /* ---- Find reference rows ---- */
 const complete = R.filter(r=>!r.partial);
@@ -439,6 +453,25 @@ const lastYear = lastSafra.slice(0,4);
 const lastMonth = lastSafra.slice(4);
 const yoyRow = R.find(r=>r.safra === (String(+lastYear-1)+lastMonth));
 
+/* ---- Datalabels helpers (only 2026 rows) ---- */
+const N26 = R26.length; // number of 2026 rows
+function dlShow(ctx){ return ctx.dataIndex >= R.length - N26; }
+function dlShowNoPartial(ctx){ return ctx.dataIndex >= R.length - N26 && !R[ctx.dataIndex]?.partial; }
+const dlBase = {
+  color:'#94a3b8', font:{size:9,weight:'600'},
+  anchor:'end', align:'top', offset:1,
+  formatter:(v)=>v!=null?fmtK(v):null
+};
+const dlPct = {
+  color:'#94a3b8', font:{size:9,weight:'600'},
+  anchor:'end', align:'top', offset:1,
+  formatter:(v)=>v!=null?v.toFixed(1)+'%':null
+};
+const dlBar = {
+  ...dlBase, anchor:'end', align:'top', offset:2,
+  padding:{bottom:0}
+};
+
 /* ---- Grid & Tick helpers ---- */
 const GC = 'rgba(30,41,59,.9)', TC2 = '#334155';
 function sX(rotate){ return{grid:{color:GC},ticks:{color:TC2,font:{size:10},maxRotation:rotate||45}}; }
@@ -447,13 +480,27 @@ function sPct(){ return{grid:{color:GC},ticks:{color:TC2,font:{size:10},callback
 function ttFmt(label,v){ return `${label}: ${fmt(v)}`; }
 function ttFmtPct(label,v){ return `${label}: ${v.toFixed(1)}%`; }
 
+/* ---- Insight box helper ---- */
+function setInsight(id, html){
+  let el = document.getElementById(id);
+  if(!el){
+    const canvas = document.getElementById(id.replace('ins-','chart'));
+    if(canvas){
+      el = document.createElement('div');
+      el.id = id;
+      el.className = 'chart-insight';
+      canvas.closest('.card').appendChild(el);
+    }
+  }
+  if(el) el.innerHTML = html;
+}
+
 /* ---- Charts store ---- */
 const CH = {};
 function kill(id){ if(CH[id]){CH[id].destroy();delete CH[id];} }
 
 /* ===================== INIT KPIs ===================== */
 function initKPIs(){
-  // Last complete month
   function setKpi(valId, refId, momId, yoyId, curr, p, yoy, lbl){
     document.getElementById(valId).textContent = fmtK(curr);
     document.getElementById(refId).textContent = lbl;
@@ -479,7 +526,6 @@ function initKPIs(){
   setKpi('g-re-val','g-re-ref','g-re-mom','g-re-yoy', last.reemissaoTotal, prev.reemissaoTotal, yoyRow?.reemissaoTotal, ref);
   setKpi('g-tot-val','g-tot-ref','g-tot-mom','g-tot-yoy', totalLast, totalPrev, totalYoy, ref);
 
-  // Reemissão tab KPIs
   setKpi('r-tot-val','r-tot-ref','r-tot-mom','r-tot-yoy', last.reemissaoTotal, prev.reemissaoTotal, yoyRow?.reemissaoTotal, ref);
   setKpi('r-td-val','r-td-ref','r-td-mom','r-td-yoy',   last.reemissaoTD, prev.reemissaoTD, yoyRow?.reemissaoTD, ref);
   setKpi('r-tc-val','r-tc-ref','r-tc-mom','r-tc-yoy',   last.reemissaoTC, prev.reemissaoTC, yoyRow?.reemissaoTC, ref);
@@ -533,18 +579,36 @@ function initGeralCharts(){
     data:{
       labels,
       datasets:[
-        {label:'Emissão TD',data:R.map(r=>r.emissaoTD),borderColor:'#00d4aa',backgroundColor:'rgba(0,212,170,.06)',fill:true,tension:.3,borderWidth:2.5,pointRadius:2.5},
-        {label:'Emissão TC',data:R.map(r=>r.emissaoTC),borderColor:'#60a5fa',backgroundColor:'rgba(96,165,250,.04)',fill:true,tension:.3,borderWidth:2.5,pointRadius:2.5},
-        {label:'Reemissão',data:R.map(r=>r.reemissaoTotal),borderColor:'rgba(251,146,60,.6)',backgroundColor:'transparent',fill:false,tension:.3,borderWidth:1.5,pointRadius:2,borderDash:[5,3]},
+        {label:'Emissão TD',data:R.map(r=>r.emissaoTD),borderColor:'#00d4aa',backgroundColor:'rgba(0,212,170,.06)',fill:true,tension:.3,borderWidth:2.5,pointRadius:2.5,
+          datalabels:{...dlBase,display:dlShowNoPartial,color:'#00d4aa'}},
+        {label:'Emissão TC',data:R.map(r=>r.emissaoTC),borderColor:'#60a5fa',backgroundColor:'rgba(96,165,250,.04)',fill:true,tension:.3,borderWidth:2.5,pointRadius:2.5,
+          datalabels:{...dlBase,display:dlShowNoPartial,color:'#60a5fa',align:'bottom'}},
+        {label:'Reemissão',data:R.map(r=>r.reemissaoTotal),borderColor:'rgba(251,146,60,.6)',backgroundColor:'transparent',fill:false,tension:.3,borderWidth:1.5,pointRadius:2,borderDash:[5,3],
+          datalabels:{...dlBase,display:dlShowNoPartial,color:'#fb923c',align:'bottom',offset:4}},
       ]
     },
     options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ttFmt(ctx.dataset.label,ctx.raw)}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ttFmt(ctx.dataset.label,ctx.raw)}},
+        datalabels:{}},
       scales:{x:sX(),y:sY()}}
   });
 
+  // Insight for trend chart
+  const r26 = R.filter(r=>r.safra.startsWith('2026')&&!r.partial);
+  const r26first = r26[0], r26last = r26[r26.length-1];
+  const tdDelta = r26last ? pct(r26last.emissaoTD, r26first.emissaoTD) : 0;
+  const tcDelta = r26last ? pct(r26last.emissaoTC, r26first.emissaoTC) : 0;
+  const reDelta = r26last ? pct(r26last.reemissaoTotal, r26first.reemissaoTotal) : 0;
+  setInsight('ins-chartTrend',
+    `<strong>2026 em resumo:</strong> ` +
+    `TD ${tdDelta>=0?hi(fmtPct(tdDelta)):lo(fmtPct(tdDelta))} · ` +
+    `TC ${tcDelta>=0?hi(fmtPct(tcDelta)):lo(fmtPct(tcDelta))} · ` +
+    `Reemissão ${warn(fmtPct(reDelta))} — ` +
+    `de ${fmt(r26first?.reemissaoTotal)} (Jan/26) para ${fmt(r26last?.reemissaoTotal)} (${r26last?.label}).`
+  );
+
   // MoM TD
-  const momTD = R.slice(1).map((r,i)=>({label:r.label,val:pct(r.emissaoTD,R[i].emissaoTD)}));
+  const momTD = R.slice(1).map((r,i)=>({label:r.label,val:pct(r.emissaoTD,R[i].emissaoTD),idx:i+1}));
   kill('chartMomTD');
   CH.chartMomTD = new Chart(document.getElementById('chartMomTD'),{
     type:'bar',
@@ -556,12 +620,28 @@ function initGeralCharts(){
         backgroundColor:momTD.map(d=>d.val>=0?'rgba(52,211,153,.75)':'rgba(248,113,113,.75)'),
         borderColor:momTD.map(d=>d.val>=0?'#34d399':'#f87171'),
         borderWidth:1,borderRadius:3,
+        datalabels:{
+          ...dlPct,
+          display:(ctx)=>ctx.dataIndex >= momTD.length - N26,
+          color:(ctx)=>momTD[ctx.dataIndex].val>=0?'#34d399':'#f87171',
+          anchor:'end', align:(ctx)=>momTD[ctx.dataIndex].val>=0?'top':'bottom', offset:1,
+          formatter:(v)=>v!=null?v.toFixed(1)+'%':null
+        }
       }]
     },
     options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw.toFixed(1)}%`}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw.toFixed(1)}%`}},datalabels:{}},
       scales:{x:sX(60),y:sPct()}}
   });
+
+  const momTD26 = momTD.slice(-N26);
+  const negMoM = momTD26.filter(d=>d.val<0);
+  setInsight('ins-chartMomTD',
+    negMoM.length > 0
+      ? `<strong>Alerta:</strong> TD caiu MoM em ${negMoM.length} dos últimos ${N26} meses. ` +
+        `Pior: ${lo(negMoM.sort((a,b)=>a.val-b.val)[0].label + ' ' + fmtPct(negMoM[0].val))}.`
+      : `<strong>Positivo:</strong> TD cresceu em todos os ${N26} meses de 2026 MoM.`
+  );
 
   // MoM TC
   const momTC = R.slice(1).map((r,i)=>({label:r.label,val:pct(r.emissaoTC,R[i].emissaoTC)}));
@@ -576,12 +656,28 @@ function initGeralCharts(){
         backgroundColor:momTC.map(d=>d.val>=0?'rgba(96,165,250,.75)':'rgba(248,113,113,.75)'),
         borderColor:momTC.map(d=>d.val>=0?'#60a5fa':'#f87171'),
         borderWidth:1,borderRadius:3,
+        datalabels:{
+          ...dlPct,
+          display:(ctx)=>ctx.dataIndex >= momTC.length - N26,
+          color:(ctx)=>momTC[ctx.dataIndex].val>=0?'#60a5fa':'#f87171',
+          anchor:'end', align:(ctx)=>momTC[ctx.dataIndex].val>=0?'top':'bottom', offset:1,
+          formatter:(v)=>v!=null?v.toFixed(1)+'%':null
+        }
       }]
     },
     options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw.toFixed(1)}%`}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw.toFixed(1)}%`}},datalabels:{}},
       scales:{x:sX(60),y:sPct()}}
   });
+
+  const momTC26 = momTC.slice(-N26);
+  const negMoMtc = momTC26.filter(d=>d.val<0);
+  setInsight('ins-chartMomTC',
+    negMoMtc.length > 0
+      ? `<strong>Alerta:</strong> TC caiu MoM em ${negMoMtc.length} dos últimos ${N26} meses. ` +
+        `Pior: ${lo(negMoMtc.sort((a,b)=>a.val-b.val)[0].label + ' ' + fmtPct(negMoMtc[0].val))}.`
+      : `<strong>Positivo:</strong> TC cresceu em todos os ${N26} meses de 2026 MoM.`
+  );
 }
 
 /* ===================== EMISSÃO CHARTS ===================== */
@@ -594,16 +690,26 @@ function initEmissaoCharts(){
     data:{
       labels,
       datasets:[
-        {label:'Emissão TD',data:R.map(r=>r.emissaoTD),backgroundColor:'rgba(0,212,170,.7)',borderColor:'#00d4aa',borderWidth:1,borderRadius:3},
-        {label:'Emissão TC',data:R.map(r=>r.emissaoTC),backgroundColor:'rgba(96,165,250,.7)',borderColor:'#60a5fa',borderWidth:1,borderRadius:3},
+        {label:'Emissão TD',data:R.map(r=>r.emissaoTD),backgroundColor:'rgba(0,212,170,.7)',borderColor:'#00d4aa',borderWidth:1,borderRadius:3,
+          datalabels:{...dlBar,display:dlShowNoPartial,color:'#00d4aa'}},
+        {label:'Emissão TC',data:R.map(r=>r.emissaoTC),backgroundColor:'rgba(96,165,250,.7)',borderColor:'#60a5fa',borderWidth:1,borderRadius:3,
+          datalabels:{...dlBar,display:dlShowNoPartial,color:'#60a5fa'}},
       ]
     },
     options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ttFmt(ctx.dataset.label,ctx.raw)}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ttFmt(ctx.dataset.label,ctx.raw)}},datalabels:{}},
       scales:{x:sX(),y:sY()}}
   });
 
-  // YoY TD
+  const tdJun = R.find(r=>r.safra==='202606'), tcJun = tdJun;
+  const planTD = 450000, planTC = 375000; // Jun/26 plan approximate
+  setInsight('ins-chartEmissaoComp',
+    `<strong>Jun/26 (último completo):</strong> ` +
+    `TD ${fmt(tdJun?.emissaoTD)} ${tdJun&&tdJun.emissaoTD<planTD?lo('abaixo do plano'):hi('acima do plano')} · ` +
+    `TC ${fmt(tcJun?.emissaoTC)} ${tcJun&&tcJun.emissaoTC<planTC?lo('abaixo do plano'):hi('acima do plano')}. ` +
+    `TD normalizou após pico BBB em Jan–Fev/26.`
+  );
+
   const MONTHS_PT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
   const years = ['2024','2025','2026'];
   const monthLabels = MONTHS_PT.slice(0,12);
@@ -626,13 +732,23 @@ function initEmissaoCharts(){
       datasets:years.map((yr,i)=>({
         label:yr,data:yoyData('emissaoTD',yr),
         backgroundColor:yoyColors.TD[i]+'cc',borderColor:yoyColors.TD[i],borderWidth:1,borderRadius:2,
-        spanGaps:false
+        spanGaps:false,
+        datalabels:{...dlBar,display:yr==='2026'?(ctx=>ctx.raw!=null):false,color:yoyColors.TD[i]}
       }))
     },
     options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ttFmt(ctx.dataset.label,ctx.raw)}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ttFmt(ctx.dataset.label,ctx.raw)}},datalabels:{}},
       scales:{x:sX(0),y:sY()}}
   });
+
+  const td26data = yoyData('emissaoTD','2026').filter(v=>v);
+  const td25data = yoyData('emissaoTD','2025').filter(v=>v);
+  const avgTD26 = td26data.reduce((s,v)=>s+v,0)/td26data.length;
+  const avgTD25 = td25data.reduce((s,v)=>s+v,0)/td25data.length;
+  setInsight('ins-chartYoyTD',
+    `<strong>YoY TD:</strong> Média 2026 (Jan–${MONTHS_PT[td26data.length-1]}) = ${hi(fmtK(avgTD26))} vs 2025 = ${fmtK(avgTD25)} (${pct(avgTD26,avgTD25)>=0?hi:lo}(fmtPct(pct(avgTD26,avgTD25)))). ` +
+    `Jan–Fev/26 inflados por BBB; Mar+ normalizando.`
+  );
 
   kill('chartYoyTC');
   CH.chartYoyTC = new Chart(document.getElementById('chartYoyTC'),{
@@ -642,13 +758,24 @@ function initEmissaoCharts(){
       datasets:years.map((yr,i)=>({
         label:yr,data:yoyData('emissaoTC',yr),
         backgroundColor:yoyColors.TC[i]+'cc',borderColor:yoyColors.TC[i],borderWidth:1,borderRadius:2,
-        spanGaps:false
+        spanGaps:false,
+        datalabels:{...dlBar,display:yr==='2026'?(ctx=>ctx.raw!=null):false,color:yoyColors.TC[i]}
       }))
     },
     options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ttFmt(ctx.dataset.label,ctx.raw)}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ttFmt(ctx.dataset.label,ctx.raw)}},datalabels:{}},
       scales:{x:sX(0),y:sY()}}
   });
+
+  const tc26data = yoyData('emissaoTC','2026').filter(v=>v);
+  const tc25data = yoyData('emissaoTC','2025').filter(v=>v);
+  const avgTC26 = tc26data.reduce((s,v)=>s+v,0)/tc26data.length;
+  const avgTC25 = tc25data.reduce((s,v)=>s+v,0)/tc25data.length;
+  const yoyTCpct = pct(avgTC26,avgTC25);
+  setInsight('ins-chartYoyTC',
+    `<strong>YoY TC:</strong> Média 2026 (Jan–${MONTHS_PT[tc26data.length-1]}) = ${yoyTCpct>=0?hi(fmtK(avgTC26)):lo(fmtK(avgTC26))} vs 2025 = ${fmtK(avgTC25)} (${yoyTCpct>=0?hi(fmtPct(yoyTCpct)):lo(fmtPct(yoyTCpct))}). ` +
+    (yoyTCpct < 0 ? `TC em 2026 abaixo de 2025 em média.` : `TC crescendo vs 2025.`)
+  );
 
   kill('chartCross');
   CH.chartCross = new Chart(document.getElementById('chartCross'),{
@@ -656,14 +783,24 @@ function initEmissaoCharts(){
     data:{
       labels,
       datasets:[
-        {label:'TD → Credit First',data:R.map(r=>r.tdCreditFirst),borderColor:'#c084fc',backgroundColor:'transparent',fill:false,tension:.3,borderWidth:2,pointRadius:2.5},
-        {label:'TC → Debit First',data:R.map(r=>r.tcDebitFirst),borderColor:'#f472b6',backgroundColor:'transparent',fill:false,tension:.3,borderWidth:2,pointRadius:2.5},
+        {label:'TD → Credit First',data:R.map(r=>r.tdCreditFirst),borderColor:'#c084fc',backgroundColor:'transparent',fill:false,tension:.3,borderWidth:2,pointRadius:2.5,
+          datalabels:{...dlBase,display:dlShowNoPartial,color:'#c084fc',align:'top'}},
+        {label:'TC → Debit First',data:R.map(r=>r.tcDebitFirst),borderColor:'#f472b6',backgroundColor:'transparent',fill:false,tension:.3,borderWidth:2,pointRadius:2.5,
+          datalabels:{...dlBase,display:dlShowNoPartial,color:'#f472b6',align:'bottom',offset:4}},
       ]
     },
     options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ttFmt(ctx.dataset.label,ctx.raw)}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ttFmt(ctx.dataset.label,ctx.raw)}},datalabels:{}},
       scales:{x:sX(),y:sY()}}
   });
+
+  const r26cf = R.filter(r=>r.safra.startsWith('2026')&&!r.partial);
+  const maxTcDf = r26cf.reduce((mx,r)=>r.tcDebitFirst>mx.v?{v:r.tcDebitFirst,l:r.label}:mx,{v:0,l:''});
+  const avgTdCf = r26cf.reduce((s,r)=>s+r.tdCreditFirst,0)/r26cf.length;
+  setInsight('ins-chartCross',
+    `<strong>TC → Debit First:</strong> Pico em ${warn(maxTcDf.l + ' (' + fmt(maxTcDf.v) + ')')} — alto volume de cartões TC sendo emitidos para clientes debit. ` +
+    `<strong>TD → Credit First:</strong> Estável em ~${hi(fmtK(avgTdCf))}/mês em 2026.`
+  );
 }
 
 /* ===================== REEMISSÃO CHARTS ===================== */
@@ -676,17 +813,27 @@ function initReemissaoCharts(){
     data:{
       labels,
       datasets:[
-        {label:'Total',data:R.map(r=>r.reemissaoTotal),borderColor:'#fb923c',backgroundColor:'rgba(251,146,60,.07)',fill:true,tension:.3,borderWidth:2.5,pointRadius:2.5},
-        {label:'Reemissão TD',data:R.map(r=>r.reemissaoTD),borderColor:'rgba(0,212,170,.8)',backgroundColor:'transparent',fill:false,tension:.3,borderWidth:2,pointRadius:2,borderDash:[5,3]},
-        {label:'Reemissão TC',data:R.map(r=>r.reemissaoTC),borderColor:'rgba(96,165,250,.8)',backgroundColor:'transparent',fill:false,tension:.3,borderWidth:2,pointRadius:2,borderDash:[2,2]},
+        {label:'Total',data:R.map(r=>r.reemissaoTotal),borderColor:'#fb923c',backgroundColor:'rgba(251,146,60,.07)',fill:true,tension:.3,borderWidth:2.5,pointRadius:2.5,
+          datalabels:{...dlBase,display:dlShowNoPartial,color:'#fb923c'}},
+        {label:'Reemissão TD',data:R.map(r=>r.reemissaoTD),borderColor:'rgba(0,212,170,.8)',backgroundColor:'transparent',fill:false,tension:.3,borderWidth:2,pointRadius:2,borderDash:[5,3],
+          datalabels:{...dlBase,display:dlShowNoPartial,color:'#00d4aa',align:'bottom',offset:4}},
+        {label:'Reemissão TC',data:R.map(r=>r.reemissaoTC),borderColor:'rgba(96,165,250,.8)',backgroundColor:'transparent',fill:false,tension:.3,borderWidth:2,pointRadius:2,borderDash:[2,2],
+          datalabels:{...dlBase,display:false}},
       ]
     },
     options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ttFmt(ctx.dataset.label,ctx.raw)}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ttFmt(ctx.dataset.label,ctx.raw)}},datalabels:{}},
       scales:{x:sX(),y:sY()}}
   });
 
-  // Reemissão % of emissão
+  const reJan = R.find(r=>r.safra==='202601');
+  const reJun = R.find(r=>r.safra==='202606');
+  const rePctChg = reJan&&reJun?pct(reJun.reemissaoTotal,reJan.reemissaoTotal):0;
+  setInsight('ins-chartReemiTrend',
+    `<strong>Aceleração 2026:</strong> Reemissão total cresceu ${warn(fmtPct(rePctChg))} de Jan/26 (${fmt(reJan?.reemissaoTotal)}) a Jun/26 (${fmt(reJun?.reemissaoTotal)}). ` +
+    `TD representa ${hi(((reJun?.reemissaoTD/reJun?.reemissaoTotal)*100).toFixed(0)+'%')} do total.`
+  );
+
   const pctData = R.map(r=>{
     const emTotal = r.emissaoTD + r.emissaoTC;
     return emTotal>0 ? +((r.reemissaoTotal/emTotal)*100).toFixed(2) : 0;
@@ -701,29 +848,46 @@ function initReemissaoCharts(){
         data:pctData,
         borderColor:'#f59e0b',
         backgroundColor:'rgba(245,158,11,.08)',
-        fill:true,tension:.3,borderWidth:2.5,pointRadius:2.5
+        fill:true,tension:.3,borderWidth:2.5,pointRadius:2.5,
+        datalabels:{...dlPct,display:dlShowNoPartial,color:'#f59e0b'}
       }]
     },
     options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw.toFixed(1)}%`}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw.toFixed(1)}%`}},datalabels:{}},
       scales:{x:sX(),y:sPct()}}
   });
 
-  // Reemissão stacked TD/TC
+  const pct26 = pctData.slice(R.length-N26, R.length-1);
+  const pct26first = pct26[0], pct26last = pct26[pct26.length-1];
+  setInsight('ins-chartReemiPct',
+    `<strong>Proporção Reemissão/Emissão:</strong> Passou de ${warn(pct26first?.toFixed(1)+'%')} (Jan/26) para ${warn(pct26last?.toFixed(1)+'%')} (Jun/26). ` +
+    `Cada 100 cartões emitidos hoje geram ${warn(pct26last?.toFixed(0))} reemissões no mesmo mês.`
+  );
+
   kill('chartReemiStack');
   CH.chartReemiStack = new Chart(document.getElementById('chartReemiStack'),{
     type:'bar',
     data:{
       labels,
       datasets:[
-        {label:'Reemissão TD',data:R.map(r=>r.reemissaoTD),backgroundColor:'rgba(0,212,170,.7)',borderColor:'#00d4aa',borderWidth:1,stack:'s'},
-        {label:'Reemissão TC',data:R.map(r=>r.reemissaoTC),backgroundColor:'rgba(96,165,250,.7)',borderColor:'#60a5fa',borderWidth:1,stack:'s'},
+        {label:'Reemissão TD',data:R.map(r=>r.reemissaoTD),backgroundColor:'rgba(0,212,170,.7)',borderColor:'#00d4aa',borderWidth:1,stack:'s',
+          datalabels:{...dlBar,display:dlShowNoPartial,color:'#00d4aa',anchor:'center',align:'center',offset:0}},
+        {label:'Reemissão TC',data:R.map(r=>r.reemissaoTC),backgroundColor:'rgba(96,165,250,.7)',borderColor:'#60a5fa',borderWidth:1,stack:'s',
+          datalabels:{...dlBar,display:dlShowNoPartial,color:'#60a5fa',anchor:'center',align:'center',offset:0}},
       ]
     },
     options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ttFmt(ctx.dataset.label,ctx.raw)}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ttFmt(ctx.dataset.label,ctx.raw)}},datalabels:{}},
       scales:{x:{...sX(),stacked:true},y:{...sY(),stacked:true}}}
   });
+
+  const reStack26 = R.filter(r=>r.safra.startsWith('2026')&&!r.partial);
+  const avgTdShare = reStack26.reduce((s,r)=>s+r.reemissaoTD/r.reemissaoTotal,0)/reStack26.length;
+  const avgTcShare = 1-avgTdShare;
+  setInsight('ins-chartReemiStack',
+    `<strong>Composição média 2026:</strong> Reemissão TD = ${hi((avgTdShare*100).toFixed(0)+'%')} · Reemissão TC = ${warn((avgTcShare*100).toFixed(0)+'%')}. ` +
+    `TC vem ganhando share — de ${((R.find(r=>r.safra==='202601')?.reemissaoTC/R.find(r=>r.safra==='202601')?.reemissaoTotal)*100).toFixed(0)}% (Jan) para ${((R.find(r=>r.safra==='202606')?.reemissaoTC/R.find(r=>r.safra==='202606')?.reemissaoTotal)*100).toFixed(0)}% (Jun).`
+  );
 }
 
 /* ===================== TABLE ===================== */
@@ -762,12 +926,12 @@ function renderTable(year){
 }
 
 /* ===================== TAB SWITCHING ===================== */
-let rendered = {geral:false, emissao:false, reemissao:false};
+let rendered = {geral:false, emissao:false, reemissao:false, tabela:true};
 
 function activateTab(tab){
   document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
   document.querySelectorAll('.tab-content').forEach(d=>d.classList.toggle('active',d.id==='tab-'+tab));
-  if(tab==='geral' && !rendered.geral){ initGeralCharts(); rendered.geral=true; }
+  if(tab==='geral' && !rendered.geral){ initKPIs(); initInsights(); initGeralCharts(); rendered.geral=true; }
   if(tab==='emissao' && !rendered.emissao){ initEmissaoCharts(); rendered.emissao=true; }
   if(tab==='reemissao' && !rendered.reemissao){ initReemissaoCharts(); rendered.reemissao=true; }
 }
@@ -811,9 +975,6 @@ document.getElementById('btnExportCSV').addEventListener('click', ()=>{
 /* ===================== BOOT ===================== */
 document.getElementById('updDate').textContent = PLASTICO_DATA.updateDate;
 initKPIs();
-initInsights();
-initGeralCharts();
-rendered.geral = true;
 renderTable('all');
 </script>
 </body>
