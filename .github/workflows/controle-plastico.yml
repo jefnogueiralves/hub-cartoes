@@ -52,24 +52,25 @@ jobs:
           python3 - << 'EOF'
           import requests, sys, os
           token  = os.environ["GRID_TOKEN"]
-          doc_id = "01KRPZ2TK8FA0Q9MJK2SRZBW2C"
           bundle = "controle-plastico/index.html"
+          doc_id = "01KRPZ2TK8FA0Q9MJK2SRZBW2C"
           with open(bundle, "rb") as f:
               data = f.read()
-          print(f"Publicando {len(data)//1024}KB no Grid...")
+          print("Publicando " + str(len(data)//1024) + "KB no Grid...")
+          config = '{"skill_version":"3.6.5","doc_id":"' + doc_id + '"}'
           r = requests.post(
               "https://grid.melioffice.com/api/v1/engine/run",
-              headers={"Authorization": f"Bearer {token}"},
+              headers={"Authorization": "Bearer " + token},
               files={
-                  "config": (None, f'{"skill_version":"3.6.5","doc_id":"{doc_id}"}'),
+                  "config": (None, config),
                   "file": (bundle, data, "text/html"),
               },
               timeout=300
           )
           if r.status_code == 200:
-              print(f"Grid publicado! Versao: {r.json().get('version','?')}")
+              print("Grid publicado! Versao: " + str(r.json().get("version","?")))
           else:
-              print(f"Erro HTTP {r.status_code}: {r.text[:300]}")
+              print("Erro HTTP " + str(r.status_code) + ": " + r.text[:300])
               sys.exit(1)
           EOF
 
