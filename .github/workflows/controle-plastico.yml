@@ -50,27 +50,43 @@ jobs:
           GRID_TOKEN: ${{ secrets.GRID_TOKEN }}
         run: |
           python3 - << 'EOF'
-          import requests, sys, os
-          token  = os.environ["GRID_TOKEN"]
-          bundle = "controle-plastico/index.html"
-          doc_id = "01KRPZ2TK8FA0Q9MJK2SRZBW2C"
-          with open(bundle, "rb") as f:
-              data = f.read()
-          print("Publicando " + str(len(data)//1024) + "KB no Grid...")
-          config = '{"skill_version":"3.6.5","doc_id":"' + doc_id + '"}'
-          r = requests.post(
-              "https://grid.melioffice.com/api/v1/engine/run",
-              headers={"Authorization": "Bearer " + token},
-              files={
-                  "config": (None, config),
-                  "file": (bundle, data, "text/html"),
-              },
-              timeout=300
-          )
-          if r.status_code == 200:
-              print("Grid publicado! Versao: " + str(r.json().get("version","?")))
-          else:
-              print("Erro HTTP " + str(r.status_code) + ": " + r.text[:300])
+          import sys, os
+          try:
+              import requests
+          except ImportError as e:
+              print("ERRO import requests:", e)
+              sys.exit(1)
+          try:
+              token  = os.environ["GRID_TOKEN"]
+              bundle = "controle-plastico/index.html"
+              doc_id = "01KRPZ2TK8FA0Q9MJK2SRZBW2C"
+              if not token:
+                  print("ERRO: GRID_TOKEN vazio")
+                  sys.exit(1)
+              print("Token OK, len=" + str(len(token)))
+              with open(bundle, "rb") as f:
+                  data = f.read()
+              print("Publicando " + str(len(data)//1024) + "KB no Grid...")
+              config = '{"skill_version":"3.6.5","doc_id":"' + doc_id + '"}'
+              r = requests.post(
+                  "https://grid.melioffice.com/api/v1/engine/run",
+                  headers={"Authorization": "Bearer " + token},
+                  files={
+                      "config": (None, config),
+                      "file": (bundle, data, "text/html"),
+                  },
+                  timeout=60
+              )
+              print("HTTP " + str(r.status_code))
+              print("Response: " + r.text[:500])
+              if r.status_code == 200:
+                  print("Grid publicado! Versao: " + str(r.json().get("version","?")))
+              else:
+                  sys.exit(1)
+          except Exception as e:
+              import traceback
+              print("EXCECAO: " + str(e))
+              traceback.print_exc()
               sys.exit(1)
           EOF
 
