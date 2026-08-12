@@ -79,32 +79,4 @@ jobs:
           git pull --rebase origin main
           git push
 
-      - name: Publicar no Grid
-        env:
-          GRID_TOKEN: ${{ secrets.GRID_TOKEN }}
-        run: |
-          python3 - << 'EOF'
-          import requests, sys, os
-          token  = os.environ["GRID_TOKEN"]
-          bundle = "cartoes_expirados_bundle.html"
-          doc_id = "01KPZTMZJT17437KWRNKDGE0AQ"
-          with open(bundle, "rb") as f:
-              data = f.read()
-          print("Publicando " + str(len(data)//1024) + "KB no Grid...")
-          config = '{"skill_version":"3.6.5","doc_id":"' + doc_id + '"}'
-          r = requests.post(
-              "https://grid.melioffice.com/api/v1/engine/run",
-              headers={"Authorization": "Bearer " + token},
-              files={
-                  "config": (None, config),
-                  "file": (bundle, data, "text/html"),
-              },
-              timeout=300
-          )
-          if r.status_code == 200:
-              print("Grid publicado! Versao: " + str(r.json().get("version","?")))
-          else:
-              print("Erro HTTP " + str(r.status_code) + ": " + r.text[:300])
-              sys.exit(1)
-          EOF
 
