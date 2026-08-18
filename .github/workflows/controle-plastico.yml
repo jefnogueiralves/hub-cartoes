@@ -1,9 +1,8 @@
-name: Controle de Plastico — Atualizar Dashboard
+name: Controle Plastico — Gerar Dataset
 
 on:
   schedule:
-    - cron: '0 12 * * 1-5'    # 09:00 BRT = 12:00 UTC, seg-sex
-    - cron: '15 13 * * 1-5'   # 10:15 BRT = 13:15 UTC, seg-sex (segurança)
+    - cron: '0 12 * * 1-5'   # 09:00 BRT = 12:00 UTC, seg a sex
   workflow_dispatch:
 
 permissions:
@@ -20,29 +19,36 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Python 3.13
+      - name: Python 3.11
         uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
+          python-version: '3.11'
 
       - name: Instalar dependências
         run: |
           pip install --quiet \
-            google-cloud-bigquery db-dtypes pandas google-auth google-auth-httplib2 requests
+            google-cloud-bigquery \
+            db-dtypes \
+            pandas \
+            google-auth \
+            google-auth-httplib2
 
-      - name: Atualizar dados e gerar HTML
+      - name: Gerar plastico_dataset.json
         env:
           GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
-          DASH_DIR: controle-plastico
-        run: python controle-plastico/scripts/atualizar_dados_ci.py
+        run: python controle-plastico/scripts/generate_dataset.py
 
-      - name: Commit HTML no repo
+      - name: Commit plastico_dataset.json
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add controle-plastico/index.html
-          git diff --staged --quiet || git commit -m "chore: controle plastico $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git add controle-plastico/plastico_dataset.json
+          git diff --staged --quiet || git commit -m "data: controle plastico $(date -u +'%Y-%m-%d %H:%M UTC')"
           git pull --rebase origin main
           git push
 
-
+      - name: Resumo
+        run: |
+          echo "## Dashboard atualizado" >> $GITHUB_STEP_SUMMARY
+          echo "**Grid:** https://grid.adminml.com/d/01KRPZ2TK8FA0Q9MJK2SRZBW2C/view" >> $GITHUB_STEP_SUMMARY
+          echo "**Data:** $(date -u +'%d/%m/%Y %H:%M UTC')" >> $GITHUB_STEP_SUMMARY
