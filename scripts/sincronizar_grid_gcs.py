@@ -3,7 +3,7 @@ sincronizar_grid_gcs.py
 Baixa o HTML atual de cada documento do Grid e sobe no GCS.
 Uso: python sincronizar_grid_gcs.py
 """
-import sys, io, json, os, time
+import sys, io, json, os, time, hashlib
 from pathlib import Path
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
@@ -27,6 +27,10 @@ DASHBOARDS = [
     {"label": "Projeção Business",     "doc_id": "01KQ083TZAS4CKP309R99BN9DC", "gcs": "projecao-cartao-business.html"},
     {"label": "Limite Médio",          "doc_id": "01KQFDWVKJ0T6G3ZG99SQPWP1C", "gcs": "limite-medio-micro-tc.html"},
 ]
+
+
+def sha256(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
 
 
 def load_session():
@@ -67,6 +71,14 @@ def upload_gcs(client, gcs_filename, html_bytes):
     blob.upload_from_string(html_bytes, content_type='text/html; charset=utf-8')
     blob.patch()
     return f'https://storage.cloud.google.com/{GCS_BUCKET}/{GCS_PREFIX}/{gcs_filename}'
+
+
+def verify_upload(client, gcs_filename, expected_bytes) -> bool:
+    """Confere se o conteudo publicado no GCS bate byte-a-byte com o que acabamos de enviar."""
+    blob = client.bucket(GCS_BUCKET).blob(f'{GCS_PREFIX}/{gcs_filename}')
+    blob.reload()
+    published = blob.download_as_bytes()
+    return sha256(published) == sha256(expected_bytes)
 
 
 def download_from_grid(page, doc_id):
@@ -157,6 +169,8 @@ def main():
     print('Conectando ao GCS...')
     gcs = get_gcs_client()
 
+    failures = []
+
     from playwright.sync_api import sync_playwright, TimeoutError as PWTimeout
 
     with sync_playwright() as pw:
@@ -188,8 +202,11 @@ def main():
                     continue
                 html_bytes = local_path.read_bytes()
                 url = upload_gcs(gcs, gcs_name, html_bytes)
-                print(f'  ✅ {label} (local → GCS)')
+                hash_ok = verify_upload(gcs, gcs_name, html_bytes)
+                print(f'  ✅ {label} (local → GCS) [hash:{"OK" if hash_ok else "MISMATCH"}]')
                 print(f'     {url}')
+                if not hash_ok:
+                    failures.append(label)
                 continue
 
             # Documento Grid
@@ -203,18 +220,28 @@ def main():
                     print(f'  ⚠️  {label}: HTML muito curto ({len(html)} chars) — pulando')
                     continue
 
-                url = upload_gcs(gcs, gcs_name, html.encode('utf-8'))
-                print(f'  ✅ {label} ({len(html)//1024} KB → GCS)')
+                html_bytes = html.encode('utf-8')
+                url = upload_gcs(gcs, gcs_name, html_bytes)
+                hash_ok = verify_upload(gcs, gcs_name, html_bytes)
+                print(f'  ✅ {label} ({len(html)//1024} KB → GCS) [hash:{"OK" if hash_ok else "MISMATCH"}]')
                 print(f'     {url}')
+                if not hash_ok:
+                    failures.append(label)
 
             except PWTimeout:
                 print(f'  ❌ {label}: timeout')
+                failures.append(label)
             except Exception as e:
                 print(f'  ❌ {label}: {e}')
+                failures.append(label)
 
         browser.close()
 
-    print('\nSincronização concluída!')
+    if failures:
+        print(f'\n❌ Sincronização concluída com falhas: {", ".join(failures)}')
+        sys.exit(1)
+
+    print('\n✅ Sincronização concluída — conteúdo publicado no GCS confere com o extraído do Grid.')
 
 
 if __name__ == '__main__':
