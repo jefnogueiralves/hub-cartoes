@@ -6,6 +6,10 @@ on:
     - cron: '30 14 * * 1-5'  # 11:30 BRT = 14:30 UTC, seg-sex
   workflow_dispatch:
 
+concurrency:
+  group: sincronizar-grid-gcs-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
