@@ -99,16 +99,17 @@ def fetch_bq(creds):
             'safra':         s,
             'label':         f"{MONTHS_PT[int(s[4:6])-1]}/{s[2:4]}",
             'emissaoTD':     int(r.get('EMT_TD_DEBT_FIRST') or 0),
-            'emissaoTC':     int(c.get('EMIT_TC_CRED_FIRST') or 0),
+            'emissaoTC':     int(c.get('EMIT_TC_CRED_FIRST_TOT') or c.get('EMIT_TC_CRED_FIRST') or 0),
+            'emissaoTCMicro':int(c.get('EMIT_TC_CRED_FIRST_MICRO') or 0),
+            'emissaoTCFull': int(c.get('EMIT_TC_CRED_FIRST_FULL') or 0),
             'reemissaoTotal':int(e.get('QTDE_REEMISSAO_TOT') or 0),
             'reemissaoTD':   int(e.get('QTDE_REEMI_DEBT') or 0),
             'reemissaoTC':   int(e.get('QTDE_REEMI_CREDIT') or 0),
             'tdCreditFirst': int(r.get('EMT_TD_CRED_FIRST') or 0),
             'tcDebitFirst':  int(c.get('EMIT_TC_DEBT_FIRST') or 0),
             'partial':       s == current,
-            '_updateDate':   update_date,   # metadata em cada row
         })
-    return rows
+    return rows, update_date
 
 
 def main():
@@ -116,12 +117,15 @@ def main():
     log.info(f"Controle Plástico — generate_dataset — {datetime.now().strftime('%d/%m/%Y %H:%M')}")
 
     creds = get_credentials()
-    rows  = fetch_bq(creds)
+    rows, update_date = fetch_bq(creds)
 
-    # Salva como json_rows (array de objetos)
+    # Formato consumido pelo front-end via Grid.dataset('plastico_data').load():
+    # ds[0] == {updateDate, rows}, igual ao PLASTICO_DATA inline no index.html.
+    dataset = [{"updateDate": update_date, "rows": rows}]
+
     out_path = Path(__file__).parent.parent / "plastico_dataset.json"
     with open(out_path, 'w', encoding='utf-8') as f:
-        json.dump(rows, f, ensure_ascii=False, separators=(',', ':'))
+        json.dump(dataset, f, ensure_ascii=False, separators=(',', ':'))
 
     log.info(f"Dataset salvo: {out_path} ({len(rows)} safras, {out_path.stat().st_size} bytes)")
     log.info("=" * 55)
