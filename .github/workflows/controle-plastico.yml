@@ -51,30 +51,12 @@ jobs:
           git pull --rebase origin main
           git push
 
-      - name: Publicar dataset no Grid
-        env:
-          GRID_TOKEN: ${{ secrets.GRID_TOKEN }}
-        run: |
-          set -e
-          DOC_ID="01KRPZ2TK8FA0Q9MJK2SRZBW2C"
-          DATASET="plastico_data"
-          # grid.adminml.com e publico (mesmo host usado pelo Playwright em
-          # sincronizar_todos.yml); grid.melioffice.com so e alcancavel de
-          # dentro da rede corporativa/VPN e dá timeout em runner publico.
-          BASE="https://grid.adminml.com/api/v1/documents/$DOC_ID/datasets/$DATASET"
-          AUTH="Authorization: Bearer $GRID_TOKEN"
-
-          RESP=$(curl -s --max-time 30 -X POST "$BASE/upload-url" -H "$AUTH")
-          echo "upload-url resp: $RESP"
-          UPLOAD_URL=$(echo "$RESP" | python3 -c "import sys,json; print(json.load(sys.stdin)['upload_url'])")
-          REVISION=$(echo "$RESP" | python3 -c "import sys,json; print(json.load(sys.stdin)['revision'])")
-
-          curl -s --max-time 30 -X PUT "$UPLOAD_URL" -H "$AUTH" -H "Content-Type: application/json" --data-binary @controle-plastico/plastico_dataset.json
-
-          PUB_RESP=$(curl -s --max-time 30 -X POST "$BASE/publish" -H "$AUTH" -H "Content-Type: application/json" -d "{\"revision\":\"$REVISION\"}")
-          echo "publish resp: $PUB_RESP"
-          echo "$PUB_RESP" | python3 -c "import sys,json; d=json.load(sys.stdin); exit(0 if d.get('published') else 1)"
-          echo "OK: dataset publicado no Grid"
+      # NOTA (24/08/2026): tentei publicar via API Grid Dataset aqui (upload-url
+      # + PUT + publish, com GRID_TOKEN como Bearer), mas o endpoint esta
+      # protegido por Google IAP, que rejeitou com "Invalid IAP credentials:
+      # Unable to parse JWT" -- GRID_TOKEN nao e um JWT valido pro IAP. Falta
+      # descobrir o fluxo de autenticacao correto (provavelmente um identity
+      # token do Google com audience especifica) antes de reativar este step.
 
       - name: Resumo
         run: |
