@@ -503,6 +503,16 @@ tfoot td:first-child{color:#64748b}
 Chart.defaults.color = '#475569';
 Chart.defaults.font.family = "'Segoe UI',system-ui,sans-serif";
 
+(async function(){
+try {
+  const ds = await Grid.dataset('plastico_data').load();
+  if (ds && ds.length > 0 && ds[0].rows && ds[0].rows.length > 0) {
+    window.PLASTICO_DATA = ds[0];
+  }
+} catch(e) {
+  console.warn('Grid dataset indisponível, usando dado embutido:', e);
+}
+
 const R = PLASTICO_DATA.rows;
 
 /* ---- Utilities ---- */
@@ -1026,6 +1036,7 @@ initInsights();
 initGeralCharts();
 rendered.geral = true;
 renderTable('all');
+})();
 </script>
 </body>
 </html>
