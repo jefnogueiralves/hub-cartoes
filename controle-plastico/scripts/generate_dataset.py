@@ -1,14 +1,14 @@
 """
-generate_dataset.py â Controle PlÃ¡stico
-Queries BigQuery â gera plastico_dataset.json para publicaÃ§Ã£o no Grid Dataset.
+generate_dataset.py — Controle Plástico
+Queries BigQuery — gera plastico_dataset.json para publicação no Grid Dataset.
 
 Usado pelo GitHub Actions:
   python scripts/generate_dataset.py
 
-SaÃ­da: plastico_dataset.json na raiz do repo
+Saída: plastico_dataset.json na raiz do repo
 """
 
-import sys, io, os, json, logging
+import sys, io, os, json, logging, time
 from pathlib import Path
 from datetime import datetime
 
@@ -55,14 +55,34 @@ def get_credentials():
     return creds
 
 
+def bq_query(client, sql, retries=4):
+    """Retry com backoff para erros transitorios do BigQuery (ex.: quota de jobs em fila)."""
+    waits = [30, 60, 120, 180]
+    for attempt in range(retries):
+        try:
+            return list(client.query(sql).result(timeout=900))
+        except Exception as e:
+            err = str(e)
+            retryable = any(x in err for x in (
+                'Quota exceeded', 'quotaExceeded', 'ConnectionResetError',
+                'Connection aborted', 'RetryError', 'ServiceUnavailable',
+                'Timeout', 'timed out'))
+            if retryable and attempt < retries - 1:
+                wait = waits[attempt]
+                log.warning(f"BQ transitório ({attempt+1}/{retries}), aguardando {wait}s: {err[:60]}")
+                time.sleep(wait)
+            else:
+                raise
+
+
 def fetch_bq(creds):
     from google.cloud import bigquery
     client = bigquery.Client(project=PROJECT, credentials=creds)
     log.info("Buscando dados no BigQuery...")
 
-    deb_rows   = list(client.query(f"SELECT * FROM `{TABLES['deb']}`   ORDER BY SAFRA_AQUISICAO").result())
-    cred_rows  = list(client.query(f"SELECT * FROM `{TABLES['cred']}`  ORDER BY SAFRA_AQUISICAO").result())
-    reemi_rows = list(client.query(f"SELECT * FROM `{TABLES['reemissao']}` ORDER BY SAFRA_AQUISICAO").result())
+    deb_rows   = bq_query(client, f"SELECT * FROM `{TABLES['deb']}`   ORDER BY SAFRA_AQUISICAO")
+    cred_rows  = bq_query(client, f"SELECT * FROM `{TABLES['cred']}`  ORDER BY SAFRA_AQUISICAO")
+    reemi_rows = bq_query(client, f"SELECT * FROM `{TABLES['reemissao']}` ORDER BY SAFRA_AQUISICAO")
     log.info(f"DEB:{len(deb_rows)} CRED:{len(cred_rows)} REEMISSAO:{len(reemi_rows)} safras")
 
     cred_map  = {r['SAFRA_AQUISICAO']: r for r in cred_rows}
@@ -93,7 +113,7 @@ def fetch_bq(creds):
 
 def main():
     log.info("=" * 55)
-    log.info(f"Controle PlÃ¡stico â generate_dataset â {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+    log.info(f"Controle Plástico — generate_dataset — {datetime.now().strftime('%d/%m/%Y %H:%M')}")
 
     creds = get_credentials()
     rows  = fetch_bq(creds)
