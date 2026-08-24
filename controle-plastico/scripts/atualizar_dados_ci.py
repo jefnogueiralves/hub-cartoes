@@ -4,7 +4,7 @@ Roda no GitHub Actions: BQ → HTML → Grid.
 Variáveis de ambiente: GCP_CREDENTIALS (obrigatório), GRID_SESSION_ID (obrigatório).
 Grid: session expira ~7 dias — atualizar secret GRID_SESSION_ID quando expirar.
 """
-import sys, io, os, json, logging
+import sys, io, os, json, logging, time
 from pathlib import Path
 from datetime import datetime
 
@@ -70,14 +70,34 @@ def get_credentials():
     return creds
 
 
+def bq_query(client, sql, retries=4):
+    """Retry com backoff para erros transitorios do BigQuery (ex.: quota de jobs em fila)."""
+    waits = [30, 60, 120, 180]
+    for attempt in range(retries):
+        try:
+            return list(client.query(sql).result(timeout=900))
+        except Exception as e:
+            err = str(e)
+            retryable = any(x in err for x in (
+                'Quota exceeded', 'quotaExceeded', 'ConnectionResetError',
+                'Connection aborted', 'RetryError', 'ServiceUnavailable',
+                'Timeout', 'timed out'))
+            if retryable and attempt < retries - 1:
+                wait = waits[attempt]
+                log.warning(f"BQ transitório ({attempt+1}/{retries}), aguardando {wait}s: {err[:60]}")
+                time.sleep(wait)
+            else:
+                raise
+
+
 def fetch_bq(creds):
     from google.cloud import bigquery
     client = bigquery.Client(project=PROJECT, credentials=creds)
     log.info("Buscando dados no BigQuery...")
 
-    deb_rows   = list(client.query(f"SELECT * FROM `{TABLES['deb']}`   ORDER BY SAFRA_AQUISICAO").result())
-    cred_rows  = list(client.query(f"SELECT * FROM `{TABLES['cred']}`  ORDER BY SAFRA_AQUISICAO").result())
-    reemi_rows = list(client.query(f"SELECT * FROM `{TABLES['reemissao']}` ORDER BY SAFRA_AQUISICAO").result())
+    deb_rows   = bq_query(client, f"SELECT * FROM `{TABLES['deb']}`   ORDER BY SAFRA_AQUISICAO")
+    cred_rows  = bq_query(client, f"SELECT * FROM `{TABLES['cred']}`  ORDER BY SAFRA_AQUISICAO")
+    reemi_rows = bq_query(client, f"SELECT * FROM `{TABLES['reemissao']}` ORDER BY SAFRA_AQUISICAO")
     log.info(f"DEB:{len(deb_rows)} CRED:{len(cred_rows)} REEMISSAO:{len(reemi_rows)} safras")
 
     cred_map  = {r['SAFRA_AQUISICAO']: r for r in cred_rows}
@@ -93,7 +113,9 @@ def fetch_bq(creds):
             'safra': s,
             'label': f"{MONTHS_PT[int(s[4:6])-1]}/{s[2:4]}",
             'emissaoTD':     int(r.get('EMT_TD_DEBT_FIRST') or 0),
-            'emissaoTC':     int(c.get('EMIT_TC_CRED_FIRST') or 0),
+            'emissaoTC':     int(c.get('EMIT_TC_CRED_FIRST_TOT') or c.get('EMIT_TC_CRED_FIRST') or 0),
+            'emissaoTCMicro':int(c.get('EMIT_TC_CRED_FIRST_MICRO') or 0),
+            'emissaoTCFull': int(c.get('EMIT_TC_CRED_FIRST_FULL') or 0),
             'reemissaoTotal':int(e.get('QTDE_REEMISSAO_TOT') or 0),
             'reemissaoTD':   int(e.get('QTDE_REEMI_DEBT') or 0),
             'reemissaoTC':   int(e.get('QTDE_REEMI_CREDIT') or 0),
@@ -126,6 +148,7 @@ def build_html(rows, update_date):
         lines.append(
             f'    {{safra:"{r["safra"]}",label:"{r["label"]}",'
             f'emissaoTD:{r["emissaoTD"]},emissaoTC:{r["emissaoTC"]},'
+            f'emissaoTCMicro:{r["emissaoTCMicro"]},emissaoTCFull:{r["emissaoTCFull"]},'
             f'reemissaoTotal:{r["reemissaoTotal"]},reemissaoTD:{r["reemissaoTD"]},'
             f'reemissaoTC:{r["reemissaoTC"]},'
             f'tdCreditFirst:{r["tdCreditFirst"]},tcDebitFirst:{r["tcDebitFirst"]}{p}}},'
