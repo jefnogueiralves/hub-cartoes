@@ -216,6 +216,21 @@ tfoot td:first-child{color:#64748b}
 
 @media(max-width:1100px){.kpi-grid,.row2{grid-template-columns:1fr 1fr}.insights,.row3{grid-template-columns:1fr 1fr}}
 @media(max-width:640px){.kpi-grid,.insights,.row2,.row3{grid-template-columns:1fr}}
+
+/* Querys tab */
+.qry-intro{font-size:12px;color:#64748b;margin-bottom:18px;line-height:1.6}
+.query-block{margin-bottom:26px}
+.tbl-name{font-size:12px;font-weight:600;color:#60a5fa;background:rgba(96,165,250,.1);padding:2px 7px;border-radius:5px}
+.code-card{background:#0f172a;border:1px solid #334155;border-radius:10px;margin-bottom:10px;overflow:hidden}
+.code-top{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;background:#1e293b;border-bottom:1px solid #334155;font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px}
+.btn-copy{background:transparent;border:1px solid #334155;color:#94a3b8;padding:3px 10px;border-radius:5px;cursor:pointer;font-size:10px;font-weight:600;text-transform:none;letter-spacing:0;transition:all .15s}
+.btn-copy:hover{border-color:#34d399;color:#34d399}
+.btn-copy.copied{border-color:#34d399;color:#34d399}
+.code-card pre{margin:0;padding:14px 16px;overflow-x:auto;max-height:420px}
+.code-card code{font-family:'Consolas','Courier New',monospace;font-size:11.5px;line-height:1.6;color:#cbd5e1;white-space:pre}
+/* Light theme */
+.qry-intro{color:#64748b}
+.code-card{background:#0f172a}
 </style>
 </head>
 <body>
@@ -234,6 +249,7 @@ tfoot td:first-child{color:#64748b}
   <button class="tab" data-tab="geral">Visão Geral</button>
   <button class="tab" data-tab="emissao">Emissão</button>
   <button class="tab" data-tab="reemissao">Reemissão</button>
+  <button class="tab" data-tab="querys">Querys</button>
 </div>
 
 <!-- ==================== TAB GERAL ==================== -->
@@ -451,6 +467,327 @@ tfoot td:first-child{color:#64748b}
       <div class="ch" style="height:250px"><canvas id="chartReemiStack"></canvas></div>
     </div>
   </div>
+</div>
+
+<!-- ==================== TAB QUERYS ==================== -->
+<div id="tab-querys" class="tab-content">
+  <p class="sec">Queries de Geração das Tabelas Fonte (BigQuery — meli-bi-data.SBOX_CREDITSTC)</p>
+  <p class="qry-intro">Estas são as 3 queries que recriam as tabelas usadas pelo dashboard. Cada bloco tem a query completa (recalcula do zero, pode demorar) e uma query de SELECT direto na tabela já pronta (rápida, usa o último cálculo).</p>
+
+  <div class="query-block">
+    <div class="card-hdr">
+      <h3>1. Crédito — <code class="tbl-name">BD_CNTR_PLASTICO_CRED</code></h3>
+      <p>Emissão de cartão de crédito físico (TC) por safra de aquisição (mês de aprovação da proposta em BT_CCARD_PROPOSAL). Classifica o cliente como <b>Debit First</b> (já usava o TD antes do TC) ou <b>Credit First</b> (pediu o físico de crédito na mesma safra da aquisição), e dentro de Credit First quebra entre <b>MICRO</b> (limite ≤ R$100 ou produto 5) e <b>FULL</b>.</p>
+    </div>
+      <div class="code-card">
+        <div class="code-top"><span>Query completa — recalcula e recria a tabela</span><button class="btn-copy" data-copy="q-cred-full">Copiar</button></div>
+        <pre id="q-cred-full"><code>CREATE OR REPLACE TABLE meli-bi-data.SBOX_CREDITSTC.BD_CNTR_PLASTICO_CRED AS SELECT * FROM (
+
+WITH
+ADQ_TC AS (
+SELECT DISTINCT
+  SAFE_CAST(CUS_CUST_ID AS INT) AS CUS_CUST_ID,
+  SAFE_CAST(CCARD_PROP_UPDATE_DT AS DATE) AS DT_AQUISICAO,
+  SAFE_CAST(ccard_prop_CREATION_dt AS DATE) AS DT_ENCENDIDO,
+  FORMAT_DATE("%Y%m",CCARD_PROP_UPDATE_DT) AS SAFRA_AQUISICAO,
+  FORMAT_DATE("%Y",CCARD_PROP_UPDATE_DT) AS ANO_AQUISICAO,
+  CASE WHEN (CCARD_GLOBAL_LIMIT_AMT_LC &lt;= 100 or ccard_product_id = 5) THEN 'MICRO' ELSE 'FULL' END AS FLAG_CARTAO
+FROM meli-bi-data.WHOWNER.BT_CCARD_PROPOSAL
+WHERE CCARD_PROP_STATUS in ('accepted')
+	AND SIT_SITE_ID like '%MLB%'
+  AND FORMAT_DATE("%Y%m",CCARD_PROP_UPDATE_DT) &gt;= '202401'
+
+QUALIFY ROW_NUMBER() OVER(PARTITION BY CUS_CUST_ID ORDER BY CCARD_PROP_UPDATE_DT DESC) = 1
+),
+
+-- SOLICITACAO DE CARTAO FISICO
+Y AS (
+SELECT DISTINCT
+
+    CUS_CUST_ID,
+    CREATED_DATE AS DATA_SOLICITACAO,
+    DATA_DESBLOQUEIO,
+    DATA_ENTREGA,
+    ORIGEM_TABLE
+
+ FROM (
+
+SELECT DISTINCT
+
+    REQ.CUS_CUST_ID,
+    'FISICA_DEBITO_HIBRIDA' AS PPD_CARD_TYPE_GROUP,
+    CAST(REQ.DBT_CARD_REQ_DATE_CREATED AS DATE) AS CREATED_DATE,
+    CASE
+      WHEN REQ.DBT_CARD_REQ_STATUS_REASON  = 'card_unlocked' THEN CAST(REQ.DBT_CARD_REQ_DATE_LAST_MODIFIED AS DATE)
+    END AS DATA_DESBLOQUEIO,
+    CASE
+   WHEN REQ.DBT_CARD_REQ_STATUS_REASON  = 'card_unlocked' AND DATE(SP.SHP_DATETIME_DELIVERED_ID) IS NULL THEN CAST(REQ.DBT_CARD_REQ_DATE_LAST_MODIFIED AS DATE)
+   ELSE CAST(SP.SHP_DATETIME_DELIVERED_ID AS DATE)
+      END AS DATA_ENTREGA,
+    'TB_REQUEST' as ORIGEM_TABLE
+
+    FROM meli-bi-data.WHOWNER.BT_DBT_CARD_REQUEST REQ
+    LEFT JOIN
+     meli-bi-data.WHOWNER.BT_SHP_SHIPMENTS SP ON CAST(REQ.DBT_CARD_REQ_SHIPMENT_ID AS BIGINT) = SP.SHP_SHIPMENT_ID
+    WHERE REQ.SIT_SITE_ID like '%MLB%'
+    qualify row_number() over (partition by cus_cust_id order by CAST(REQ.DBT_CARD_REQ_DATE_CREATED AS DATE)) = 1
+
+    UNION DISTINCT
+
+SELECT DISTINCT
+
+    C.CUS_CUST_ID,
+    'FISICA_DEBITO_HIBRIDA' AS PPD_CARD_TYPE_GROUP,
+    CAST(C.CARD_CREATION_DT AS DATE) AS CREATED_DATE,
+    CAST(C.CARD_CREATION_DT AS DATE) AS DATA_DESBLOQUEIO,
+    CAST(C.CARD_CREATION_DT AS DATE) AS DATA_ENTREGA,
+    'TB_MP_CARD' as ORIGEM_TABLE
+
+    from meli-bi-data.WHOWNER.LK_MP_CARD C
+
+  WHERE
+    C.sit_site_id='MLB'
+    and C.CARD_TYPE_GROUP ='FISICA_DEBITO_HIBRIDA'
+    qualify row_number() over (partition by C.cus_cust_id order by CAST(C.CARD_CREATION_DT AS DATE)) = 1)
+
+
+  qualify row_number() over (partition by cus_cust_id order by CAST(CREATED_DATE AS DATE)) = 1
+),
+
+SOL_FISICO AS (
+SELECT DISTINCT
+CUS_CUST_ID,
+DT_SOLICITACAO,
+FLAG_PERFIL_USUARIO,
+CASE WHEN FLAG_PERFIL_USUARIO = 'Credit First' AND DT_SOLICITACAO &lt; DT_AQUISICAO THEN 'Ja Tinha'
+    WHEN FLAG_PERFIL_USUARIO = 'Credit First' AND DT_SOLICITACAO = DT_AQUISICAO THEN 'Solicitou no dia'
+	  WHEN FLAG_PERFIL_USUARIO = 'Credit First' AND DT_SOLICITACAO &gt; DT_AQUISICAO THEN 'Solicitou Depois'
+      WHEN FLAG_PERFIL_USUARIO = 'Debit First' THEN 'Ja Tinha'
+      ELSE 'Nao Solicitou' END AS FLAG_SOLICITACAO_FISICO
+FROM(
+SELECT DISTINCT
+ADQ_TC.CUS_CUST_ID,
+Y.DATA_SOLICITACAO AS DT_SOLICITACAO,
+ADQ_TC.DT_AQUISICAO,
+CASE
+  WHEN ADQ_TC.DT_ENCENDIDO &lt; CAST('2021-07-13' AS DATE) THEN 'Debit First'
+  WHEN ADQ_TC.DT_AQUISICAO = Y.DATA_SOLICITACAO THEN 'Credit First'
+  WHEN ADQ_TC.DT_AQUISICAO &lt; Y.DATA_SOLICITACAO THEN 'Credit First'
+  WHEN Y.CUS_CUST_ID IS NULL THEN 'Credit First'
+  ELSE 'Debit First'
+END AS FLAG_PERFIL_USUARIO
+FROM ADQ_TC
+LEFT JOIN Y ON ADQ_TC.CUS_CUST_ID = Y.CUS_CUST_ID)
+)
+
+SELECT DISTINCT
+CURRENT_DATE AS DT_ATUALIZACAO,
+ADQ_TC.SAFRA_AQUISICAO,
+COUNT(DISTINCT CASE WHEN SOL_FISICO.FLAG_PERFIL_USUARIO = 'Debit First' THEN ADQ_TC.CUS_CUST_ID END) AS EMIT_TC_DEBT_FIRST,
+COUNT(DISTINCT CASE WHEN SOL_FISICO.FLAG_PERFIL_USUARIO = 'Credit First'
+                     AND ADQ_TC.SAFRA_AQUISICAO = FORMAT_DATE("%Y%m",SOL_FISICO.DT_SOLICITACAO)
+                    THEN ADQ_TC.CUS_CUST_ID END) AS EMIT_TC_CRED_FIRST_TOT,
+COUNT(DISTINCT CASE WHEN SOL_FISICO.FLAG_PERFIL_USUARIO = 'Credit First'
+                     AND ADQ_TC.SAFRA_AQUISICAO = FORMAT_DATE("%Y%m",SOL_FISICO.DT_SOLICITACAO)
+                     AND ADQ_TC.FLAG_CARTAO = 'MICRO'
+                    THEN ADQ_TC.CUS_CUST_ID END) AS EMIT_TC_CRED_FIRST_MICRO,
+COUNT(DISTINCT CASE WHEN SOL_FISICO.FLAG_PERFIL_USUARIO = 'Credit First'
+                     AND ADQ_TC.SAFRA_AQUISICAO = FORMAT_DATE("%Y%m",SOL_FISICO.DT_SOLICITACAO)
+                     AND ADQ_TC.FLAG_CARTAO = 'FULL'
+                    THEN ADQ_TC.CUS_CUST_ID END) AS EMIT_TC_CRED_FIRST_FULL,
+
+FROM ADQ_TC
+LEFT JOIN SOL_FISICO ON ADQ_TC.CUS_CUST_ID = SOL_FISICO.CUS_CUST_ID
+GROUP BY ALL);</code></pre>
+      </div>
+      <div class="code-card">
+        <div class="code-top"><span>Já calculado — só consultar a tabela pronta</span><button class="btn-copy" data-copy="q-cred-select">Copiar</button></div>
+        <pre id="q-cred-select"><code>SELECT *
+FROM `meli-bi-data.SBOX_CREDITSTC.BD_CNTR_PLASTICO_CRED`
+ORDER BY SAFRA_AQUISICAO;</code></pre>
+      </div>
+  </div>
+
+  <div class="query-block">
+    <div class="card-hdr">
+      <h3>2. Débito — <code class="tbl-name">BD_CNTR_PLASTICO_DEB</code></h3>
+      <p>Emissão de cartão físico de débito/híbrido por safra de criação (LK_MP_CARDS_TRACKING, fluxo ISSUE). Segmenta se o cliente entrou pelo fluxo de crédito primeiro (<b>CRED</b> — HYBRID_USE = 'CREDIT FIRST' ou motivo da solicitação indica cartão de crédito) ou fluxo padrão de débito (<b>DEBT</b>).</p>
+    </div>
+      <div class="code-card">
+        <div class="code-top"><span>Query completa — recalcula e recria a tabela</span><button class="btn-copy" data-copy="q-deb-full">Copiar</button></div>
+        <pre id="q-deb-full"><code>CREATE OR REPLACE TABLE meli-bi-data.SBOX_CREDITSTC.BD_CNTR_PLASTICO_DEB AS SELECT * FROM (
+ SELECT
+SAFRA_AQUISICAO,
+SUM(DISTINCT CASE WHEN FLAG_TIPO = 'CRED' THEN QTDE END) AS EMT_TD_CRED_FIRST,
+SUM(DISTINCT CASE WHEN FLAG_TIPO = 'DEBT' THEN QTDE END) AS EMT_TD_DEBT_FIRST
+
+FROM (
+  SELECT
+    FORMAT_DATE("%Y%m", A.CREATE_DATE) AS SAFRA_AQUISICAO,
+    CASE WHEN A.HYBRID_USE='CREDIT FIRST' or LOWER(B.DBT_ACQ_FLOW_REASON_DETAIL) LIKE 'credit_card_%' THEN 'CRED' ELSE 'DEBT' END AS FLAG_TIPO,
+    COUNT(DISTINCT A.CUS_CUST_ID) AS QTDE
+
+    FROM meli-bi-data.WHOWNER.LK_MP_CARDS_TRACKING A
+    LEFT JOIN (SELECT  DBT_CARD_REQ_ID,DBT_ACQ_FLOW_REASON_DETAIL
+              FROM meli-bi-data.WHOWNER.BT_DBT_CARD_REQUEST
+              WHERE SIT_SITE_ID='MLB') B
+    ON A.DBT_CARD_REQ_ID=B.DBT_CARD_REQ_ID
+
+    WHERE CAST(CREATE_DATE AS DATE) &gt;= '2024-01-01'
+    AND A.SIT_SITE_ID = 'MLB'
+    AND TIPO_FLOW='ISSUE'
+    AND A.CARD_TYPE_GROUP LIKE "%FISICA%"
+
+    GROUP BY 1,2)
+GROUP BY 1)</code></pre>
+      </div>
+      <div class="code-card">
+        <div class="code-top"><span>Já calculado — só consultar a tabela pronta</span><button class="btn-copy" data-copy="q-deb-select">Copiar</button></div>
+        <pre id="q-deb-select"><code>SELECT *
+FROM `meli-bi-data.SBOX_CREDITSTC.BD_CNTR_PLASTICO_DEB`
+ORDER BY SAFRA_AQUISICAO;</code></pre>
+      </div>
+  </div>
+
+  <div class="query-block">
+    <div class="card-hdr">
+      <h3>3. Reemissão — <code class="tbl-name">BD_CNTR_PLASTICO_REEMISSAO</code></h3>
+      <p>Reemissões de cartão físico (reissue) por mês de solicitação. Para cada reemissão, verifica se o cliente tinha linha de crédito ativa e se já tinha usado o débito antes da reemissão, e classifica em: sem linha de crédito ativa (100% débito), linha ativa + já usou débito (divide 50/50 entre débito e crédito) ou linha ativa sem uso de débito (100% crédito).</p>
+    </div>
+      <div class="code-card">
+        <div class="code-top"><span>Query completa — recalcula e recria a tabela</span><button class="btn-copy" data-copy="q-reemi-full">Copiar</button></div>
+        <pre id="q-reemi-full"><code>CREATE OR REPLACE TABLE meli-bi-data.SBOX_CREDITSTC.BD_CNTR_PLASTICO_REEMISSAO AS SELECT * FROM (
+ WITH PARQUE_FIRST_REQUEST AS (
+SELECT
+    REQ.SIT_SITE_ID,
+    CAST(DBT_CARD_REQ_DATE_CREATED AS DATE) AS CREATED_DATE,
+    CUS_CUST_ID,
+    DBT_CARD_REQ_ID,
+    FROM meli-bi-data.WHOWNER.BT_DBT_CARD_REQUEST REQ
+   WHERE  REQ.sit_site_id = 'MLB'
+    qualify row_number() over (partition by cus_cust_id order by CAST(DBT_CARD_REQ_DATE_CREATED AS DATE)) = 1
+),
+PARQUE_FISICAS AS (
+    SELECT
+    REQ.SIT_SITE_ID,
+    REQ.CUS_CUST_ID,
+    case when REQ.sit_site_id = 'MLA' then 'PREPAID'
+    else 'FISICA_DEBITO_HIBRIDA' end as PPD_CARD_TYPE_GROUP,
+    REQ.DBT_CARD_REQ_ID,
+    CAST(DBT_CARD_REQ_DATE_CREATED AS DATE) AS CREATED_DATE,
+    case when DBT_CARD_REQ_ACQUISITON_FLOW like '%reissue%' or  F.DBT_CARD_REQ_ID &lt;&gt; REQ.DBT_CARD_REQ_ID then 'REISSUE' else 'OTHERS' end as TIPO_FLOW,
+
+    FROM meli-bi-data.WHOWNER.BT_DBT_CARD_REQUEST REQ
+    LEFT JOIN PARQUE_FIRST_REQUEST f ON REQ.CUS_CUST_ID = F.CUS_CUST_ID
+    where
+    REQ.sit_site_id = 'MLB'
+    AND (REQ.SIT_SITE_ID = 'MLB' and DATE(DBT_CARD_REQ_DATE_CREATED) &gt;= '2021-01-01')
+    and dbt_card_req_acquisiton_flow &lt;&gt; 'prepaid_renewal_kyc_cr'
+),
+
+REEMISSOES AS (
+
+SELECT
+
+FORMAT_DATE("%Y%m",CREATED_DATE) AS MES_REEMISSAO,
+CUS_CUST_ID,
+CREATED_DATE AS DATA_REEMISSAO,
+DBT_CARD_REQ_ID,
+--COUNT(CASE WHEN CREATED_DATE IS NOT NULL  and TIPO_FLOW = 'REISSUE' THEN 1 ELSE NULL END) AS REISSUE,
+FROM PARQUE_FISICAS WHERE PPD_CARD_TYPE_GROUP='FISICA_DEBITO_HIBRIDA' AND TIPO_FLOW='REISSUE'
+--GROUP BY 1,2,3,4
+),
+
+
+DEBITO_USO AS (
+
+SELECT
+
+  T.CUS_CUST_ID as CUS_CUST_ID,
+  FORMAT_DATE("%Y%d",CAST(DBT_CREATION_DATETIME as DATE)) AS MES_USO_TD,
+  CAST(DBT_CREATION_DATETIME as DATE) AS DATA_USO_TD
+
+
+   FROM meli-bi-data.WHOWNER.BT_DBT_TRANSACTIONS T
+   LEFT JOIN meli-bi-data.WHOWNER.BT_MP_CARD_ISSUER_ACCOUNTS CIA
+    ON T.DBT_CARD_ID = CIA.CARD_ISS_ACC_ID
+   LEFT JOIN meli-bi-data.WHOWNER.LK_MP_CARD C
+    ON C.CARD_ID = CIA.CARD_ID
+
+  WHERE T.dbt_type = 'authorization'
+  AND DBT_STATUS = 'approved'
+  AND DBT_SUBTYPE IN ('purchase','withdraw')
+  AND T.sit_site_id IN ('MLB')
+  AND T.dbt_income_channel = 'transactional'
+  AND C.CARD_STATUS_INTERNAL_REASON NOT LIKE '%deprecated%'
+  AND CARD_TYPE_GROUP IN ('FISICA_DEBITO_HIBRIDA')
+  AND T.CUS_CUST_ID NOT IN (SELECT CUS_CUST_ID FROM meli-bi-data.WHOWNER.LK_CUS_CUSTOMERS_T)
+  --qualify row_number() over (partition by cus_cust_id order by DBT_CREATION_DATETIME ASC) = 1
+
+),
+
+
+LINHA_DE_CREDITO AS (
+
+select  cus_cust_id, CCARD_PROP_ID, CAST(CCARD_PROP_UPDATE_DT AS DATE) AS DATA_ENCENDIDO_CREDITO from meli-bi-data.WHOWNER.BT_CCARD_PROPOSAL where CCARD_PROP_STATUS in ('accepted')
+
+),
+
+
+
+REEMISSAO_CARD_DETAILS AS (
+
+SELECT
+
+A.CUS_CUST_ID,
+A.MES_REEMISSAO,
+A.DBT_CARD_REQ_ID,
+A.DATA_REEMISSAO,
+
+
+max(case when B.CUS_CUST_ID is not null then 1 else 0 end) as debt_used,
+-- max(du.debt_use_date) as debt_tz,
+max(case when C.CUS_CUST_ID is not null then 1 else 0 end) as has_active_credit_line
+
+FROM REEMISSOES A
+LEFT JOIN DEBITO_USO B ON A.CUS_CUST_ID=B.CUS_CUST_ID AND B.DATA_USO_TD &lt; A.DATA_REEMISSAO
+LEFT JOIN LINHA_DE_CREDITO C ON A.CUS_CUST_ID=C.CUS_CUST_ID AND A.DATA_REEMISSAO &gt;= C.DATA_ENCENDIDO_CREDITO
+
+GROUP BY 1,2,3,4
+),
+
+BD_AUX AS (
+SELECT
+MES_REEMISSAO as SAFRA_AQUISICAO,
+COUNT(distinct DBT_CARD_REQ_ID) as QTDE_REEMISSAO_TOT,
+COUNT(DISTINCT CASE WHEN has_active_credit_line = 0  THEN DBT_CARD_REQ_ID END) AS QTDE_REEMI_DEBT,
+COUNT(DISTINCT CASE WHEN has_active_credit_line &lt;&gt; 0 AND debt_used = 1  THEN DBT_CARD_REQ_ID END) AS QTDE_REEMI_SPLIT,
+COUNT(DISTINCT CASE WHEN has_active_credit_line &lt;&gt; 0 AND debt_used = 0  THEN DBT_CARD_REQ_ID END) AS QTDE_REEMI_CREDIT
+
+FROM reemissao_card_details
+
+GROUP BY 1
+)
+
+
+SELECT
+SAFRA_AQUISICAO,
+SUM(QTDE_REEMISSAO_TOT) AS QTDE_REEMISSAO_TOT,
+ROUND(SUM(QTDE_REEMI_DEBT + (QTDE_REEMI_SPLIT/2))) AS QTDE_REEMI_DEBT,
+ROUND(SUM(QTDE_REEMI_CREDIT + (QTDE_REEMI_SPLIT/2))) AS QTDE_REEMI_CREDIT
+
+FROM BD_AUX
+WHERE SAFRA_AQUISICAO &gt;= '202401'
+GROUP BY 1)</code></pre>
+      </div>
+      <div class="code-card">
+        <div class="code-top"><span>Já calculado — só consultar a tabela pronta</span><button class="btn-copy" data-copy="q-reemi-select">Copiar</button></div>
+        <pre id="q-reemi-select"><code>SELECT *
+FROM `meli-bi-data.SBOX_CREDITSTC.BD_CNTR_PLASTICO_REEMISSAO`
+ORDER BY SAFRA_AQUISICAO;</code></pre>
+      </div>
+  </div>
+
 </div>
 
 <!-- ==================== TAB TABELA ==================== -->
@@ -995,6 +1332,19 @@ function activateTab(tab){
 
 document.querySelectorAll('.tab').forEach(b=>{
   b.addEventListener('click',()=>activateTab(b.dataset.tab));
+});
+
+
+document.querySelectorAll('.btn-copy').forEach(b=>{
+  b.addEventListener('click',()=>{
+    const el = document.getElementById(b.dataset.copy);
+    navigator.clipboard.writeText(el.textContent).then(()=>{
+      const orig = b.textContent;
+      b.textContent = 'Copiado!';
+      b.classList.add('copied');
+      setTimeout(()=>{ b.textContent = orig; b.classList.remove('copied'); }, 1600);
+    });
+  });
 });
 
 document.querySelectorAll('.ybtn').forEach(b=>{
