@@ -3,6 +3,11 @@ name: Controle Plastico — Gerar Dataset
 on:
   schedule:
     - cron: '0 12 * * 1-5'   # 09:00 BRT = 12:00 UTC, seg a sex
+    - cron: '0 14 * * 1-5'   # 11:00 BRT = 14:00 UTC, seg a sex
+    - cron: '0 16 * * 1-5'   # 13:00 BRT = 16:00 UTC, seg a sex
+    - cron: '0 18 * * 1-5'   # 15:00 BRT = 18:00 UTC, seg a sex
+    - cron: '0 21 * * 1-5'   # 18:00 BRT = 21:00 UTC, seg a sex
+    - cron: '0 1 * * 2-6'    # 22:00 BRT = 01:00 UTC do dia seguinte, seg a sex (ter-sab em UTC)
   workflow_dispatch:
 
 concurrency:
