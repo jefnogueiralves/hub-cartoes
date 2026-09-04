@@ -528,6 +528,9 @@ canvas{display:block;width:100%!important;height:100%!important}
 .ybtn{background:#1e293b;border:1px solid #334155;color:#94a3b8;padding:6px 18px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:500;transition:all .15s}
 .ybtn:hover{border-color:#60a5fa;color:#60a5fa}
 .ybtn.active{background:#60a5fa;border-color:#60a5fa;color:#0f172a;font-weight:700}
+.ybtn2{background:#1e293b;border:1px solid #334155;color:#94a3b8;padding:6px 18px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:500;transition:all .15s}
+.ybtn2:hover{border-color:#60a5fa;color:#60a5fa}
+.ybtn2.active{background:#60a5fa;border-color:#60a5fa;color:#0f172a;font-weight:700}
 
 /* Table */
 .tbl-card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:18px}
@@ -603,6 +606,8 @@ header{border-bottom-color:#e2e8f0}
 .btn-csv{border-color:#e2e8f0;color:#64748b}
 .ybtn{background:#fff;border-color:#e2e8f0;color:#64748b}
 .ybtn.active{background:#60a5fa;border-color:#60a5fa;color:#fff}
+.ybtn2{background:#fff;border-color:#e2e8f0;color:#64748b}
+.ybtn2.active{background:#60a5fa;border-color:#60a5fa;color:#fff}
 .tbl-card{background:#fff;border-color:#e2e8f0}
 .tbl-top h3{color:#1e293b}
 .tbl-top span{color:#64748b}
@@ -877,6 +882,11 @@ tfoot td:first-child{color:#64748b}
       </div>
       <div class="ch" style="height:250px"><canvas id="chartReemiStack"></canvas></div>
     </div>
+  </div>
+
+  <div class="year-btns" id="motivoYearBtns" style="margin-bottom:6px">
+    <button class="ybtn2" data-year2="2025">2025</button>
+    <button class="ybtn2 active" data-year2="2026">2026</button>
   </div>
 
   <div class="row1">
@@ -1752,21 +1762,31 @@ function initReemissaoCharts(){
       scales:{x:{...sX(),stacked:true},y:{...sY(),stacked:true}}}
   });
 
+  renderMotivoSection(motivoYearFilter);
+}
+
+let motivoYearFilter = '2026';
+
+function renderMotivoSection(year){
+  const RM = R.filter(r=>r.safra.startsWith(year));
+  const labels = RM.map(r=>r.label);
+
   // Motivo da reemissão por mês (abertura por origem)
   const motivoBySafra = {};
   MOTIVO.forEach(m=>{
+    if(!m.safra.startsWith(year)) return;
     if(!motivoBySafra[m.safra]) motivoBySafra[m.safra] = {};
     motivoBySafra[m.safra][m.origem] = m.qtde;
   });
-  const origensPresentes = MOTIVO_ORDER.filter(o=>MOTIVO.some(m=>m.origem===o));
+  const origensPresentes = MOTIVO_ORDER.filter(o=>MOTIVO.some(m=>m.safra.startsWith(year) && m.origem===o));
   const legEl = document.getElementById('legReemiMotivo');
   if(legEl) legEl.innerHTML = origensPresentes.map(o=>
     `<div class="leg"><div class="leg-line" style="background:${MOTIVO_COLORS[o]}"></div>${o}</div>`
   ).join('');
 
-  const motivoTotais = R.map(r=>origensPresentes.reduce((s,o)=>s+((motivoBySafra[r.safra]||{})[o]||0),0));
-  const motivoAbs = origensPresentes.map(o=>R.map(r=>(motivoBySafra[r.safra]||{})[o]||0));
-  const motivoPct = origensPresentes.map((o,oi)=>R.map((r,ri)=>{
+  const motivoTotais = RM.map(r=>origensPresentes.reduce((s,o)=>s+((motivoBySafra[r.safra]||{})[o]||0),0));
+  const motivoAbs = origensPresentes.map(o=>RM.map(r=>(motivoBySafra[r.safra]||{})[o]||0));
+  const motivoPct = origensPresentes.map((o,oi)=>RM.map((r,ri)=>{
     const tot = motivoTotais[ri];
     return tot>0 ? +((motivoAbs[oi][ri]/tot)*100).toFixed(2) : 0;
   }));
@@ -1847,13 +1867,14 @@ function initReemissaoCharts(){
       scales:{x:{...sX(),stacked:true},y:{...sPct(),stacked:true,min:0,max:100}}}
   });
 
-  renderCreditReqDetalheTable();
+  renderCreditReqDetalheTable(year);
 }
 
-function renderCreditReqDetalheTable(){
+function renderCreditReqDetalheTable(year){
   const bySafra = {};
   const totBySafra = {};
   CREDITREQ_DETALHE.forEach(d=>{
+    if(!d.safra.startsWith(year)) return;
     if(!bySafra[d.safra]) bySafra[d.safra] = {};
     bySafra[d.safra][d.detalhe] = (bySafra[d.safra][d.detalhe]||0) + d.qtde;
     totBySafra[d.safra] = (totBySafra[d.safra]||0) + d.qtde;
@@ -2038,6 +2059,15 @@ document.querySelectorAll('.ybtn').forEach(b=>{
     document.querySelectorAll('.ybtn').forEach(x=>x.classList.remove('active'));
     b.classList.add('active');
     renderTable(b.dataset.year);
+  });
+});
+
+document.querySelectorAll('#motivoYearBtns .ybtn2').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('#motivoYearBtns .ybtn2').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    motivoYearFilter = b.dataset.year2;
+    renderMotivoSection(motivoYearFilter);
   });
 });
 
