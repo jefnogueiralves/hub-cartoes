@@ -13,9 +13,10 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='repla
 PROJECT     = 'meli-bi-data'
 GRID_DOC_ID = '01KRPZ2TK8FA0Q9MJK2SRZBW2C'
 TABLES = {
-    'deb':       'meli-bi-data.SBOX_CREDITSTC.BD_CNTR_PLASTICO_DEB',
-    'cred':      'meli-bi-data.SBOX_CREDITSTC.BD_CNTR_PLASTICO_CRED',
-    'reemissao': 'meli-bi-data.SBOX_CREDITSTC.BD_CNTR_PLASTICO_REEMISSAO',
+    'deb':             'meli-bi-data.SBOX_CREDITSTC.BD_CNTR_PLASTICO_DEB',
+    'cred':            'meli-bi-data.SBOX_CREDITSTC.BD_CNTR_PLASTICO_CRED',
+    'reemissao':       'meli-bi-data.SBOX_CREDITSTC.BD_CNTR_PLASTICO_REEMISSAO',
+    'reemissaoMotivo': 'meli-bi-data.SBOX_CREDITSTC.BD_CNTR_PLASTICO_REEMISSAO_MOTIVO',
 }
 MONTHS_PT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
 
@@ -95,10 +96,11 @@ def fetch_bq(creds):
     client = bigquery.Client(project=PROJECT, credentials=creds)
     log.info("Buscando dados no BigQuery...")
 
-    deb_rows   = bq_query(client, f"SELECT * FROM `{TABLES['deb']}`   ORDER BY SAFRA_AQUISICAO")
-    cred_rows  = bq_query(client, f"SELECT * FROM `{TABLES['cred']}`  ORDER BY SAFRA_AQUISICAO")
-    reemi_rows = bq_query(client, f"SELECT * FROM `{TABLES['reemissao']}` ORDER BY SAFRA_AQUISICAO")
-    log.info(f"DEB:{len(deb_rows)} CRED:{len(cred_rows)} REEMISSAO:{len(reemi_rows)} safras")
+    deb_rows    = bq_query(client, f"SELECT * FROM `{TABLES['deb']}`   ORDER BY SAFRA_AQUISICAO")
+    cred_rows   = bq_query(client, f"SELECT * FROM `{TABLES['cred']}`  ORDER BY SAFRA_AQUISICAO")
+    reemi_rows  = bq_query(client, f"SELECT * FROM `{TABLES['reemissao']}` ORDER BY SAFRA_AQUISICAO")
+    motivo_rows = bq_query(client, f"SELECT * FROM `{TABLES['reemissaoMotivo']}` ORDER BY SAFRA_AQUISICAO, ORIGEM")
+    log.info(f"DEB:{len(deb_rows)} CRED:{len(cred_rows)} REEMISSAO:{len(reemi_rows)} REEMISSAO_MOTIVO:{len(motivo_rows)} safras")
 
     cred_map  = {r['SAFRA_AQUISICAO']: r for r in cred_rows}
     reemi_map = {r['SAFRA_AQUISICAO']: r for r in reemi_rows}
@@ -123,10 +125,19 @@ def fetch_bq(creds):
             'tcDebitFirst':  int(c.get('EMIT_TC_DEBT_FIRST') or 0),
             'partial': s == current,
         })
-    return rows
+
+    motivo_rows = [
+        {
+            'safra': m['SAFRA_AQUISICAO'],
+            'origem': m['ORIGEM'],
+            'qtde': int(m.get('QTDE_REEMISSAO') or 0),
+        }
+        for m in motivo_rows
+    ]
+    return rows, motivo_rows
 
 
-def build_html(rows, update_date):
+def build_html(rows, motivo_rows, update_date):
     """Lê o template HTML e injeta os dados."""
     script_dir = Path(__file__).parent
     for candidate in [
@@ -153,6 +164,9 @@ def build_html(rows, update_date):
             f'reemissaoTC:{r["reemissaoTC"]},'
             f'tdCreditFirst:{r["tdCreditFirst"]},tcDebitFirst:{r["tcDebitFirst"]}{p}}},'
         )
+    lines += ['  ],', '  reemiMotivo: [']
+    for m in motivo_rows:
+        lines.append(f'    {{safra:"{m["safra"]}",origem:{json.dumps(m["origem"])},qtde:{m["qtde"]}}},')
     lines += ['  ]', '};']
     js_block = '\n'.join(lines)
 
@@ -213,9 +227,9 @@ if __name__ == "__main__":
     log.info(f"Atualização CI — {datetime.now().strftime('%d/%m/%Y %H:%M')}")
 
     creds       = get_credentials()
-    rows        = fetch_bq(creds)
+    rows, motivo_rows = fetch_bq(creds)
     update_date = datetime.now().strftime("%d/%m/%Y")
-    html        = build_html(rows, update_date)
+    html        = build_html(rows, motivo_rows, update_date)
 
     # Salva HTML local
     local_html = Path(__file__).parent.parent / "index.html"
