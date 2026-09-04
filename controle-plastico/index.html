@@ -623,7 +623,7 @@ tfoot td:first-child{color:#64748b}
     <div class="card">
       <div class="card-hdr">
         <h3>Motivo da Reemissão por Mês</h3>
-        <p>Abertura por origem da solicitação (renewal, reissue, request, credit_request, request_point)</p>
+        <p>Mix histórico (% do total) por origem da solicitação — rótulo no topo mostra o volume total de reemissões no mês</p>
       </div>
       <div class="legend" id="legReemiMotivo"></div>
       <div class="ch" style="height:280px"><canvas id="chartReemiMotivo"></canvas></div>
@@ -1431,14 +1431,43 @@ function initReemissaoCharts(){
     `<div class="leg"><div class="leg-line" style="background:${MOTIVO_COLORS[o]}"></div>${MOTIVO_LABELS[o]||o}</div>`
   ).join('');
 
+  const motivoTotais = R.map(r=>origensPresentes.reduce((s,o)=>s+((motivoBySafra[r.safra]||{})[o]||0),0));
+  const motivoAbs = origensPresentes.map(o=>R.map(r=>(motivoBySafra[r.safra]||{})[o]||0));
+  const motivoPct = origensPresentes.map((o,oi)=>R.map((r,ri)=>{
+    const tot = motivoTotais[ri];
+    return tot>0 ? +((motivoAbs[oi][ri]/tot)*100).toFixed(2) : 0;
+  }));
+
+  const totalLabelPlugin = {
+    id: 'totalLabelPlugin',
+    afterDatasetsDraw(chart, args, opts){
+      const totals = opts.totals || [];
+      const lastIdx = chart.data.datasets.length - 1;
+      const meta = chart.getDatasetMeta(lastIdx);
+      if(!meta || !meta.data.length) return;
+      const {ctx} = chart;
+      ctx.save();
+      ctx.font = "600 10px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
+      ctx.fillStyle = opts.color || '#94a3b8';
+      ctx.textAlign = 'center';
+      meta.data.forEach((bar,i)=>{
+        if(totals[i]==null) return;
+        ctx.fillText(fmtK(totals[i]), bar.x, bar.y - 6);
+      });
+      ctx.restore();
+    }
+  };
+
   kill('chartReemiMotivo');
   CH.chartReemiMotivo = new Chart(document.getElementById('chartReemiMotivo'),{
     type:'bar',
+    plugins:[totalLabelPlugin],
     data:{
       labels,
-      datasets: origensPresentes.map(o=>({
+      datasets: origensPresentes.map((o,oi)=>({
         label: MOTIVO_LABELS[o]||o,
-        data: R.map(r=>(motivoBySafra[r.safra]||{})[o]||0),
+        data: motivoPct[oi],
+        abs: motivoAbs[oi],
         backgroundColor: MOTIVO_COLORS[o],
         borderColor: MOTIVO_COLORS[o],
         borderWidth:1,
@@ -1446,8 +1475,13 @@ function initReemissaoCharts(){
       }))
     },
     options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ttFmt(ctx.dataset.label,ctx.raw)}}},
-      scales:{x:{...sX(),stacked:true},y:{...sY(),stacked:true}}}
+      layout:{padding:{top:18}},
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt(ctx.dataset.abs[ctx.dataIndex])} (${ctx.raw.toFixed(1)}%)`}},
+        totalLabelPlugin:{totals:motivoTotais,color:TC2}
+      },
+      scales:{x:{...sX(),stacked:true},y:{...sPct(),stacked:true,min:0,max:100}}}
   });
 }
 
