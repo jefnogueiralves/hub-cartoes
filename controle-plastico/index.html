@@ -467,6 +467,17 @@ tfoot td:first-child{color:#64748b}
       <div class="ch" style="height:250px"><canvas id="chartReemiStack"></canvas></div>
     </div>
   </div>
+
+  <div class="row1">
+    <div class="card">
+      <div class="card-hdr">
+        <h3>Motivo da Reemissão por Mês</h3>
+        <p>Abertura por origem da solicitação (renewal, reissue, request, credit_request, request_point)</p>
+      </div>
+      <div class="legend" id="legReemiMotivo"></div>
+      <div class="ch" style="height:280px"><canvas id="chartReemiMotivo"></canvas></div>
+    </div>
+  </div>
 </div>
 
 <!-- ==================== TAB QUERYS ==================== -->
@@ -788,6 +799,63 @@ ORDER BY SAFRA_AQUISICAO;</code></pre>
       </div>
   </div>
 
+  <div class="query-block">
+      <h3>4. Motivo da Reemissão — <code class="tbl-name">BD_CNTR_PLASTICO_REEMISSAO_MOTIVO</code></h3>
+      <p>Abertura mensal das reemissões (mesma definição de reemissão do bloco 3) por <strong>origem da solicitação</strong> (campo <code>DBT_CARD_REQ_ACQUISITON_FLOW</code> da tabela <code>BT_DBT_CARD_REQUEST</code>): <em>renewal</em> (renovação programada), <em>reissue</em> (perda, roubo, dano, não recebimento etc.), <em>request</em> (solicitação avulsa), <em>credit_request</em> (associada a pedido de crédito) e <em>request_point</em> (ponto de atendimento). Usada na aba Reemissão para o gráfico "Motivo da Reemissão por Mês".</p>
+      <div class="code-card">
+        <div class="code-top"><span>Query Completa — Recalcula e Recria a Tabela</span><button class="btn-copy" data-copy="q-motivo-full">Copiar</button></div>
+        <pre id="q-motivo-full"><code>CREATE OR REPLACE TABLE meli-bi-data.SBOX_CREDITSTC.BD_CNTR_PLASTICO_REEMISSAO_MOTIVO AS SELECT * FROM (
+WITH PARQUE_FIRST_REQUEST AS (
+SELECT
+    REQ.SIT_SITE_ID,
+    CAST(DBT_CARD_REQ_DATE_CREATED AS DATE) AS CREATED_DATE,
+    CUS_CUST_ID,
+    DBT_CARD_REQ_ID,
+    FROM meli-bi-data.WHOWNER.BT_DBT_CARD_REQUEST REQ
+   WHERE  REQ.sit_site_id = 'MLB'
+    qualify row_number() over (partition by cus_cust_id order by CAST(DBT_CARD_REQ_DATE_CREATED AS DATE)) = 1
+),
+PARQUE_FISICAS AS (
+    SELECT
+    REQ.SIT_SITE_ID,
+    REQ.CUS_CUST_ID,
+    case when REQ.sit_site_id = 'MLA' then 'PREPAID'
+    else 'FISICA_DEBITO_HIBRIDA' end as PPD_CARD_TYPE_GROUP,
+    REQ.DBT_CARD_REQ_ID,
+    CAST(DBT_CARD_REQ_DATE_CREATED AS DATE) AS CREATED_DATE,
+    COALESCE(DBT_CARD_REQ_ACQUISITON_FLOW, 'unknown') AS ORIGEM,
+    case when DBT_CARD_REQ_ACQUISITON_FLOW like '%reissue%' or  F.DBT_CARD_REQ_ID &lt;&gt; REQ.DBT_CARD_REQ_ID then 'REISSUE' else 'OTHERS' end as TIPO_FLOW,
+
+    FROM meli-bi-data.WHOWNER.BT_DBT_CARD_REQUEST REQ
+    LEFT JOIN PARQUE_FIRST_REQUEST f ON REQ.CUS_CUST_ID = F.CUS_CUST_ID
+    where
+    REQ.sit_site_id = 'MLB'
+    AND (REQ.SIT_SITE_ID = 'MLB' and DATE(DBT_CARD_REQ_DATE_CREATED) &gt;= '2021-01-01')
+    and dbt_card_req_acquisiton_flow &lt;&gt; 'prepaid_renewal_kyc_cr'
+),
+REEMISSOES AS (
+SELECT
+FORMAT_DATE("%Y%m",CREATED_DATE) AS MES_REEMISSAO,
+DBT_CARD_REQ_ID,
+ORIGEM
+FROM PARQUE_FISICAS WHERE PPD_CARD_TYPE_GROUP='FISICA_DEBITO_HIBRIDA' AND TIPO_FLOW='REISSUE'
+)
+SELECT
+MES_REEMISSAO AS SAFRA_AQUISICAO,
+ORIGEM,
+COUNT(DISTINCT DBT_CARD_REQ_ID) AS QTDE_REEMISSAO
+FROM REEMISSOES
+WHERE MES_REEMISSAO &gt;= '202401'
+GROUP BY 1,2)</code></pre>
+      </div>
+      <div class="code-card">
+        <div class="code-top"><span>Já calculado — só consultar a tabela pronta</span><button class="btn-copy" data-copy="q-motivo-select">Copiar</button></div>
+        <pre id="q-motivo-select"><code>SELECT *
+FROM `meli-bi-data.SBOX_CREDITSTC.BD_CNTR_PLASTICO_REEMISSAO_MOTIVO`
+ORDER BY SAFRA_AQUISICAO, ORIGEM;</code></pre>
+      </div>
+  </div>
+
 </div>
 
 <!-- ==================== TAB TABELA ==================== -->
@@ -852,6 +920,10 @@ try {
 }
 
 const R = PLASTICO_DATA.rows;
+const MOTIVO = PLASTICO_DATA.reemiMotivo || [];
+const MOTIVO_LABELS = {renewal:'Renovação',reissue:'Reemissão (perda/dano/etc)',request:'Solicitação',credit_request:'Solicitação de Crédito',request_point:'Ponto de Atendimento'};
+const MOTIVO_COLORS = {renewal:'#60a5fa',reissue:'#fb923c',request:'#a78bfa',credit_request:'#34d399',request_point:'#f472b6'};
+const MOTIVO_ORDER = ['renewal','reissue','request','credit_request','request_point'];
 
 /* ---- Utilities ---- */
 function fmt(n){ return n==null?'—':Math.round(n).toLocaleString('pt-BR'); }
@@ -1190,6 +1262,37 @@ function initReemissaoCharts(){
         {label:'Reemissão TD',data:R.map(r=>r.reemissaoTD),backgroundColor:'rgba(0,212,170,.7)',borderColor:'#00d4aa',borderWidth:1,stack:'s'},
         {label:'Reemissão TC',data:R.map(r=>r.reemissaoTC),backgroundColor:'rgba(96,165,250,.7)',borderColor:'#60a5fa',borderWidth:1,stack:'s'},
       ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ttFmt(ctx.dataset.label,ctx.raw)}}},
+      scales:{x:{...sX(),stacked:true},y:{...sY(),stacked:true}}}
+  });
+
+  // Motivo da reemissão por mês (abertura por origem)
+  const motivoBySafra = {};
+  MOTIVO.forEach(m=>{
+    if(!motivoBySafra[m.safra]) motivoBySafra[m.safra] = {};
+    motivoBySafra[m.safra][m.origem] = m.qtde;
+  });
+  const origensPresentes = MOTIVO_ORDER.filter(o=>MOTIVO.some(m=>m.origem===o));
+  const legEl = document.getElementById('legReemiMotivo');
+  if(legEl) legEl.innerHTML = origensPresentes.map(o=>
+    `<div class="leg"><div class="leg-line" style="background:${MOTIVO_COLORS[o]}"></div>${MOTIVO_LABELS[o]||o}</div>`
+  ).join('');
+
+  kill('chartReemiMotivo');
+  CH.chartReemiMotivo = new Chart(document.getElementById('chartReemiMotivo'),{
+    type:'bar',
+    data:{
+      labels,
+      datasets: origensPresentes.map(o=>({
+        label: MOTIVO_LABELS[o]||o,
+        data: R.map(r=>(motivoBySafra[r.safra]||{})[o]||0),
+        backgroundColor: MOTIVO_COLORS[o],
+        borderColor: MOTIVO_COLORS[o],
+        borderWidth:1,
+        stack:'m'
+      }))
     },
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ttFmt(ctx.dataset.label,ctx.raw)}}},
