@@ -296,6 +296,13 @@ tbody tr{border-bottom:1px solid #1a2744;transition:background .1s}
 tbody tr:hover{background:#162032}
 td{padding:8px 10px;text-align:right;color:#94a3b8;white-space:nowrap}
 td:first-child{text-align:left;color:#e2e8f0;font-weight:600}
+.creditreq-tbl{min-width:auto}
+.creditreq-tbl th{background:#0f172a;padding:7px 8px;text-align:right;color:#475569;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;border-bottom:2px solid #334155;white-space:nowrap}
+.creditreq-tbl th:first-child{text-align:left}
+.creditreq-tbl td.hl-unknown{color:#f87171;font-weight:700}
+.creditreq-tbl td.hl-vazio{color:#fbbf24;font-weight:700}
+.creditreq-tbl th.hl-unknown{color:#f87171}
+.creditreq-tbl th.hl-vazio{color:#fbbf24}
 td.tot{color:#e2e8f0;font-weight:600}
 .partial-row td{color:#4b5563;font-style:italic}
 .partial-row td:first-child{color:#6b7280}
@@ -350,6 +357,7 @@ header{border-bottom-color:#e2e8f0}
 .th-grp th{background:#f8fafc}
 .th-grp .g-td,.th-grp .g-tc,.th-grp .g-x{border-right-color:#e2e8f0}
 .th-sub th{background:#f8fafc;border-bottom-color:#e2e8f0;color:#64748b}
+.creditreq-tbl th{background:#f8fafc;border-bottom-color:#e2e8f0;color:#64748b}
 .bdr{border-right-color:#e2e8f0}
 tbody tr{border-bottom-color:#f1f5f9}
 tbody tr:hover{background:#f8fafc}
@@ -627,6 +635,19 @@ tfoot td:first-child{color:#64748b}
       </div>
       <div class="legend" id="legReemiMotivo"></div>
       <div class="ch" style="height:280px"><canvas id="chartReemiMotivo"></canvas></div>
+    </div>
+  </div>
+
+  <div class="tbl-card" style="margin-bottom:14px">
+    <div class="tbl-top">
+      <h3>Detalhe do "credit_request" por Mês (% do mix)</h3>
+      <span>Campo <code>DBT_ACQ_FLOW_REASON_DETAIL</code> — apenas para origem credit_request. Colunas "(vazio)" e "unknown" destacadas.</span>
+    </div>
+    <div class="tbl-wrap">
+      <table id="tblCreditReqDetalhe" class="creditreq-tbl">
+        <thead><tr id="tblCreditReqDetalheHead"></tr></thead>
+        <tbody id="tblCreditReqDetalheBody"></tbody>
+      </table>
     </div>
   </div>
 </div>
@@ -1007,6 +1028,65 @@ ORDER BY SAFRA_AQUISICAO, ORIGEM;</code></pre>
       </div>
   </div>
 
+  <div class="query-block">
+      <h3>5. Detalhe do "credit_request" — <code class="tbl-name">BD_CNTR_PLASTICO_REEMISSAO_CREDITREQ_DETALHE</code></h3>
+      <p>Abertura mensal do campo <code>DBT_ACQ_FLOW_REASON_DETAIL</code> (motivo detalhado), <strong>apenas para reemissões com origem "credit_request"</strong>. Usa <code>COALESCE(..., 'unknown')</code> na origem e <code>COALESCE(..., '(vazio)')</code> no detalhe para diferenciar valor realmente nulo (campo não preenchido) de "unknown" (valor explícito gravado pelo app quando não identifica o motivo). Usada na aba Reemissão para a tabela "Detalhe do credit_request por Mês".</p>
+      <div class="code-card">
+        <div class="code-top"><span>Query Completa — Recalcula e Recria a Tabela</span><button class="btn-copy" data-copy="q-creditreq-full">Copiar</button></div>
+        <pre id="q-creditreq-full"><code>CREATE OR REPLACE TABLE meli-bi-data.SBOX_CREDITSTC.BD_CNTR_PLASTICO_REEMISSAO_CREDITREQ_DETALHE AS SELECT * FROM (
+WITH PARQUE_FIRST_REQUEST AS (
+SELECT
+    REQ.SIT_SITE_ID,
+    CAST(DBT_CARD_REQ_DATE_CREATED AS DATE) AS CREATED_DATE,
+    CUS_CUST_ID,
+    DBT_CARD_REQ_ID,
+    FROM meli-bi-data.WHOWNER.BT_DBT_CARD_REQUEST REQ
+   WHERE  REQ.sit_site_id = 'MLB'
+    qualify row_number() over (partition by cus_cust_id order by CAST(DBT_CARD_REQ_DATE_CREATED AS DATE)) = 1
+),
+PARQUE_FISICAS AS (
+    SELECT
+    REQ.SIT_SITE_ID,
+    REQ.CUS_CUST_ID,
+    case when REQ.sit_site_id = 'MLA' then 'PREPAID'
+    else 'FISICA_DEBITO_HIBRIDA' end as PPD_CARD_TYPE_GROUP,
+    REQ.DBT_CARD_REQ_ID,
+    CAST(DBT_CARD_REQ_DATE_CREATED AS DATE) AS CREATED_DATE,
+    COALESCE(DBT_CARD_REQ_ACQUISITON_FLOW, 'unknown') AS ORIGEM,
+    COALESCE(DBT_ACQ_FLOW_REASON_DETAIL, '(vazio)') AS DETALHE,
+    case when DBT_CARD_REQ_ACQUISITON_FLOW like '%reissue%' or  F.DBT_CARD_REQ_ID &lt;&gt; REQ.DBT_CARD_REQ_ID then 'REISSUE' else 'OTHERS' end as TIPO_FLOW,
+
+    FROM meli-bi-data.WHOWNER.BT_DBT_CARD_REQUEST REQ
+    LEFT JOIN PARQUE_FIRST_REQUEST f ON REQ.CUS_CUST_ID = F.CUS_CUST_ID
+    where
+    REQ.sit_site_id = 'MLB'
+    AND (REQ.SIT_SITE_ID = 'MLB' and DATE(DBT_CARD_REQ_DATE_CREATED) &gt;= '2021-01-01')
+    and dbt_card_req_acquisiton_flow &lt;&gt; 'prepaid_renewal_kyc_cr'
+),
+REEMISSOES AS (
+SELECT
+FORMAT_DATE("%Y%m",CREATED_DATE) AS MES_REEMISSAO,
+DBT_CARD_REQ_ID,
+ORIGEM,
+DETALHE
+FROM PARQUE_FISICAS WHERE PPD_CARD_TYPE_GROUP='FISICA_DEBITO_HIBRIDA' AND TIPO_FLOW='REISSUE'
+)
+SELECT
+MES_REEMISSAO AS SAFRA_AQUISICAO,
+DETALHE,
+COUNT(DISTINCT DBT_CARD_REQ_ID) AS QTDE
+FROM REEMISSOES
+WHERE MES_REEMISSAO &gt;= '202401' AND ORIGEM='credit_request'
+GROUP BY 1,2)</code></pre>
+      </div>
+      <div class="code-card">
+        <div class="code-top"><span>Já calculado — só consultar a tabela pronta</span><button class="btn-copy" data-copy="q-creditreq-select">Copiar</button></div>
+        <pre id="q-creditreq-select"><code>SELECT *
+FROM `meli-bi-data.SBOX_CREDITSTC.BD_CNTR_PLASTICO_REEMISSAO_CREDITREQ_DETALHE`
+ORDER BY SAFRA_AQUISICAO, DETALHE;</code></pre>
+      </div>
+  </div>
+
 </div>
 
 <!-- ==================== TAB TABELA ==================== -->
@@ -1074,6 +1154,8 @@ const R = PLASTICO_DATA.rows;
 const MOTIVO = PLASTICO_DATA.reemiMotivo || [];
 const MOTIVO_COLORS = {renewal:'#60a5fa',reissue:'#fb923c',request:'#a78bfa',credit_request:'#34d399',request_point:'#f472b6'};
 const MOTIVO_ORDER = ['renewal','reissue','request','credit_request','request_point'];
+const CREDITREQ_DETALHE = PLASTICO_DATA.creditReqDetalhe || [];
+const CREDITREQ_DETALHE_COLS = ['unknown','(vazio)','activation','cards_listing_restyling_low_propension','reactivation','card-cancellation','dashboard_ftu_tcmp','maxwell'];
 
 /* ---- Utilities ---- */
 function fmt(n){ return n==null?'—':Math.round(n).toLocaleString('pt-BR'); }
@@ -1512,6 +1594,41 @@ function initReemissaoCharts(){
       },
       scales:{x:{...sX(),stacked:true},y:{...sPct(),stacked:true,min:0,max:100}}}
   });
+
+  renderCreditReqDetalheTable();
+}
+
+function renderCreditReqDetalheTable(){
+  const bySafra = {};
+  const totBySafra = {};
+  CREDITREQ_DETALHE.forEach(d=>{
+    if(!bySafra[d.safra]) bySafra[d.safra] = {};
+    bySafra[d.safra][d.detalhe] = (bySafra[d.safra][d.detalhe]||0) + d.qtde;
+    totBySafra[d.safra] = (totBySafra[d.safra]||0) + d.qtde;
+  });
+  const safras = Object.keys(bySafra).sort();
+  if(!safras.length) return;
+
+  const head = document.getElementById('tblCreditReqDetalheHead');
+  const cols = CREDITREQ_DETALHE_COLS;
+  head.innerHTML = '<th>Safra</th><th>Total</th>' +
+    cols.map(c=>`<th class="${c==='unknown'?'hl-unknown':c==='(vazio)'?'hl-vazio':''}">${c}</th>`).join('') +
+    '<th>Outros</th>';
+
+  const body = document.getElementById('tblCreditReqDetalheBody');
+  body.innerHTML = safras.map(s=>{
+    const det = bySafra[s]||{};
+    const tot = totBySafra[s]||0;
+    const label = R.find(r=>r.safra===s)?.label || s;
+    const knownSum = cols.reduce((sum,c)=>sum+(det[c]||0),0);
+    const outros = tot - knownSum;
+    const pct = v => tot>0 ? ((v/tot)*100).toFixed(1)+'%' : '—';
+    const cells = cols.map(c=>{
+      const cls = c==='unknown'?'hl-unknown':c==='(vazio)'?'hl-vazio':'';
+      return `<td class="${cls}">${pct(det[c]||0)}</td>`;
+    }).join('');
+    return `<tr><td>${label}</td><td>${fmt(tot)}</td>${cells}<td>${pct(outros)}</td></tr>`;
+  }).join('');
 }
 
 /* ===================== MoM ACCELERATION ===================== */
