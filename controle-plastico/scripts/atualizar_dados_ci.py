@@ -17,6 +17,7 @@ TABLES = {
     'cred':            'meli-bi-data.SBOX_CREDITSTC.BD_CNTR_PLASTICO_CRED',
     'reemissao':       'meli-bi-data.SBOX_CREDITSTC.BD_CNTR_PLASTICO_REEMISSAO',
     'reemissaoMotivo': 'meli-bi-data.SBOX_CREDITSTC.BD_CNTR_PLASTICO_REEMISSAO_MOTIVO',
+    'creditReqDetalhe':'meli-bi-data.SBOX_CREDITSTC.BD_CNTR_PLASTICO_REEMISSAO_CREDITREQ_DETALHE',
 }
 MONTHS_PT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
 
@@ -100,7 +101,8 @@ def fetch_bq(creds):
     cred_rows   = bq_query(client, f"SELECT * FROM `{TABLES['cred']}`  ORDER BY SAFRA_AQUISICAO")
     reemi_rows  = bq_query(client, f"SELECT * FROM `{TABLES['reemissao']}` ORDER BY SAFRA_AQUISICAO")
     motivo_rows = bq_query(client, f"SELECT * FROM `{TABLES['reemissaoMotivo']}` ORDER BY SAFRA_AQUISICAO, ORIGEM")
-    log.info(f"DEB:{len(deb_rows)} CRED:{len(cred_rows)} REEMISSAO:{len(reemi_rows)} REEMISSAO_MOTIVO:{len(motivo_rows)} safras")
+    creditreq_detalhe_rows = bq_query(client, f"SELECT * FROM `{TABLES['creditReqDetalhe']}` ORDER BY SAFRA_AQUISICAO, DETALHE")
+    log.info(f"DEB:{len(deb_rows)} CRED:{len(cred_rows)} REEMISSAO:{len(reemi_rows)} REEMISSAO_MOTIVO:{len(motivo_rows)} CREDITREQ_DETALHE:{len(creditreq_detalhe_rows)} safras")
 
     cred_map  = {r['SAFRA_AQUISICAO']: r for r in cred_rows}
     reemi_map = {r['SAFRA_AQUISICAO']: r for r in reemi_rows}
@@ -134,10 +136,19 @@ def fetch_bq(creds):
         }
         for m in motivo_rows
     ]
-    return rows, motivo_rows
+
+    creditreq_detalhe_rows = [
+        {
+            'safra': d['SAFRA_AQUISICAO'],
+            'detalhe': d['DETALHE'],
+            'qtde': int(d.get('QTDE') or 0),
+        }
+        for d in creditreq_detalhe_rows
+    ]
+    return rows, motivo_rows, creditreq_detalhe_rows
 
 
-def build_html(rows, motivo_rows, update_date):
+def build_html(rows, motivo_rows, creditreq_detalhe_rows, update_date):
     """Lê o template HTML e injeta os dados."""
     script_dir = Path(__file__).parent
     for candidate in [
@@ -167,6 +178,9 @@ def build_html(rows, motivo_rows, update_date):
     lines += ['  ],', '  reemiMotivo: [']
     for m in motivo_rows:
         lines.append(f'    {{safra:"{m["safra"]}",origem:{json.dumps(m["origem"])},qtde:{m["qtde"]}}},')
+    lines += ['  ],', '  creditReqDetalhe: [']
+    for d in creditreq_detalhe_rows:
+        lines.append(f'    {{safra:"{d["safra"]}",detalhe:{json.dumps(d["detalhe"])},qtde:{d["qtde"]}}},')
     lines += ['  ]', '};']
     js_block = '\n'.join(lines)
 
@@ -227,9 +241,9 @@ if __name__ == "__main__":
     log.info(f"Atualização CI — {datetime.now().strftime('%d/%m/%Y %H:%M')}")
 
     creds       = get_credentials()
-    rows, motivo_rows = fetch_bq(creds)
+    rows, motivo_rows, creditreq_detalhe_rows = fetch_bq(creds)
     update_date = datetime.now().strftime("%d/%m/%Y")
-    html        = build_html(rows, motivo_rows, update_date)
+    html        = build_html(rows, motivo_rows, creditreq_detalhe_rows, update_date)
 
     # Salva HTML local
     local_html = Path(__file__).parent.parent / "index.html"
