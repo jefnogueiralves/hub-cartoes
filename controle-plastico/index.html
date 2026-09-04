@@ -531,6 +531,8 @@ canvas{display:block;width:100%!important;height:100%!important}
 .ybtn2{background:#1e293b;border:1px solid #334155;color:#94a3b8;padding:6px 18px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:500;transition:all .15s}
 .ybtn2:hover{border-color:#60a5fa;color:#60a5fa}
 .ybtn2.active{background:#60a5fa;border-color:#60a5fa;color:#0f172a;font-weight:700}
+.highlight-box{display:none;align-items:flex-start;gap:8px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.35);border-radius:10px;padding:10px 14px;font-size:12px;color:#fcd34d;line-height:1.5;margin-bottom:14px}
+.highlight-box strong{color:#fbbf24}
 
 /* Table */
 .tbl-card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:18px}
@@ -608,6 +610,8 @@ header{border-bottom-color:#e2e8f0}
 .ybtn.active{background:#60a5fa;border-color:#60a5fa;color:#fff}
 .ybtn2{background:#fff;border-color:#e2e8f0;color:#64748b}
 .ybtn2.active{background:#60a5fa;border-color:#60a5fa;color:#fff}
+.highlight-box{background:rgba(217,119,6,.08);border-color:rgba(217,119,6,.3);color:#92400e}
+.highlight-box strong{color:#b45309}
 .tbl-card{background:#fff;border-color:#e2e8f0}
 .tbl-top h3{color:#1e293b}
 .tbl-top span{color:#64748b}
@@ -888,6 +892,8 @@ tfoot td:first-child{color:#64748b}
     <button class="ybtn2" data-year2="2025">2025</button>
     <button class="ybtn2 active" data-year2="2026">2026</button>
   </div>
+
+  <div id="motivo2026Highlight" class="highlight-box"></div>
 
   <div class="row1">
     <div class="card">
@@ -1768,17 +1774,18 @@ function initReemissaoCharts(){
 let motivoYearFilter = '2026';
 
 function renderMotivoSection(year){
-  const RM = R.filter(r=>r.safra.startsWith(year));
+  const RM = R.filter(r=>r.safra.startsWith(year) && !r.partial);
   const labels = RM.map(r=>r.label);
+  const safrasRM = new Set(RM.map(r=>r.safra));
 
   // Motivo da reemissão por mês (abertura por origem)
   const motivoBySafra = {};
   MOTIVO.forEach(m=>{
-    if(!m.safra.startsWith(year)) return;
+    if(!safrasRM.has(m.safra)) return;
     if(!motivoBySafra[m.safra]) motivoBySafra[m.safra] = {};
     motivoBySafra[m.safra][m.origem] = m.qtde;
   });
-  const origensPresentes = MOTIVO_ORDER.filter(o=>MOTIVO.some(m=>m.safra.startsWith(year) && m.origem===o));
+  const origensPresentes = MOTIVO_ORDER.filter(o=>MOTIVO.some(m=>safrasRM.has(m.safra) && m.origem===o));
   const legEl = document.getElementById('legReemiMotivo');
   if(legEl) legEl.innerHTML = origensPresentes.map(o=>
     `<div class="leg"><div class="leg-line" style="background:${MOTIVO_COLORS[o]}"></div>${o}</div>`
@@ -1867,14 +1874,15 @@ function renderMotivoSection(year){
       scales:{x:{...sX(),stacked:true},y:{...sPct(),stacked:true,min:0,max:100}}}
   });
 
-  renderCreditReqDetalheTable(year);
+  renderCreditReqDetalheTable(year, safrasRM);
+  renderMotivoHighlight(year, safrasRM);
 }
 
-function renderCreditReqDetalheTable(year){
+function renderCreditReqDetalheTable(year, safrasRM){
   const bySafra = {};
   const totBySafra = {};
   CREDITREQ_DETALHE.forEach(d=>{
-    if(!d.safra.startsWith(year)) return;
+    if(!safrasRM.has(d.safra)) return;
     if(!bySafra[d.safra]) bySafra[d.safra] = {};
     bySafra[d.safra][d.detalhe] = (bySafra[d.safra][d.detalhe]||0) + d.qtde;
     totBySafra[d.safra] = (totBySafra[d.safra]||0) + d.qtde;
@@ -1902,6 +1910,37 @@ function renderCreditReqDetalheTable(year){
     }).join('');
     return `<tr><td>${label}</td><td>${fmt(tot)}</td>${cells}<td>${pct(outros)}</td></tr>`;
   }).join('');
+}
+
+function renderMotivoHighlight(year, safrasRM){
+  const box = document.getElementById('motivo2026Highlight');
+  if(!box) return;
+  if(year !== '2026'){ box.style.display='none'; box.innerHTML=''; return; }
+
+  const creditBySafra = {};
+  MOTIVO.forEach(m=>{
+    if(m.origem!=='credit_request' || !safrasRM.has(m.safra)) return;
+    creditBySafra[m.safra] = (creditBySafra[m.safra]||0) + m.qtde;
+  });
+  const preSafras  = Object.keys(creditBySafra).filter(s=>s<'202606');
+  const postSafras = Object.keys(creditBySafra).filter(s=>s>='202606');
+  if(!preSafras.length || !postSafras.length){ box.style.display='none'; box.innerHTML=''; return; }
+
+  const avg = arr => arr.reduce((s,x)=>s+x,0)/arr.length;
+  const avgPre  = avg(preSafras.map(s=>creditBySafra[s]));
+  const avgPost = avg(postSafras.map(s=>creditBySafra[s]));
+  const growthPct = avgPre>0 ? ((avgPost-avgPre)/avgPre*100) : 0;
+
+  let unknownSum=0, postTotal=0;
+  CREDITREQ_DETALHE.forEach(d=>{
+    if(!safrasRM.has(d.safra) || d.safra < '202606') return;
+    postTotal += d.qtde;
+    if(d.detalhe==='unknown') unknownSum += d.qtde;
+  });
+  const unknownPct = postTotal>0 ? (unknownSum/postTotal*100) : 0;
+
+  box.style.display='flex';
+  box.innerHTML = `⚠️ <div>A partir de <strong>Jun/26</strong>, o volume médio mensal de <strong>credit_request</strong> cresceu <strong>${growthPct.toFixed(0)}%</strong> frente à média de Jan–Mai/26, puxado majoritariamente por um grande volume classificado como <strong>"unknown"</strong> (${unknownPct.toFixed(0)}% do total de credit_request no período pós-salto). Mês corrente (parcial) excluído da amostra.</div>`;
 }
 
 /* ===================== MoM ACCELERATION ===================== */
