@@ -623,7 +623,7 @@ tfoot td:first-child{color:#64748b}
     <div class="card">
       <div class="card-hdr">
         <h3>Motivo da Reemissão por Mês</h3>
-        <p>Mix histórico (% do total) por origem da solicitação — rótulo no topo mostra o volume total de reemissões no mês</p>
+        <p>Mix histórico (% do total) — classificação exata do campo <code>DBT_CARD_REQ_ACQUISITON_FLOW</code> (sem agrupamento). Rótulo no topo mostra o volume total de reemissões no mês.</p>
       </div>
       <div class="legend" id="legReemiMotivo"></div>
       <div class="ch" style="height:280px"><canvas id="chartReemiMotivo"></canvas></div>
@@ -1072,7 +1072,6 @@ try {
 
 const R = PLASTICO_DATA.rows;
 const MOTIVO = PLASTICO_DATA.reemiMotivo || [];
-const MOTIVO_LABELS = {renewal:'Renovação',reissue:'Reemissão (perda/dano/etc)',request:'Solicitação',credit_request:'Solicitação de Crédito',request_point:'Ponto de Atendimento'};
 const MOTIVO_COLORS = {renewal:'#60a5fa',reissue:'#fb923c',request:'#a78bfa',credit_request:'#34d399',request_point:'#f472b6'};
 const MOTIVO_ORDER = ['renewal','reissue','request','credit_request','request_point'];
 
@@ -1428,7 +1427,7 @@ function initReemissaoCharts(){
   const origensPresentes = MOTIVO_ORDER.filter(o=>MOTIVO.some(m=>m.origem===o));
   const legEl = document.getElementById('legReemiMotivo');
   if(legEl) legEl.innerHTML = origensPresentes.map(o=>
-    `<div class="leg"><div class="leg-line" style="background:${MOTIVO_COLORS[o]}"></div>${MOTIVO_LABELS[o]||o}</div>`
+    `<div class="leg"><div class="leg-line" style="background:${MOTIVO_COLORS[o]}"></div>${o}</div>`
   ).join('');
 
   const motivoTotais = R.map(r=>origensPresentes.reduce((s,o)=>s+((motivoBySafra[r.safra]||{})[o]||0),0));
@@ -1494,7 +1493,7 @@ function initReemissaoCharts(){
     data:{
       labels,
       datasets: origensPresentes.map((o,oi)=>({
-        label: MOTIVO_LABELS[o]||o,
+        label: o,
         data: motivoPct[oi],
         abs: motivoAbs[oi],
         backgroundColor: MOTIVO_COLORS[o],
