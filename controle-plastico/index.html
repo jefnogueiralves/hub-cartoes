@@ -1858,7 +1858,7 @@ function renderCreditReqDetalheTable(){
     bySafra[d.safra][d.detalhe] = (bySafra[d.safra][d.detalhe]||0) + d.qtde;
     totBySafra[d.safra] = (totBySafra[d.safra]||0) + d.qtde;
   });
-  const safras = Object.keys(bySafra).sort();
+  const safras = Object.keys(bySafra).sort().reverse();
   if(!safras.length) return;
 
   const head = document.getElementById('tblCreditReqDetalheHead');
