@@ -1458,10 +1458,39 @@ function initReemissaoCharts(){
     }
   };
 
+  const segmentLabelPlugin = {
+    id: 'segmentLabelPlugin',
+    afterDatasetsDraw(chart, args, opts){
+      const minPct = opts.minPct || 5;
+      const {ctx} = chart;
+      ctx.save();
+      ctx.font = "600 9.5px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      chart.data.datasets.forEach((ds, di)=>{
+        const meta = chart.getDatasetMeta(di);
+        if(meta.hidden) return;
+        meta.data.forEach((bar, i)=>{
+          const val = ds.data[i];
+          if(val == null || val < minPct) return;
+          if(Math.abs(bar.base - bar.y) < 12) return;
+          const y = (bar.y + bar.base) / 2;
+          const text = val.toFixed(0) + '%';
+          ctx.lineWidth = 2.5;
+          ctx.strokeStyle = 'rgba(15,23,42,.55)';
+          ctx.strokeText(text, bar.x, y);
+          ctx.fillStyle = '#fff';
+          ctx.fillText(text, bar.x, y);
+        });
+      });
+      ctx.restore();
+    }
+  };
+
   kill('chartReemiMotivo');
   CH.chartReemiMotivo = new Chart(document.getElementById('chartReemiMotivo'),{
     type:'bar',
-    plugins:[totalLabelPlugin],
+    plugins:[totalLabelPlugin, segmentLabelPlugin],
     data:{
       labels,
       datasets: origensPresentes.map((o,oi)=>({
@@ -1479,7 +1508,8 @@ function initReemissaoCharts(){
       plugins:{
         legend:{display:false},
         tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt(ctx.dataset.abs[ctx.dataIndex])} (${ctx.raw.toFixed(1)}%)`}},
-        totalLabelPlugin:{totals:motivoTotais,color:TC2}
+        totalLabelPlugin:{totals:motivoTotais,color:TC2},
+        segmentLabelPlugin:{minPct:5}
       },
       scales:{x:{...sX(),stacked:true},y:{...sPct(),stacked:true,min:0,max:100}}}
   });
